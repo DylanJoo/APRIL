@@ -14,6 +14,45 @@ from vllm.distributed import (
     destroy_model_parallel
 )
 
+def cleanup():
+    destroy_model_parallel()
+    destroy_distributed_environment()
+    with contextlib.suppress(AssertionError):
+        torch.distributed.destroy_process_group()
+    gc.collect()
+    torch.cuda.empty_cache()
+
+# async def iterate_over_output_for_one_prompt(output_iterator: AsyncStream) -> str:
+#     last_text = ""
+#     prompt = "???"
+#
+#     async for output in output_iterator:
+#         prompt = output.prompt
+#         last_text = output.outputs[0].text
+#
+#     return last_text
+#
+# async def generate(
+#     engine: AsyncLLMEngine, 
+#     request_ids: list[str], 
+#     prompts: list[str], 
+#     sampling_params: SamplingParams, 
+#     **kwargs
+# ) -> list[str]:
+#
+#     output_iterators = [
+#         await engine.add_request(request_ids[i], prompt, sampling_params)\
+#                 for i, prompt in enumerate(prompts)
+#     ]
+#     outputs = await asyncio.gather(*[iterate_over_output_for_one_prompt(output_iterator)
+#                                      for output_iterator in output_iterators])
+#     return list(outputs)
+#
+# async def serve(engine, sampling_params, prompts):
+#     request_ids = [str(i) for i in range(len(prompts))]
+#     outputs = await generate(engine, request_ids, prompts, sampling_params)
+#     return outputs
+
 class LLM:
 
     def __init__(self, 
@@ -22,7 +61,7 @@ class LLM:
         dtype='half', gpu_memory_utilization=0.75, 
         num_gpus=1, 
         enforce_eager=False,
-        logprobs=None
+        think_activated=False,
     ):
         args = AsyncEngineArgs(
             model=model,
@@ -37,8 +76,7 @@ class LLM:
         self.sampling_params = SamplingParams(
             temperature=temperature, 
             top_p=top_p,
-            skip_special_tokens=False,
-            logprobs=logprobs
+            skip_special_tokens=False
         )
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
@@ -48,7 +86,6 @@ class LLM:
         last_text = ""
         async for output in output_iterator:
             last_text = output.outputs[0].text
-            last_logprob = output.outputs[0].text
         return last_text
     
     async def _generate_async(self, prompts, sampling_params):
