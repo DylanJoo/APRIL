@@ -15,11 +15,12 @@ from vllm.distributed import (
 )
 
 class LLM:
-
     def __init__(self, 
         model, 
-        temperature=0.7, top_p=0.9, 
-        dtype='half', gpu_memory_utilization=0.75, 
+        temperature=0.7, 
+        top_p=0.9, 
+        dtype='half', 
+        gpu_memory_utilization=0.75, 
         num_gpus=1, 
         enforce_eager=False,
         logprobs=None
@@ -48,7 +49,7 @@ class LLM:
         last_text = ""
         async for output in output_iterator:
             last_text = output.outputs[0].text
-            last_logprob = output.outputs[0].text
+            # last_logprobs = output.outputs[0].logprobs
         return last_text
     
     async def _generate_async(self, prompts, sampling_params):
@@ -72,7 +73,6 @@ class LLM:
     
     def generate(self, prompts, max_tokens=5, min_tokens=0):
         """Generate completions for the provided prompts"""
-        # If prompts is a single string, convert to list
         if isinstance(prompts, str):
             prompts = [prompts]
         
