@@ -14,7 +14,7 @@ def load_runs(path, topk=None, output_score=False):
     with open(path, 'r') as f:
         for line in f:
             qid, _, docid, rank, score, _ = line.strip().split()
-            if int(rank) <= (9999 or topk):
+            if int(rank) <= (topk or 9999):
                 run_dict[str(qid)] += [(docid, float(rank), float(score))]
 
     # sort by score and return static dictionary
@@ -22,7 +22,6 @@ def load_runs(path, topk=None, output_score=False):
     for qid, docid_ranks in run_dict.items():
         sorted_docid_ranks = sorted(docid_ranks, key=lambda x: x[1], reverse=False) 
         if output_score:
-            # sorted_run_dict[qid] = [{docid, rel_score} for docid, rel_rank, rel_score in sorted_docid_ranks]
             sorted_run_dict[qid] = {docid: rel_score for docid, rel_rank, rel_score in sorted_docid_ranks}
         else:
             sorted_run_dict[qid] = [docid for docid, _, _ in sorted_docid_ranks]

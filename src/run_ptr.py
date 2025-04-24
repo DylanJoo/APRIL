@@ -1,12 +1,12 @@
-import loader
-import logging
+import os
 from typing import Optional
+import ir_measures
+from ir_measures import *
 
+import loader
 from pointwise import pt_rerank
 from llm.vllm_back import LLM
 from utils.tools import load_runs
-
-logger = logging.getLogger(__name__)
 
 def main(
     model_name_or_path: str,
@@ -16,7 +16,7 @@ def main(
     doc_fields: Optional[list] = None,
     **kwargs,
 ):
-    run = load_runs(run_path, topk=10)
+    run = load_runs(run_path, topk=100, output_score=True)
     corpus, queries, qrels = loader.load(
         ir_datasets_name, query_fields, doc_fields
     )
@@ -25,42 +25,38 @@ def main(
         model=model_name_or_path,
         temperature=0, 
         top_p=1.0,
-        prompt_logprobs=5,
         gpu_memory_utilization=0.9, 
+        logprobs=20,
+        prompt_logprobs=None,
     )
 
-    reranked_run = qlm_rerank(
+    reranked_run = pt_rerank(
         model=model,
         run=run,
         queries=queries,
         corpus=corpus,
-        batch_size=8
+        batch_size=16
     )
 
-    # evaluation
-    result = ir_measures.calc_aggregate([nDCG@10], qrels, reranked_run)[nDCG@10]
-    print(result)
+    with open(run_path.replace('runs', 'pt_reranked_runs'), 'w') as f:
+        for qid in reranked_run:
+            for i, (docid, score) in enumerate(reranked_run[qid].items()):
+                f.write(f"{qid} Q0 {docid} {i+1} {score} pt_rerank\n")
 
+    # evaluation
+    r1 = ir_measures.calc_aggregate([nDCG@10, MRR@10], qrels, run)
+    r2 = ir_measures.calc_aggregate([nDCG@10, MRR@10], qrels, reranked_run)
+    print(r1)
+    print(r2)
+
+os.makedirs("../pt_reranked_runs", exist_ok=True)
 main(
     model_name_or_path='meta-llama/Llama-3.1-8B-Instruct',
-    run_path="/home/jju/APRIL/runs/run.msmarco-v1-passage.bm25-rm3-default.dl19.txt",
+    run_path="/home/dju/APRIL/runs/run.msmarco-v1-passage.bm25-default.dl19.txt",
     ir_datasets_name='msmarco-passage/trec-dl-2019',
 )
-
-# kwargs: 
-# ("prompt_mode", PromptMode.MONOT5),
-# ("context_size", 512),
-# ("device", "cuda"),
-# ("batch_size", 64),
-# ("context_size", 4096),
-# ("prompt_mode", PromptMode.RANK_GPT),
-# ("num_few_shot_examples", 0),
-# ("device", "cuda"),
-# ("num_gpus", 1),
-# ("variable_passages", False),
-# ("window_size", 20),
-# ("system_message", None),
-# ("sglang_batched", False),
-# ("tensorrt_batched", False),
-# ("use_logits", False),
-# ("use_alpha", False),
+main(
+    model_name_or_path='meta-llama/Llama-3.1-8B-Instruct',
+    run_path="/home/dju/APRIL/runs/run.msmarco-v1-passage.bm25-default.dl20.txt",
+    ir_datasets_name='msmarco-passage/trec-dl-2020',
+)
