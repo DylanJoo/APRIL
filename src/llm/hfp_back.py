@@ -1,70 +1,60 @@
-import logging
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-import time
 import json
 import string
 import random
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import (
+    AutoModelForCausalLM, 
+    AutoModelForSeq2SeqLM, 
+    AutoTokenizer,
+    pipeline
+)
 from typing import List
 
-    # "fid": FiDT5, # unified encoder-decoder
-    # "cepe": LlamaForCausalContextLM, # encoder + llama
-MODEL_CLASS = {
-    "clm": AutoModelForCausalLM
-}
+class dummyLLM:
+
+    def generate(self, inputs):
+        if len(inputs[0]) > 512:
+            outputs = []
+            for input in inputs:
+                strings = input.split()
+                random.shuffle(strings)
+                outputs.append( " ".join(strings[:100]) )
+            return outputs
+        else:
+            return inputs
 
 class LLM:
 
     def __init__(self, 
-        model,
-        model_class='CLM',
+        model, 
         temperature=0.7, 
         top_p=1.0, 
-        flash_attention_2=True,
-        device='auto'
+        use_pipeline=True,
+        flash_attention_2=False,
     ):
-        start_time = time.time()
 
         if flash_attention_2:
-            model_kwargs = {
-                "attn_implementation": "flash_attention_2",
-                "torch_dtype": torch.bfloat16
-            }
+            model_kwargs = {'torch_dtype': torch.bfloat16}
         else:
             model_kwargs = {'torch_dtype': torch.float16}
 
-        self.model = MODEL_CLASS[model_class.lower()].from_pretrained(
-            model,
-            device_map=device,
+        self.pipeline = pipeline(
+            'text-generation', 
+            model=model,
+            device_map='auto',
             **model_kwargs
         )
-
         self.temperature = temperature
         self.top_p = top_p
 
-        logger.info("Finish loading in %.2f sec." % (time.time() - start_time))
+    def generate(self, x, max_tokens=1024, min_tokens=0, **kwargs):
 
-    def preprocess(self, x):
-        # [todo] check padding side
-        tokenized_input = tokenizer(
-            batch_inputs,
-            padding=True,
-            truncation=True,
-            max_length=args.max_length,
-            return_tensors='pt'
-        ).to(self.model.device)
-        print(tokenized_input)
-        return tokenized_input
-
-    def generate(self, x, min_tokens=0, max_tokens=1024, **kwargs):
         if isinstance(x, str):
             x = [x]
 
         x = self.preprocess(x)
-        outputs = self.generate(
+        outputs = self.pipeline(
+            x,
             do_sample=True,
             temperature=self.temperature, 
             top_p=self.top_p, 

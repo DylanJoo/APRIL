@@ -4,7 +4,7 @@ from utils.tools import batch_iterator
 
 def preprocess(query, doc):
     template = \
-    """Passage: {doc}\nQuery: {query}\nIs this passage relevant to the query? Please answer 'true' or 'false'. Answer: 
+    """Passage: {doc}\nQuery: {query}\nIs this passage relevant to the query? Please answer 'true' or 'false'.\nAnswer: 
     """.strip()
     return x
 
