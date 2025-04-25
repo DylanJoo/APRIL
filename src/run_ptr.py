@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Optional
 import ir_measures
 from ir_measures import *
-
 import loader
 from pointwise import pt_rerank
 from llm.hf_encode import LLM
@@ -39,15 +38,18 @@ def main(
                 f.write(f"{qid} Q0 {docid} {i+1} {score} pt_rerank\n")
 
     # evaluation
-    r1 = ir_measures.calc_aggregate([nDCG@10, MRR@10], qrels, run)
-    r2 = ir_measures.calc_aggregate([nDCG@10, MRR@10], qrels, reranked_run)
+    r1 = ir_measures.calc_aggregate([nDCG@10, nDCG@20], qrels, run)
+    r2 = ir_measures.calc_aggregate([nDCG@10, nDCG@20], qrels, reranked_run)
     print(r1)
     print(r2)
 
 os.makedirs("../pt_reranked_runs", exist_ok=True)
-    # model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
+# model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
+# model_name_or_path='allenai/Llama-3.1-Tulu-3.1-8B',
+# model_name_or_path='meta-llama/Llama-3.1-8B-Instruct'
+
 main(
-    model_name_or_path='meta-llama/Llama-3.1-8B-Instruct',
+    model_name_or_path='allenai/Llama-3.1-Tulu-3.1-8B',
     run_path=f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-default.dl19.txt",
     ir_datasets_name='msmarco-passage/trec-dl-2019/judged',
 )

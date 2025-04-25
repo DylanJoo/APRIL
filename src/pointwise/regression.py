@@ -7,15 +7,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# template of tokens
-# [('No', 2822), ('NO', 9173), ('no', 2201), ('ĠNo', 2360), (Ġno', 912)] 
-# [('Yes', 9642), ('YES', 14331), ('yes', 9891), ('ĠYes', 7566), ('Ġyes', 10035)] 
-
 # template of prompts. Recommend to use ':' as the end of the prompt token. It is more stable.
 template = "Passage: {doc}\nQuery: {query}\nIs this passage relevant to the query?\nPlease answer 'Yes' or 'No'.\nAnswer: "
-# template = "### Instruction:\nDetermine whether the passage is relevant to the given query. Answer only with 'Yes' or 'No'.\n\n" + \
-#         "### Input:\nPassage: {doc}\nQuery: {query}\n\n" + \
-#         "### Response:\n"
 
 def extract_scores(
     batch_logits, 
