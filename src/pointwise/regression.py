@@ -1,4 +1,5 @@
 import re
+import math
 from tqdm import tqdm
 from typing import List
 from utils.tools import batch_iterator
@@ -10,8 +11,23 @@ logger = logging.getLogger(__name__)
 # [('No', 2822), ('NO', 9173), ('no', 2201), ('ĠNo', 2360), (Ġno', 912)] 
 # [('Yes', 9642), ('YES', 14331), ('yes', 9891), ('ĠYes', 7566), ('Ġyes', 10035)] 
 
-# template of prompts
-template = "Passage: {doc}\nQuery: {query}\nIs this passage relevant to the query? Please answer Yes or No.\nAnswer: "
+# template of prompts. Recommend to use ':' as the end of the prompt token. It is more stable.
+template = "Passage: {doc}\nQuery: {query}\nIs this passage relevant to the query?\nPlease answer 'Yes' or 'No'.\nAnswer: "
+# template = "### Instruction:\nDetermine whether the passage is relevant to the given query. Answer only with 'Yes' or 'No'.\n\n" + \
+#         "### Input:\nPassage: {doc}\nQuery: {query}\n\n" + \
+#         "### Response:\n"
+
+def extract_scores(
+    batch_logits, 
+    yes_tokens, 
+    no_tokens
+):
+    scores = []
+    for logits in batch_logits: # (B, L, N)
+        yes_ = math.exp(max( [logits[-1, i] for i in yes_tokens] ))
+        no_ = math.exp(max( [logits[-1, i] for i in no_tokens] ))
+        scores.append( (yes_) / (no_ + yes_) )
+    return scores
 
 def rerank(
     model: str,
@@ -30,9 +46,7 @@ def rerank(
             id_pairs.append((qid, docid))
 
     # token identifier
-    tokenizer = model.model.get_tokenizer()
-    # true_list = [' True', 'True', ' true', 'true', 'TRUE', ' TRUE']
-    # false_list = [' False', 'False', ' false', 'false', 'FALSE', ' FALSE']
+    tokenizer = model.tokenizer
     true_list = [' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES']
     false_list = [' No', 'No', ' no', 'no', 'NO', ' NO']
     yes_tokens = [tokenizer.encode(item, add_special_tokens=False)[0] for item in true_list]
@@ -47,11 +61,8 @@ def rerank(
     ):
         batch_prompts = prompts[start:end]
 
-        texts, batch_scores = model.generate(
-            batch_prompts, max_tokens=5, min_tokens=0,
-            yes_tokens=yes_tokens,
-            no_tokens=no_tokens
-        )
+        batch_logits = model.inference(batch_prompts)
+        batch_scores = extract_scores(batch_logits, yes_tokens, no_tokens)
         scores += batch_scores
 
     # update scores

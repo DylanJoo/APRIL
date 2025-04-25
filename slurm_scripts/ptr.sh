@@ -1,7 +1,7 @@
 #!/bin/sh
 #SBATCH --job-name=ptr
-#SBATCH --partition gpu
-#SBATCH --gres=gpu:nvidia_rtx_a6000:1
+#SBATCH --partition gpu_a100
+#SBATCH --gres=gpu:a100:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -11,9 +11,9 @@
 # Set-up the environment.
 source ~/.bashrc
 enter_conda
-conda activate pyserini
+conda activate april
 
 # root
-cd /home/dju/APRIL/src
+cd ~/APRIL/src
 
 python3 run_ptr.py

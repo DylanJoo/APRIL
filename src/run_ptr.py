@@ -1,12 +1,14 @@
 import os
+from pathlib import Path
 from typing import Optional
 import ir_measures
 from ir_measures import *
 
 import loader
 from pointwise import pt_rerank
-from llm.vllm_back import LLM
+from llm.hf_encode import LLM
 from utils.tools import load_runs
+home_dir=str(Path.home())
 
 def main(
     model_name_or_path: str,
@@ -21,14 +23,7 @@ def main(
         ir_datasets_name, query_fields, doc_fields
     )
 
-    model = LLM(
-        model=model_name_or_path,
-        temperature=0, 
-        top_p=1.0,
-        gpu_memory_utilization=0.9, 
-        logprobs=20,
-        prompt_logprobs=None,
-    )
+    model = LLM(model=model_name_or_path, model_class='clm', temperature=0) 
 
     reranked_run = pt_rerank(
         model=model,
@@ -50,13 +45,14 @@ def main(
     print(r2)
 
 os.makedirs("../pt_reranked_runs", exist_ok=True)
+    # model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
 main(
     model_name_or_path='meta-llama/Llama-3.1-8B-Instruct',
-    run_path="/home/dju/APRIL/runs/run.msmarco-v1-passage.bm25-default.dl19.txt",
-    ir_datasets_name='msmarco-passage/trec-dl-2019',
+    run_path=f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-default.dl19.txt",
+    ir_datasets_name='msmarco-passage/trec-dl-2019/judged',
 )
-main(
-    model_name_or_path='meta-llama/Llama-3.1-8B-Instruct',
-    run_path="/home/dju/APRIL/runs/run.msmarco-v1-passage.bm25-default.dl20.txt",
-    ir_datasets_name='msmarco-passage/trec-dl-2020',
-)
+# main(
+#     model_name_or_path='meta-llama/Llama-3.1-8B-Instruct',
+#     run_path=f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-default.dl20.txt",
+#     ir_datasets_name='msmarco-passage/trec-dl-2020',
+# )
