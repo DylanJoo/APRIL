@@ -43,9 +43,10 @@ def main(
     print(r1)
     print(r2)
 
-os.makedirs("../pt_reranked_runs", exist_ok=True)
+# starting experiments
+os.makedirs(f"{home_dir}/APRIL/li_reranked_runs", exist_ok=True)
+
 # model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
-# model_name_or_path='allenai/Llama-3.1-Tulu-3.1-8B',
 # model_name_or_path='meta-llama/Llama-3.1-8B-Instruct'
 
 main(
