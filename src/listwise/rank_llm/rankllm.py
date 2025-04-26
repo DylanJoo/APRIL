@@ -1,5 +1,3 @@
-
-
 import copy
 import random
 import re
@@ -9,7 +7,7 @@ from typing import Any, Dict, List, Tuple, Union
 
 from tqdm import tqdm
 
-from utils.result import RankingExecInfo, Result
+from listwise.rank_llm.utils import RankingExecInfo, Result
 ALPH_START_IDX = ord('A')-1
 
 class PromptMode(Enum):

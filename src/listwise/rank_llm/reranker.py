@@ -6,8 +6,8 @@ import time
 
 from tqdm import tqdm
 
-from utils.rankllm import RankLLM
-from utils.result import Result
+from listwise.rank_llm.rankllm import RankLLM
+from listwise.rank_llm.utils import Result
 
 class Reranker:
     def __init__(self, agent: RankLLM) -> None:

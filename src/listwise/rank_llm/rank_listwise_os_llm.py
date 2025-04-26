@@ -6,13 +6,12 @@ from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 import torch
 import numpy as np
-from fastchat.model import get_conversation_template, load_model
 from ftfy import fix_text
 from transformers.generation import GenerationConfig
 from vllm import LLM, SamplingParams, RequestOutput
 
-from utils.rankllm import PromptMode, RankLLM
-from utils.result import Result
+from listwise.rank_llm.rankllm import PromptMode, RankLLM
+from listwise.rank_llm.utils import Result
 
 ALPH_START_IDX = ord('A') - 1
 
