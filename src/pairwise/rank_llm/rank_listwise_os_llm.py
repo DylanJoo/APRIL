@@ -55,13 +55,15 @@ class RankListwiseOSLLM(RankLLM):
             with open("data/output_v2_aug_filtered.jsonl", "r") as json_file:
                 self._examples = list(json_file)[1:-1]
 
-        # get candidate token ids
-        self.IDX_TO_ALPHA_ = {
+        self.idx_to_alpha_idx = {
             i: [self._tokenizer.encode(chr(ALPH_START_IDX + i), add_special_tokens=False)[0]] for \
                     i in range(1, 27)
         }
 
     def extract_scores(self, batch_logits, i, j):
+        """
+        batch_logits: (B L V)
+        """
         scores = []
         for logits in batch_logits: # (B, L, N)
             yes_ = math.exp(logit[-1, self.IDX_TO_ALPHA_[i][0]])

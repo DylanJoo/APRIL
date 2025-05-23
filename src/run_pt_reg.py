@@ -18,9 +18,7 @@ def main(
     **kwargs,
 ):
     run = load_runs(run_path, topk=100, output_score=True)
-    corpus, queries, qrels = loader.load(
-        ir_datasets_name, query_fields, doc_fields
-    )
+    corpus, queries, qrels = loader.load(ir_datasets_name, query_fields, doc_fields)
 
     model = LLM(model=model_name_or_path, model_class='clm', temperature=0) 
 
@@ -29,7 +27,7 @@ def main(
         run=run,
         queries=queries,
         corpus=corpus,
-        batch_size=16
+        batch_size=32
     )
 
     with open(run_path.replace('runs', 'pt_reranked_runs'), 'w') as f:
@@ -38,24 +36,26 @@ def main(
                 f.write(f"{qid} Q0 {docid} {i+1} {score} pt_rerank\n")
 
     # evaluation
-    r1 = ir_measures.calc_aggregate([nDCG@10, nDCG@20], qrels, run)
-    r2 = ir_measures.calc_aggregate([nDCG@10, nDCG@20], qrels, reranked_run)
+    r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)
+    r2 = ir_measures.calc_aggregate([nDCG@10], qrels, reranked_run)
     print(r1)
     print(r2)
+    return {'original': r1, 'reranked': r2}
 
 # starting experiments
-os.makedirs(f"{home_dir}/APRIL/li_reranked_runs", exist_ok=True)
+os.makedirs(f"{home_dir}/APRIL/pt_reranked_runs", exist_ok=True)
+model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
 
-# model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
-# model_name_or_path='meta-llama/Llama-3.1-8B-Instruct'
+results = {}
+for dataset in ['trec-dl-2019', 'trec-dl-2020']:
+    results[dataset] = {}
+    run_path = f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"
+    results[dataset] = main(
+        model_name_or_path=model_name_or_path,
+        run_path=run_path,
+        ir_datasets_name=f'msmarco-passage/{dataset}/judged',
+        use_logits=True, use_alpha=True,
+        variable_passages=False,
+    )
 
-main(
-    model_name_or_path='allenai/Llama-3.1-Tulu-3.1-8B',
-    run_path=f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-default.dl19.txt",
-    ir_datasets_name='msmarco-passage/trec-dl-2019/judged',
-)
-# main(
-#     model_name_or_path='meta-llama/Llama-3.1-8B-Instruct',
-#     run_path=f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-default.dl20.txt",
-#     ir_datasets_name='msmarco-passage/trec-dl-2020',
-# )
+print(results)

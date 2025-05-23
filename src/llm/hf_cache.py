@@ -58,11 +58,11 @@ class LLM:
         x = self.preprocess(x)
         inputs = self.tokenizer(x, padding=True, return_tensors="pt").to(self.model.device)
 
-        if kv_cache is not None:
+        if kv_cache is None:
             outputs = self.model.model(**inputs, use_cache=True)
             kv_cache = outputs.past_key_values
             return kv_cache
         else:
-            outputs = self.model(**inputs, use_cache=True, past_key_values=kv_cache, logits_to_keep=1)
-            logits = outputs.logits[:, -1, :]
+            outputs = self.model(input_ids=inputs['input_ids'], use_cache=True, past_key_values=kv_cache, logits_to_keep=1)
+            logits = outputs.logits[:, -1:, :]
         return logits.detach().cpu()

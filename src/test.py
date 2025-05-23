@@ -134,67 +134,67 @@ def rank_pair(passage1_id, passage2_id, max_new_tokens=10):
     return response
 
 # Example: compare [A] vs [B]
-result = rank_pair("A", "B")
-print(f"More relevant: {result}")
-
-def create_prompt(
-    query: str,
-    result: Result,
-    use_alpha: bool, 
-    rank_start: int,
-    rank_end: int,
-) -> Tuple[str, int]:
-
-    query = result.query
-    num_passages = len(result.hits)
-    max_length = 300
-    while True:
-        messages = list()
-        if self._system_message and self.system_message_supported:
-            messages.append({"role": "system", "content": self._system_message})
-
-        rank = 0
-        input_context = f"""I will provide you with {num_passages} passages, each indicated by a alphabetical identifier []. Read and memorize all passages carefully. Your will use these passages for multiple comparisons based on their relevance to the search query: {query}\n\n"""
-        for hit in result.hits[rank_start:rank_end]:
-            rank += 1
-            content = hit['content'].replace("Title: Content", "").strip()
-            content = " ".join(content.split()[:max_length])
-            identifier = chr(ALPH_START_IDX + rank) if use_alpha else str(rank)
-            input_context += f"[{identifier}] {content}\n"
-
-        if self._system_message and not self.system_message_supported:
-            messages[0]["content"] = self._system_message + "\n " + messages[0]["content"]
-
-        input_context += f"""\nSearch Query: {query}\nBased on the search query, focus on comparing the passages [identifier_cand1] and [identifier_cand2]. Respond only with the identifier of the passage that is more relevant."""
-        messages.append({"role": "user", "content": input_context})
-
-        prompt = self._tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        prompt = fix_text(prompt)
-
-    return prompt, 0
-
-def create_prompt_batched(
-    self,
-    results: List[Result],
-    use_alpha: bool,
-    rank_start: int,
-    rank_end: int,
-    batch_size: int = 32,
-) -> List[Tuple[str, int]]:
-    def chunks(lst, n):
-        """Yield successive n-sized chunks from lst."""
-        for i in range(0, len(lst), n):
-            yield lst[i : i + n]
-
-    all_completed_prompts = []
-
-    with ThreadPoolExecutor() as executor:
-        for batch in tqdm(chunks(results, batch_size), desc="Processing batches"):
-            completed_prompts = list(
-                executor.map(
-                    lambda result: self.create_prompt(result, use_alpha, rank_start, rank_end),
-                    batch,
-                )
-            )
-            all_completed_prompts.extend(completed_prompts)
-    return all_completed_prompts
+# result = rank_pair("A", "B")
+# print(f"More relevant: {result}")
+#
+# def create_prompt(
+#     query: str,
+#     result: Result,
+#     use_alpha: bool, 
+#     rank_start: int,
+#     rank_end: int,
+# ) -> Tuple[str, int]:
+#
+#     query = result.query
+#     num_passages = len(result.hits)
+#     max_length = 300
+#     while True:
+#         messages = list()
+#         if self._system_message and self.system_message_supported:
+#             messages.append({"role": "system", "content": self._system_message})
+#
+#         rank = 0
+#         input_context = f"""I will provide you with {num_passages} passages, each indicated by a alphabetical identifier []. Read and memorize all passages carefully. Your will use these passages for multiple comparisons based on their relevance to the search query: {query}\n\n"""
+#         for hit in result.hits[rank_start:rank_end]:
+#             rank += 1
+#             content = hit['content'].replace("Title: Content", "").strip()
+#             content = " ".join(content.split()[:max_length])
+#             identifier = chr(ALPH_START_IDX + rank) if use_alpha else str(rank)
+#             input_context += f"[{identifier}] {content}\n"
+#
+#         if self._system_message and not self.system_message_supported:
+#             messages[0]["content"] = self._system_message + "\n " + messages[0]["content"]
+#
+#         input_context += f"""\nSearch Query: {query}\nBased on the search query, focus on comparing the passages [identifier_cand1] and [identifier_cand2]. Respond only with the identifier of the passage that is more relevant."""
+#         messages.append({"role": "user", "content": input_context})
+#
+#         prompt = self._tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+#         prompt = fix_text(prompt)
+#
+#     return prompt, 0
+#
+# def create_prompt_batched(
+#     self,
+#     results: List[Result],
+#     use_alpha: bool,
+#     rank_start: int,
+#     rank_end: int,
+#     batch_size: int = 32,
+# ) -> List[Tuple[str, int]]:
+#     def chunks(lst, n):
+#         """Yield successive n-sized chunks from lst."""
+#         for i in range(0, len(lst), n):
+#             yield lst[i : i + n]
+#
+#     all_completed_prompts = []
+#
+#     with ThreadPoolExecutor() as executor:
+#         for batch in tqdm(chunks(results, batch_size), desc="Processing batches"):
+#             completed_prompts = list(
+#                 executor.map(
+#                     lambda result: self.create_prompt(result, use_alpha, rank_start, rank_end),
+#                     batch,
+#                 )
+#             )
+#             all_completed_prompts.extend(completed_prompts)
+#     return all_completed_prompts
