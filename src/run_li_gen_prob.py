@@ -22,6 +22,7 @@ def main(
 ):
     run = load_runs(run_path, topk=100, output_score=True)
     corpus, queries, qrels = loader.load(ir_datasets_name, query_fields, doc_fields)
+    run = {k: v for k, v in run.items() if k in qrels}
 
     reranked_run = gen_rerank(
         model=model_name_or_path,
@@ -47,9 +48,13 @@ def main(
     # evaluation
     r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)
     r2 = ir_measures.calc_aggregate([nDCG@10], qrels, reranked_run)
-    print(r1)
-    print(r2)
-    return {'original': r1, 'reranked': r2}
+    return {
+        'model_name_or_path': model_name_or_path, 
+        'ir_datasets_name': ir_datasets_name,
+        'run_path': run_path,
+        'original': r1, 
+        'reranked': r2
+    }
 
 # starting experiments
 os.makedirs(f"{home_dir}/APRIL/li_reranked_runs", exist_ok=True)

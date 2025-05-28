@@ -14,10 +14,9 @@ def main(
     doc_fields: Optional[list] = None,
     **kwargs,
 ):
-    run = load_runs(run_path, topk=10)
-    corpus, queries, qrels = loader.load(
-        ir_datasets_name, query_fields, doc_fields
-    )
+    run = load_runs(run_path, topk=100)
+    corpus, queries, qrels = loader.load(ir_datasets_name, query_fields, doc_fields)
+    run = {k: v for k, v in run.items() if k in qrels}
 
     model = LLM(
         model=model_name_or_path,
@@ -26,7 +25,6 @@ def main(
         gpu_memory_utilization=0.9, 
     )
 
-    # allenai/Llama-3.1-Tulu-3.1-8B
     reranked_run = qlm_rerank(
         model=model,
         run=run,
