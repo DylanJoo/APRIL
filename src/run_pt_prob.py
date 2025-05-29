@@ -5,7 +5,6 @@ import ir_measures
 from ir_measures import *
 import loader
 from pointwise import pt_rerank
-from llm.hf_encode import LLM
 from utils.tools import load_runs
 home_dir=str(Path.home())
 
@@ -21,7 +20,12 @@ def main(
     corpus, queries, qrels = loader.load(ir_datasets_name, query_fields, doc_fields)
     run = {k: v for k, v in run.items() if k in qrels}
 
-    model = LLM(model=model_name_or_path, model_class='clm', temperature=0) 
+    if kwargs.get('vllm_backend', True):
+        from llm.vllm_back import LLM
+        model = LLM(model=model_name_or_path, logprobs=20)
+    else:
+        from llm.hf_encode import LLM
+        model = LLM(model=model_name_or_path, model_class='clm', temperature=0) 
 
     reranked_run = pt_rerank(
         model=model,
@@ -49,7 +53,7 @@ def main(
 
 # starting experiments
 os.makedirs(f"{home_dir}/APRIL/pt_reranked_runs", exist_ok=True)
-model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
+model_name_or_path='Qwen/Qwen2.5-7B-Instruct'
 
 results = {}
 for dataset in ['trec-dl-2019', 'trec-dl-2020']:
@@ -61,6 +65,7 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
         ir_datasets_name=f'msmarco-passage/{dataset}/judged',
         use_logits=True, use_alpha=True,
         variable_passages=False,
+        vllm_backend=True
     )
 
 print(results)

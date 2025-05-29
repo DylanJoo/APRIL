@@ -4,6 +4,7 @@ from tqdm import tqdm
 from typing import List
 from utils.tools import batch_iterator
 import logging
+from llm import hf_back, vllm_back
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +55,12 @@ def rerank(
     ):
         batch_prompts = prompts[start:end]
 
-        batch_logits = model.inference(batch_prompts)
-        batch_scores = extract_scores(batch_logits, yes_tokens, no_tokens)
+        if isinstance(model, vllm_back.LLM):
+            batch_scores = model.inference(batch_prompts, yes_tokens, no_tokens)
+        else:
+            batch_logits = model.inference(batch_prompts)
+            batch_scores = extract_scores(batch_logits, yes_tokens, no_tokens)
+
         scores += batch_scores
 
     # update scores

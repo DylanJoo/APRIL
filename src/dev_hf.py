@@ -25,9 +25,6 @@ class APRIL:
         dtype=torch.float16
     ):
         self._tokenizer = AutoTokenizer.from_pretrained(model_name)
-        # self.model = AutoModelForCausalLM.from_pretrained(
-        #     model_name, torch_dtype=dtype, device_map="auto" if device == 'cuda' else None
-        # )
         self.model = LLM(
             model=model_name,
             model_class='CLM',

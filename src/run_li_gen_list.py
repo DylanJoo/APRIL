@@ -58,7 +58,9 @@ def main(
 
 # starting experiments
 os.makedirs(f"{home_dir}/APRIL/li_reranked_runs", exist_ok=True)
-model_name_or_path='castorini/rank_zephyr_7b_v1_full'
+# model_name_or_path='castorini/rank_zephyr_7b_v1_full'
+model_name_or_path='Qwen/Qwen3-8B'
+model_name_or_path='Qwen/Qwen2.5-7B-Instruct'
 
 results = {}
 for dataset in ['trec-dl-2019', 'trec-dl-2020']:
