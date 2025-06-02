@@ -25,7 +25,8 @@ class LLM:
             enforce_eager=True,
             tensor_parallel_size=num_gpus,
             gpu_memory_utilization=gpu_memory_utilization,
-            max_model_len=max_model_len
+            max_model_len=max_model_len,
+            enable_prefix_caching=True
         )
         self.sampling_params = vllm.SamplingParams(
             temperature=temperature, 

@@ -16,7 +16,7 @@ def main(
     doc_fields: Optional[list] = None,
     **kwargs,
 ):
-    run = load_runs(run_path, topk=50, output_score=True)
+    run = load_runs(run_path, topk=100, output_score=True)
     corpus, queries, qrels = loader.load(ir_datasets_name, query_fields, doc_fields)
     run = {k: v for k, v in run.items() if k in qrels}
 
