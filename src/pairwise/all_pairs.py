@@ -5,7 +5,7 @@ from typing import List
 from utils.tools import batch_iterator
 import logging
 from itertools import combinations
-from llm import hf_back, vllm_back
+from llm import hf_back, vllm_back, litellm_api_2
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ def extract_scores(
 def rerank(
     model,
     run, queries, corpus,
-    batch_size: int = 16,
+    batch_size: int = 128,
     **kwargs,
 ):
 
@@ -57,8 +57,8 @@ def rerank(
     tokenizer = model.tokenizer
     true_list = [' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES']
     false_list = [' No', 'No', ' no', 'no', 'NO', ' NO']
-    yes_tokens = [tokenizer.encode(item, add_special_tokens=False)[0] for item in true_list]
-    no_tokens = [tokenizer.encode(item, add_special_tokens=False)[0] for item in false_list]
+    yes_token_ids = [tokenizer.encode(item, add_special_tokens=False)[0] for item in true_list]
+    no_token_ids = [tokenizer.encode(item, add_special_tokens=False)[0] for item in false_list]
 
     # batch inference
     logger.info('Number of prompts: {len(prompts)}')
@@ -70,10 +70,13 @@ def rerank(
         batch_prompts = prompts[start:end]
 
         if isinstance(model, vllm_back.LLM):
-            batch_scores = model.inference(batch_prompts, yes_tokens, no_tokens)
+            batch_scores = model.inference(batch_prompts, yes_token_ids, no_token_ids)
+        elif isinstance(model, litellm_api_2.LLM):
+            model.set_classification(true_list, false_list, use_tokenized=True) # in this API, returned tokens are string
+            batch_scores = model.inference(batch_prompts)
         else:
             batch_logits = model.inference(batch_prompts)
-            batch_scores = extract_scores(batch_logits, yes_tokens, no_tokens)
+            batch_scores = extract_scores(batch_logits, yes_token_ids, no_token_ids)
 
         scores += batch_scores
 

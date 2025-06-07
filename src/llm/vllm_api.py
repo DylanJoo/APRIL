@@ -15,12 +15,14 @@ from vllm.distributed import (
 )
 
 class LLM:
-    def __init__(self, 
-        model, 
-        temperature=0.7, 
+
+    def __init__(
+        self,
+        model,
+        temperature=0.7,
         top_p=0.9, 
-        dtype='half', 
-        gpu_memory_utilization=0.75, 
+        dtype='half',
+        gpu_memory_utilization=0.75,
         num_gpus=1, 
         enforce_eager=False,
         logprobs=None
@@ -68,11 +70,9 @@ class LLM:
             self._iterate_over_output(output_iterator)
             for output_iterator in output_iterators
         ])
-        
         return list(outputs)
     
     def generate(self, prompts, max_tokens=5, min_tokens=0):
-        """Generate completions for the provided prompts"""
         if isinstance(prompts, str):
             prompts = [prompts]
         

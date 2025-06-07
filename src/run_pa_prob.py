@@ -14,15 +14,20 @@ def main(
     ir_datasets_name: str,
     query_fields: Optional[list] = None,
     doc_fields: Optional[list] = None,
+    topk: int = 100,
     **kwargs,
 ):
-    run = load_runs(run_path, topk=100, output_score=True)
+    run = load_runs(run_path, topk=topk, output_score=True)
     corpus, queries, qrels = loader.load(ir_datasets_name, query_fields, doc_fields)
     run = {k: v for k, v in run.items() if k in qrels}
 
-    if kwargs.get('vllm_backend', True):
+    if kwargs.get('vllm_backend', False):
         from llm.vllm_back import LLM
         model = LLM(model=model_name_or_path, logprobs=20)
+    elif kwargs.get('litellm_backend', False):
+        from llm.litellm_api_2 import LLM
+        # model = LLM(temperature=0, top_p=1.0, max_tokens=3, logprobs=True, top_logprobs=20)
+        model = LLM(temperature=0, top_p=1.0, max_tokens=3, logprobs=20)
     else:
         from llm.hf_encode import LLM
         model = LLM(model=model_name_or_path, model_class='clm', temperature=0) 
@@ -52,7 +57,7 @@ def main(
     }
 
 # starting experiments
-os.makedirs(f"{home_dir}/APRIL/pt_reranked_runs", exist_ok=True)
+os.makedirs(f"{home_dir}/APRIL/pa_reranked_runs", exist_ok=True)
 model_name_or_path='Qwen/Qwen2.5-7B-Instruct'
 
 results = {}
@@ -62,10 +67,12 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     results[dataset] = main(
         model_name_or_path=model_name_or_path,
         run_path=run_path,
+        topk=10,
         ir_datasets_name=f'msmarco-passage/{dataset}/judged',
         use_logits=True, use_alpha=True,
         variable_passages=False,
-        vllm_backend=True
+        vllm_backend=False, # set to True for local vllm
+        litellm_backend=True
     )
 
 print(results)
