@@ -71,7 +71,6 @@ class LLM:
                 ]
             ))
             score = yes_ / (no_ + yes_)
-            print(score)
             return score
 
         # Gather all the outputs

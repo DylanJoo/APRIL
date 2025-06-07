@@ -67,7 +67,7 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     results[dataset] = main(
         model_name_or_path=model_name_or_path,
         run_path=run_path,
-        topk=10,
+        topk=100,
         ir_datasets_name=f'msmarco-passage/{dataset}/judged',
         use_logits=True, use_alpha=True,
         variable_passages=False,
