@@ -25,11 +25,13 @@ class LLM:
         self.top_logprobs = top_logprobs
 
         self.tokenizer = AutoTokenizer.from_pretrained('meta-llama/Llama-3.3-70B-Instruct', use_fast=False)
-        self.yes_tokens, self.no_tokens = None, None
+        self.yes_tokens = None
+        self.no_tokens = None
 
-    def set_classification(self, yes_tokens, no_tokens):
-        self.yes_tokens = yes_tokens
-        self.no_tokens = no_tokens
+    def set_classification(self, yes_strings, no_strings):
+        """ Litellm outputs probabilties of each token strings instead of token ids """
+        self.yes_tokens = [self.tokenizer.tokenize(item)[0] for item in yes_strings]
+        self.no_tokens = [self.tokenizer.tokenize(item)[0] for item in no_strings]
 
     def preprocess(self, prompts):
         return prompts
@@ -60,7 +62,6 @@ class LLM:
         # postprocess
         yes_ = math.exp(max( [-1e2] + [logp for tok, logp in token_top_logprobs.items() if tok in self.yes_tokens] ))
         no_ = math.exp(max( [-1e2] + [logp for tok, logp in token_top_logprobs.items() if tok in self.no_tokens] ))
-        # print(yes_, no_)
         score = yes_ / (no_ + yes_)
         return score
 

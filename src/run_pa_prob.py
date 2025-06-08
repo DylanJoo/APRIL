@@ -41,10 +41,11 @@ def main(
         batch_size=64
     )
 
-    with open(run_path.replace('runs', 'pa_reranked_runs'), 'w') as f:
-        for qid in reranked_run:
-            for i, (docid, score) in enumerate(reranked_run[qid].items()):
-                f.write(f"{qid} Q0 {docid} {i+1} {score} pa_rerank\n")
+    if topk >= 50:
+        with open(run_path.replace('runs', 'pa_reranked_runs'), 'w') as f:
+            for qid in reranked_run:
+                for i, (docid, score) in enumerate(reranked_run[qid].items()):
+                    f.write(f"{qid} Q0 {docid} {i+1} {score} pa_rerank\n")
 
     # evaluation
     r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)
@@ -68,7 +69,7 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     results[dataset] = main(
         model_name_or_path=model_name_or_path,
         run_path=run_path,
-        topk=100,
+        topk=10,
         ir_datasets_name=f'msmarco-passage/{dataset}/judged',
         use_logits=True, use_alpha=True,
         variable_passages=False,

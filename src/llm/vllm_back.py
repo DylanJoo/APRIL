@@ -12,7 +12,7 @@ class LLM:
         top_p=1.0,
         logprobs=20,
         max_tokens=10,
-        prompt_logprobs=None
+        prompt_logprobs=None,
         num_gpus=1, 
         dtype='half', 
         max_model_len=10240,
@@ -66,6 +66,7 @@ class LLM:
                 [-1e2] + [
                     tok_logp[0][i].logprob for tok_id in tok_logp[0] 
                     if tok_id in self.no_tokens
+                ]
             ))
             scores.append( (yes_) / (no_ + yes_) )
 

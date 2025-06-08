@@ -37,7 +37,6 @@ def rerank(
     run: dict, queries: dict, corpus: dict,
     batch_size: int = 128,
     **kwargs,
-    **kwargs,
 ):
 
     # prompt preparation
@@ -68,17 +67,20 @@ def rerank(
     ):
         batch_prompts = prompts[start:end]
 
-        if isinstance(model, vllm_back.LLM):
-            model.set_classification(true_list, false_list)
-            batch_scores = model.inference(batch_prompts)
-
-        if isinstance(model, litellm_api.LLM):
-            model.set_classification(true_list, false_list)
-            batch_scores = model.inference(batch_prompts)
-
-        if isinstance(model, hf_back.LLM):
-            model.set_classification(true_list, false_list)
-            batch_logits = model.inference(batch_prompts)
+        # [TODO] put them togethe. loading all llm classes is unecessary.
+        model.set_classification(true_list, false_list)
+        batch_scores = model.inference(batch_prompts)
+        # if isinstance(model, vllm_back.LLM):
+        #     model.set_classification(true_list, false_list)
+        #     batch_scores = model.inference(batch_prompts)
+        #
+        # if isinstance(model, litellm_api.LLM):
+        #     model.set_classification(true_list, false_list)
+        #     batch_scores = model.inference(batch_prompts)
+        #
+        # if isinstance(model, hf_back.LLM):
+        #     model.set_classification(true_list, false_list)
+        #     batch_logits = model.inference(batch_prompts)
 
         scores += batch_scores
 

@@ -35,7 +35,7 @@ class LLM:
         self.yes_tokens = None
         self.no_tokens = None
 
-    def set_classification(self, yes_strings, no_string):
+    def set_classification(self, yes_strings, no_strings):
         """ Litellm outputs probabilties of each token strings instead of token ids """
         self.yes_tokens = [self.tokenizer.tokenize(item)[0] for item in yes_strings]
         self.no_tokens = [self.tokenizer.tokenize(item)[0] for item in no_strings]
