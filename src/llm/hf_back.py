@@ -10,8 +10,6 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from typing import List
 
-    # "fid": FiDT5, # unified encoder-decoder
-    # "cepe": LlamaForCausalContextLM, # encoder + llama
 MODEL_CLASS = {
     "clm": AutoModelForCausalLM
 }
@@ -41,20 +39,40 @@ class LLM:
             device_map=device,
             **model_kwargs
         )
-        self.tokenizer = AutoTokenizer.from_pretrained(model)
-        self.tokenizer.pad_token = self.tokenizer.eos_token # during trainin, no padding is needed
-
         self.temperature = temperature
         self.top_p = top_p
 
+        self.tokenizer = AutoTokenizer.from_pretrained(model)
+        self.tokenizer.pad_token = self.tokenizer.eos_token # during trainin, no padding is needed
+
+        self.yes_tokens = None
+        self.no_tokens = None
         logger.info("Finish loading in %.2f sec." % (time.time() - start_time))
+
+    def set_classification(self, yes_tokens, no_tokens):
+        """ HF default generated output logits can be traced by token ids """
+        self.yes_tokens = [self.tokenizer.tokenize(item)[0] for item in yes_tokens]
+        self.no_tokens = [self.tokenizer.tokenize(item)[0] for item in no_tokens]
 
     def preprocess(self, x):
         return x
 
-    def generate(self, x, min_tokens=0, max_tokens=1024, return_logits=False, **kwargs):
-        if isinstance(x, str):
-            x = [x]
+    def inference(self, prompts):
+        if isinstance(prompts, str):
+            prompts = [prompts]
+
+        # generate
+        _, batch_logits = self.generate(prompts, min_tokens=1, max_tokens=3)
+
+        # collect scores 
+        scores = []
+        for logits in batch_logits: # (B, L, N)
+            yes_ = math.exp(max( [logits[-1, tok_id] for tok_id in self.yes_tokens] ))
+            no_ = math.exp(max( [logits[-1, tok_id] for tok_id in self.no_tokens] ))
+            scores.append( (yes_) / (no_ + yes_) )
+        return scores
+
+    def generate(self, x, min_tokens=0, max_tokens=1024, **kwargs):
 
         x = self.preprocess(x)
         inputs = self.tokenizer(x, padding=True, return_tensors="pt").to(self.model.device)
@@ -75,62 +93,8 @@ class LLM:
             outputs.sequences, skip_special_tokens=True
         )
         output_logits = torch.stack(outputs.logits, dim=1)
-        print(generation)
-        # print(output_logits.max(-1).indices)
-        # print(self.tokenizer.decode(output_logits.max(-1).indices.flatten()))
 
         del inputs, outputs
         torch.cuda.empty_cache()
 
-        if return_logits:
-            return generation, output_logits
-        else:
-            return generation
-
-# def postprocess(self, outputs: List, verbose=False):
-#     if self.think_activated:
-#         for i, o in enumerate(outputs):
-#             if '</think>' in o:
-#                 o_think, o_response, = o.split('</think>')
-#                 if verbose:
-#                     print(o_think)
-#                 outputs[i] = o_response
-#     return outputs
-
-# class Seq2seqLLM(LLM):
-#
-#     def load_model(self, model_name_or_path, dtype=torch.float16, flash_attention_2=False):
-#
-#         if flash_attention_2:
-#             model_kwargs = {
-#                 'torch_dtype': torch.bfloat16,
-#                 'attn_implementation': "flash_attention_2"
-#             }
-#         else:
-#             model_kwargs = {'torch_dtype': dtype}
-#
-#         self.model = AutoModelForSeq2SeqLM.from_pretrained(
-#             model_name_or_path,
-#             device_map='auto',
-#             **model_kwargs
-#         )
-#         self.model.eval()
-#
-#         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=False)
-#
-#     def generate(self, x, max_tokens=1024, min_tokens=0, **kwargs):
-#
-#         if isinstance(x, str):
-#             x = [x]
-#
-#         inputs = self.tokenizer(x, padding=True, return_tensors="pt").to(self.model.device)
-#
-#         outputs = self.model.generate(
-#             **inputs, 
-#             min_new_tokens=min_tokens, 
-#             max_new_tokens=max_tokens
-#         )
-#         generation = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
-#         del inputs, outputs
-#         torch.cuda.empty_cache()
-#         return generation
+        return generation, output_logits

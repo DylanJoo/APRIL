@@ -24,11 +24,12 @@ def main(
     if kwargs.get('vllm_backend', False):
         from llm.vllm_back import LLM
         model = LLM(model=model_name_or_path, logprobs=20)
-    elif kwargs.get('litellm_backend', False):
-        from llm.litellm_api_2 import LLM
-        # model = LLM(temperature=0, top_p=1.0, max_tokens=3, logprobs=True, top_logprobs=20)
+
+    if kwargs.get('litellm_backend', False):
+        from llm.litellm_api import LLM
         model = LLM(temperature=0, top_p=1.0, max_tokens=3, logprobs=20)
-    else:
+
+    if kwargs.get('hf_backend', False):
         from llm.hf_encode import LLM
         model = LLM(model=model_name_or_path, model_class='clm', temperature=0) 
 
@@ -71,7 +72,7 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
         ir_datasets_name=f'msmarco-passage/{dataset}/judged',
         use_logits=True, use_alpha=True,
         variable_passages=False,
-        vllm_backend=False, # set to True for local vllm
+        vllm_backend=False,
         litellm_backend=True
     )
 

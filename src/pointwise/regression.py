@@ -25,10 +25,8 @@ def extract_scores(
 
 def rerank(
     model: str,
-    run: dict, 
-    queries: dict, 
-    corpus: dict,
-    batch_size: int = 16,
+    run: dict, queries: dict, corpus: dict,
+    batch_size: int = 128,
     **kwargs,
 ):
 
