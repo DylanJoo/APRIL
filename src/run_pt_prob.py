@@ -14,16 +14,23 @@ def main(
     ir_datasets_name: str,
     query_fields: Optional[list] = None,
     doc_fields: Optional[list] = None,
+    topk: int = 100,
     **kwargs,
 ):
-    run = load_runs(run_path, topk=100, output_score=True)
+    run = load_runs(run_path, topk=topk, output_score=True)
     corpus, queries, qrels = loader.load(ir_datasets_name, query_fields, doc_fields)
     run = {k: v for k, v in run.items() if k in qrels}
 
-    if kwargs.get('vllm_backend', True):
+    if kwargs.get('vllm_backend', False):
         from llm.vllm_back import LLM
         model = LLM(model=model_name_or_path, logprobs=20)
-    else:
+
+    if kwargs.get('litellm_backend', False):
+        from llm.litellm_api import LLM
+        model = LLM(temperature=0, top_p=1.0, logprobs=20, max_tokens=3)
+        model_name_or_path = 'llama3.3-70b-instruct'
+
+    if kwargs.get('hf_backend', False):
         from llm.hf_encode import LLM
         model = LLM(model=model_name_or_path, model_class='clm', temperature=0) 
 
@@ -35,10 +42,11 @@ def main(
         batch_size=32
     )
 
-    with open(run_path.replace('runs', 'pt_reranked_runs'), 'w') as f:
-        for qid in reranked_run:
-            for i, (docid, score) in enumerate(reranked_run[qid].items()):
-                f.write(f"{qid} Q0 {docid} {i+1} {score} pt_rerank\n")
+    if topk >= 100:
+        with open(run_path.replace('runs', 'pt_reranked_runs'), 'w') as f:
+            for qid in reranked_run:
+                for i, (docid, score) in enumerate(reranked_run[qid].items()):
+                    f.write(f"{qid} Q0 {docid} {i+1} {score} pt_rerank\n")
 
     # evaluation
     r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)
@@ -62,10 +70,12 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     results[dataset] = main(
         model_name_or_path=model_name_or_path,
         run_path=run_path,
+        topk=100,
         ir_datasets_name=f'msmarco-passage/{dataset}/judged',
         use_logits=True, use_alpha=True,
         variable_passages=False,
-        vllm_backend=True
+        vllm_backend=False,
+        litellm_backend=True
     )
 
 print(results)

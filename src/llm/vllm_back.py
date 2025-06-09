@@ -12,7 +12,6 @@ class LLM:
         top_p=1.0,
         logprobs=20,
         max_tokens=10,
-        prompt_logprobs=None,
         num_gpus=1, 
         dtype='half', 
         max_model_len=10240,
@@ -31,7 +30,7 @@ class LLM:
             temperature=temperature, 
             skip_special_tokens=False,
             logprobs=logprobs,
-            prompt_logprobs=prompt_logprobs,
+            prompt_logprobs=None,
             max_tokens=max_tokens, 
             min_tokens=2, 
         )

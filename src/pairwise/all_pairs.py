@@ -20,18 +20,6 @@ user_prompt += """"Passage 1: {cand1}\nPassage 2: {cand2}\nQuery: {query}\nBased
 template = system_prompt + user_prompt # {num_passages} {query} {document_list} {cand1} {cand2} 
 # template = "Passage: {doc}\nQuery: {query}\nIs this passage relevant to the query?\nPlease answer 'Yes' or 'No'.\nAnswer: "
 
-def extract_scores(
-    batch_logits, 
-    yes_tokens, 
-    no_tokens
-):
-    scores = []
-    for logits in batch_logits: # (B, L, N)
-        yes_ = math.exp(max( [logits[-1, i] for i in yes_tokens] ))
-        no_ = math.exp(max( [logits[-1, i] for i in no_tokens] ))
-        scores.append( (yes_) / (no_ + yes_) )
-    return scores
-
 def rerank(
     model: str,
     run: dict, queries: dict, corpus: dict,
@@ -70,17 +58,6 @@ def rerank(
         # [TODO] put them togethe. loading all llm classes is unecessary.
         model.set_classification(true_list, false_list)
         batch_scores = model.inference(batch_prompts)
-        # if isinstance(model, vllm_back.LLM):
-        #     model.set_classification(true_list, false_list)
-        #     batch_scores = model.inference(batch_prompts)
-        #
-        # if isinstance(model, litellm_api.LLM):
-        #     model.set_classification(true_list, false_list)
-        #     batch_scores = model.inference(batch_prompts)
-        #
-        # if isinstance(model, hf_back.LLM):
-        #     model.set_classification(true_list, false_list)
-        #     batch_logits = model.inference(batch_prompts)
 
         scores += batch_scores
 

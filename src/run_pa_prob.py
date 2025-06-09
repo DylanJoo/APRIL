@@ -4,7 +4,7 @@ from typing import Optional
 import ir_measures
 from ir_measures import *
 import loader
-from pairwise.all_pairs import rerank as pa_rerank
+from pairwise import pa_rerank_all
 from utils.tools import load_runs
 home_dir=str(Path.home())
 
@@ -23,17 +23,18 @@ def main(
 
     if kwargs.get('vllm_backend', False):
         from llm.vllm_back import LLM
-        model = LLM(model=model_name_or_path, logprobs=20)
+        model = LLM(model=model_name_or_path, temperature=0, top_p=1, logprobs=20)
 
     if kwargs.get('litellm_backend', False):
         from llm.litellm_api import LLM
-        model = LLM(temperature=0, top_p=1.0, max_tokens=3, logprobs=20)
+        model = LLM(temperature=0, top_p=1.0, logprobs=20, max_tokens=3)
+        model_name_or_path = 'llama3.3-70b-instruct'
 
     if kwargs.get('hf_backend', False):
         from llm.hf_encode import LLM
-        model = LLM(model=model_name_or_path, model_class='clm', temperature=0) 
+        model = LLM(model=model_name_or_path, model_class='clm', temperature=0, top_p=1)
 
-    reranked_run = pa_rerank(
+    reranked_run = pa_rerank_all(
         model=model,
         run=run,
         queries=queries,

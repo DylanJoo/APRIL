@@ -4,7 +4,6 @@ from tqdm import tqdm
 from typing import List
 from utils.tools import batch_iterator
 import logging
-from llm import hf_back, vllm_back
 
 logger = logging.getLogger(__name__)
 
@@ -34,15 +33,17 @@ def rerank(
     id_pairs, prompts = [], []
     for qid in run:
         for docid in run[qid]:
-            prompts.append(template.format(doc=corpus[docid]["contents"], query=queries[qid]))
+            query = queries[qid]
+            prompts.append(template.format(
+                doc=corpus[docid]["contents"], 
+                query=query
+            ))
             id_pairs.append((qid, docid))
 
     # token identifier
     tokenizer = model.tokenizer
     true_list = [' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES']
     false_list = [' No', 'No', ' no', 'no', 'NO', ' NO']
-    yes_tokens = [tokenizer.encode(item, add_special_tokens=False)[0] for item in true_list]
-    no_tokens = [tokenizer.encode(item, add_special_tokens=False)[0] for item in false_list]
 
     # batch inference
     logger.info('Number of prompts: {len(prompts)}')
@@ -53,15 +54,13 @@ def rerank(
     ):
         batch_prompts = prompts[start:end]
 
-        if isinstance(model, vllm_back.LLM):
-            batch_scores = model.inference(batch_prompts, yes_tokens, no_tokens)
-        else:
-            batch_logits = model.inference(batch_prompts)
-            batch_scores = extract_scores(batch_logits, yes_tokens, no_tokens)
+        # [TODO] put them togethe. loading all llm classes is unecessary.
+        model.set_classification(true_list, false_list)
+        batch_scores = model.inference(batch_prompts)
 
         scores += batch_scores
 
-    # update scores
+    # update pointwise scores
     reranked_run = {}
     for i in range(len(scores)):
         qid, docid = id_pairs[i]
