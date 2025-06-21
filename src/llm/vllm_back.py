@@ -1,3 +1,7 @@
+"""
+Update vllm engine with chat template.
+The chat template is to be implemented.
+"""
 import torch
 import math
 import vllm

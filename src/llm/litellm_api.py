@@ -13,7 +13,7 @@ class LLM:
         temperature=0.0,
         top_p=1.0,
         logprobs=20,
-        max_tokens=10,
+        max_tokens=10
     ):
         self.model = model
         self.max_tokens = max_tokens
@@ -23,7 +23,8 @@ class LLM:
 
         self.client = openai.OpenAI(
             api_key=os.environ['OPENAI_API_KEY'],
-            base_url='http://10.162.95.158:4000/v1/'
+            base_url='http://10.162.95.158:4000/v1/',
+            max_retries=10
         )
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
@@ -35,12 +36,15 @@ class LLM:
         self.yes_tokens = None
         self.no_tokens = None
 
+    def get_tokenizer(self):
+        return self.tokenizer
+
     def set_classification(self, yes_strings, no_strings):
         """ Litellm outputs probabilties of each token strings instead of token ids """
         self.yes_tokens = [self.tokenizer.tokenize(item)[0] for item in yes_strings]
         self.no_tokens = [self.tokenizer.tokenize(item)[0] for item in no_strings]
 
-    async def _generate_async(self, prompts: List[str]) -> List[float]:
+    async def _generate_async_prob(self, prompts: List[str]) -> List[float]:
 
         # singlge function call of selected token prob
         def _generate_prob(prompt: str) -> float:
@@ -76,8 +80,44 @@ class LLM:
         ])
         return list(outputs)
 
-    def inference(self, prompts):
+    def generate(self, prompts, prob=False, **kwargs):
         if isinstance(prompts, str):
             prompts = [prompts]
         
-        return self.loop.run_until_complete(self._generate_async(prompts))
+        if prob:
+            return self.loop.run_until_complete(self._generate_async_prob(prompts))
+        else:
+            return self.loop.run_until_complete(self._generate_async_text(prompts))
+
+    async def _generate_async_text(self, prompts: List[str]) -> List[float]:
+
+        def _generate_text(prompt: str) -> float:
+            response = self.client.completions.create(
+                model=self.model,
+                prompt=prompt,
+                logprobs=None,
+                temperature=self.temperature,
+                top_p=self.top_p,
+                max_tokens=self.max_tokens,
+            )
+            return response.choices[0].text
+
+        outputs = await asyncio.gather(*[
+            asyncio.to_thread(_generate_text, prompt) for prompt in prompts
+        ])
+        return list(outputs)
+
+    # def inference_chat(self, system_content: str, user_contents):
+    #     if isinstance(user_contents, str):
+    #         user_contents = [user_contents]
+    #
+    #     prompts = [self.tokenizer.apply_chat_template(
+    #         conversation=[
+    #             {"role": "system", "content": system_content},
+    #             {"role": "user", "content": user_content}
+    #         ],
+    #         tokenize=False,
+    #         add_generation_prompt=True
+    #     ) for user_content in user_contents]
+    #
+    #     return self.loop.run_until_complete(self._generate_async_prob(prompts))

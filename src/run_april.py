@@ -4,7 +4,7 @@ from typing import Optional
 import ir_measures
 from ir_measures import *
 import loader
-from pairwise import pa_rerank_all
+from pairwise import april_rerank
 from utils.tools import load_runs
 home_dir=str(Path.home())
 
@@ -34,7 +34,7 @@ def main(
         from llm.hf_encode import LLM
         model = LLM(model=model_name_or_path, model_class='clm', temperature=0, top_p=1)
 
-    reranked_run = pa_rerank_all(
+    reranked_run = april_rerank(
         model=model,
         run=run,
         queries=queries,
@@ -64,18 +64,23 @@ os.makedirs(f"{home_dir}/APRIL/pa_reranked_runs", exist_ok=True)
 model_name_or_path='Qwen/Qwen2.5-7B-Instruct'
 
 results = {}
-for dataset in ['trec-dl-2019', 'trec-dl-2020']:
+for dataset in ['trec-dl-2019']:
     results[dataset] = {}
     run_path = f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"
-    results[dataset] = main(
-        model_name_or_path=model_name_or_path,
-        run_path=run_path,
-        topk=100,
-        ir_datasets_name=f'msmarco-passage/{dataset}/judged',
-        use_logits=True, use_alpha=True,
-        variable_passages=False,
-        vllm_backend=False,
-        litellm_backend=True
-    )
+
+    from llm.litellm_api import LLM
+    model = LLM(temperature=0, top_p=1.0, logprobs=20, max_tokens=3)
+    model_name_or_path = 'llama3.3-70b-instruct'
+
+    # results[dataset] = main(
+    #     model_name_or_path=model_name_or_path,
+    #     run_path=run_path,
+    #     topk=100,
+    #     ir_datasets_name=f'msmarco-passage/{dataset}/judged',
+    #     use_logits=True, use_alpha=True,
+    #     variable_passages=False,
+    #     vllm_backend=False,
+    #     litellm_backend=True
+    # )
 
 print(results)

@@ -16,3 +16,8 @@ The top-1000 run files used in this work can be found in [runs](runs/).
 We follow [Pyserini 2cr](https://castorini.github.io/pyserini/2cr/msmarco-v1-passage.html) for the reproduction.
 
 - BM25+RM3 (K1=0.9, b=0.4)
+
+## TREC DL
+```
+# 2019
+```

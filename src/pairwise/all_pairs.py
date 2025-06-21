@@ -9,16 +9,20 @@ from llm import hf_back, vllm_back, litellm_api
 
 logger = logging.getLogger(__name__)
 
-# system_prompt = """<|im_start|>system\nYou are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query<|im_end|>\n"""
-# user_prompt = """<|im_start|>user\nI will provide you with {num_passages} passages, each indicated by a alphabetical identifier []. Read and memorize all passages carefully. Your will use these passages for multiple comparisons based on their relevance to the search query: {query}\n\n"""
-# user_prompt += """"Passages:\n{document_list}\nSearch Query: {query}\nBased on the search query, focus on comparing the passages {cand1} and {cand2}. Respond only with the identifier of the passage that is more relevant. ["""
-# template = system_prompt + user_prompt # {num_passages} {query} {document_list} {cand1} {cand2} 
+system_prompt = \
+"""You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query."""
+user_prompt = \
+"""I will provide you with two passages. Read and memorize both carefully. Your task is to determine which passage is more relevant to the query.
 
-system_prompt = """<|im_start|>system\nYou are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query<|im_end|>\n"""
-user_prompt = """<|im_start|>user\nI will provide you with two passages. Read and memorize both carefully. Your task is to determine which passage is more relevant to the query: {query}\n\n"""
-user_prompt += """"Passage 1: {cand1}\nPassage 2: {cand2}\nQuery: {query}\nBased on the query, is the Passage 1 more relevant than Passage 2?\nPlease answer 'Yes' or 'No'.\nAnswer: """
-template = system_prompt + user_prompt # {num_passages} {query} {document_list} {cand1} {cand2} 
-# template = "Passage: {doc}\nQuery: {query}\nIs this passage relevant to the query?\nPlease answer 'Yes' or 'No'.\nAnswer: "
+Query: {query}
+
+Passage 1: {cand1}
+Passage 2: {cand2}
+
+Based on the given query, is the Passage 1 more relevant than Passage 2?
+Please answer 'Yes' or 'No'.
+Answer: """
+template = user_prompt
 
 def rerank(
     model: str,
@@ -26,7 +30,6 @@ def rerank(
     batch_size: int = 128,
     **kwargs,
 ):
-
     # prompt preparation
     id_pairs, prompts = [], []
     for qid in run:
@@ -57,7 +60,7 @@ def rerank(
 
         # [TODO] put them togethe. loading all llm classes is unecessary.
         model.set_classification(true_list, false_list)
-        batch_scores = model.inference(batch_prompts)
+        batch_scores = model.inference_chat(system_prompt, batch_prompts)
 
         scores += batch_scores
 

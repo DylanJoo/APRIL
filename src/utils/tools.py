@@ -27,3 +27,24 @@ def load_runs(path, topk=None, output_score=False):
             sorted_run_dict[qid] = [docid for docid, _, _ in sorted_docid_ranks]
 
     return sorted_run_dict
+
+"""
+run: {
+    "<qid1>": {"<docid>": score, "<docid2>": score, ...}, 
+    "<qid2>": ...
+}
+results: [
+    Result{query=<query1>, hits=[{"docid": <docid>, "score": <score>, "content": <content>},...], 
+    Result{query=<query2>, hits=[...]}
+]
+"""
+def convert_run_to_result(run, queries=None, corpus=None):
+    results = []
+    for qid, hits in run.items():
+        query = queries[qid]
+        pairs = []
+        for docid, score in hits.items():
+            pairs.append({'docid': docid, 'score': float(score), 'content': corpus[docid]['contents']})
+        results.append(Result(qid=qid, query=query, hits=pairs))
+    return results
+

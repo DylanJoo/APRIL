@@ -42,7 +42,8 @@ class LLM:
 
         client =  openai.OpenAI(
             api_key=os.environ['OPENAI_API_KEY'], 
-            base_url='http://10.162.95.158:4000/v1/'
+            base_url='http://10.162.95.158:4000/v1/',
+            max_retries=777
         )
 
         # get respoinse

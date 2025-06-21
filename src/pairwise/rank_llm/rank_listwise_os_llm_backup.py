@@ -1,19 +1,17 @@
 import os
 import json
 import random
-from typing import Optional, Tuple, List, Dict, Union
+from typing import Any, Dict, List, Tuple, Union, Optional
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 import torch
 import numpy as np
 from ftfy import fix_text
 from transformers.generation import GenerationConfig
-from vllm import RequestOutput, SamplingParams
-from llm.litellm_api import LLM
+from vllm import LLM, SamplingParams, RequestOutput
 
 from pairwise.rank_llm.rankllm import PromptMode, RankLLM
 from pairwise.rank_llm.utils import Result
-from pairwise.rank_llm.messages import _add_prefix_prompt, _add_post_prompt
 
 ALPH_START_IDX = ord('A') - 1
 
@@ -31,24 +29,18 @@ class RankListwiseOSLLM(RankLLM):
         system_message: str = None,
         batched: bool = False,
         rerank_type: str = "text",
+        code_prompt_type: str = "docstring",
     ) -> None:
         super().__init__(model, context_size, prompt_mode, num_few_shot_examples)
         self._device = device
-        # if self._device == "cuda":
-        #     assert torch.cuda.is_available(), "CUDA is not available on this device"
+        if self._device == "cuda":
+            assert torch.cuda.is_available(), "CUDA is not available on this device"
         if prompt_mode != PromptMode.RANK_GPT:
             raise ValueError(
                 f"Unsupported prompt mode: {prompt_mode}. Only RANK_GPT is supported."
             )
 
-        # [TODO] simplify modification
-        self._llm = LLM(
-            model=model, 
-            temperature=0.0,
-            top_p=1.0,
-            logprobs=20,
-            max_tokens=5,
-        )
+        self._llm = LLM(model=model, max_logprobs=30, enforce_eager=True, gpu_memory_utilization=0.95, max_model_len=32768, trust_remote_code=True, enable_chunked_prefill=False, tensor_parallel_size=1)
         self._tokenizer = self._llm.get_tokenizer()
         self.system_message_supported = "system" in self._tokenizer.chat_template
         self._batched = batched
@@ -57,6 +49,7 @@ class RankListwiseOSLLM(RankLLM):
         self._system_message = system_message
         self._output_token_estimate = None
         self._rerank_type = rerank_type
+        self._code_prompt_type = code_prompt_type
 
         if num_few_shot_examples > 0:
             with open("data/output_v2_aug_filtered.jsonl", "r") as json_file:
@@ -96,13 +89,13 @@ class RankListwiseOSLLM(RankLLM):
         return self._evaluate_logits(logits, use_alpha, total)
 
     def run_llm(
-        self, prompt: str, 
-        current_window_size: Optional[int] = None, 
-        use_logits: bool = False, 
-        use_alpha: bool = False
+        self, prompt: str, current_window_size: Optional[int] = None, use_logits: bool = False, use_alpha: bool = False
     ) -> Tuple[str, int]:
         """Run the language model with appropriate restrictions for code vs text reranking"""
-        # if self._rerank_type == "code" and (use_logits or use_alpha):
+        if self._rerank_type == "code" and (use_logits or use_alpha):
+            print("Warning: Code reranking does not support logits or alpha mode. Defaulting to standard mode.")
+            use_logits = False
+            use_alpha = False
 
         temp = 0.
         if current_window_size is None:
@@ -141,7 +134,10 @@ class RankListwiseOSLLM(RankLLM):
         use_alpha: bool = False,
     ) -> List[Tuple[str, int]]:
         """Run batched inference with appropriate restrictions for code vs text reranking"""
-        # if self._rerank_type == "code" and (use_logits or use_alpha):
+        if self._rerank_type == "code" and (use_logits or use_alpha):
+            print("Warning: Code reranking does not support logits or alpha mode. Defaulting to standard mode.")
+            use_logits = False
+            use_alpha = False
 
         temp = 0.
         if current_window_size is None:
@@ -198,6 +194,61 @@ class RankListwiseOSLLM(RankLLM):
 
         return _output_token_estimate
 
+    def _add_prefix_prompt(self, use_alpha, query: str, num: int) -> str:
+        if self._rerank_type == "code":
+            if self._code_prompt_type == "docstring":
+                return self._add_prefix_prompt_doc_string(use_alpha, query, num)
+            elif self._code_prompt_type == "github_issue":
+                return self._add_prefix_prompt_github_issue(use_alpha, query, num)
+            else:
+                raise ValueError(f"Invalid code_prompt_type: {self._code_prompt_type}")
+        else:  # text reranking
+            if use_alpha:
+                return f"I will provide you with {num} passages, each indicated by a alphabetical identifier []. Rank the passages based on their relevance to the search query: {query}.\n"
+            else:
+                return f"I will provide you with {num} passages, each indicated by a numerical identifier []. Rank the passages based on their relevance to the search query: {query}.\n"
+
+    def _add_post_prompt(self, use_alpha, query: str, num: int) -> str:
+        if self._rerank_type == "code":
+            if self._code_prompt_type == "docstring":
+                return self._add_post_prompt_doc_string(use_alpha, query, num)
+            elif self._code_prompt_type == "github_issue":
+                return self._add_post_prompt_github_issue(use_alpha, query, num)
+            else:
+                raise ValueError(f"Invalid code_prompt_type: {self._code_prompt_type}")
+        else:  # text reranking
+            if use_alpha:
+                example_ordering = "[B] > [A]" if self._variable_passages else "[D] > [B]"
+            else:
+                example_ordering = "[2] > [1]" if self._variable_passages else "[4] > [2]"
+            return f"Search Query: {query}.\nRank the {num} passages above based on their relevance to the search query. All the passages should be included and listed using identifiers, in descending order of relevance. The output format should be [] > [], e.g., {example_ordering}, Only respond with the ranking results, do not say any word or explain."
+
+    def _add_prefix_prompt_doc_string(self, use_alpha, query: str, num: int) -> str:
+        if use_alpha:
+            return f"I will provide you with {num} code functions, each indicated by an alphabetical identifier []. Rank the code functions based on their relevance to the functionality described by the following doc string: {query}.\n"
+        else:
+            return f"I will provide you with {num} code snippets, each indicated by a numerical identifier []. Rank the code snippets based on their relevance to the functionality described by the following doc string: {query}.\n"
+
+    def _add_post_prompt_doc_string(self, use_alpha, query: str, num: int) -> str:
+        if use_alpha:
+            example_ordering = "[B] > [A]" if self._variable_passages else "[D] > [B]"
+        else:
+            example_ordering = "[2] > [1]" if self._variable_passages else "[4] > [2]"
+        return f"Doc String: {query}.\nRank the {num} code snippets above based on their relevance to the functionality described by the doc string. All the code snippets should be included and listed using identifiers, in descending order of relevance. The output format should be [] > [], e.g., {example_ordering}. Only respond with the ranking results, do not say any word or explain."
+
+    def _add_prefix_prompt_github_issue(self, use_alpha, query: str, num: int) -> str:
+        if use_alpha:
+            return f"I will provide you with {num} code functions, each indicated by a alphabetical identifier []. Rank the code functions based on their relevance to contain the faults causing the GitHub issue: {query}.\n"
+        else:
+            return f"I will provide you with {num} code functions, each indicated by a numerical identifier []. Rank the code functions based on their relevance to contain the faults causing the GitHub issue: {query}.\n"
+
+    def _add_post_prompt_github_issue(self, use_alpha, query: str, num: int) -> str:
+        if use_alpha:
+            example_ordering = "[B] > [A]" if self._variable_passages else "[D] > [B]"
+        else:
+            example_ordering = "[2] > [1]" if self._variable_passages else "[4] > [2]"
+        return f"GitHub Issue: {query}. \nRank the {num} code functions above based on their relevance to contain the faults causing the GitHub issue. All the code functions should be included and listed using identifiers, in descending order of relevance. The output format should be [] > [], e.g., {example_ordering}. Only respond with the ranking results, do not say any word or explain."
+
     def _add_few_shot_examples(self, conv):
         for _ in range(self._num_few_shot_examples):
             ex = random.choice(self._examples)
@@ -221,24 +272,31 @@ class RankListwiseOSLLM(RankLLM):
     def create_prompt(self, result: Result, use_alpha: bool, rank_start: int, rank_end: int) -> Tuple[str, int]:
         query = result.query
         num = len(result.hits[rank_start:rank_end])
-        # [TODO] control the doc-max-len in the context
-        max_length = 1024 # word length
+        max_length = 1024 if self._rerank_type == "code" else 300
         while True:
             messages = list()
             if self._system_message and self.system_message_supported:
                 messages.append({"role": "system", "content": self._system_message})
             messages = self._add_few_shot_examples_messages(messages)
-            prefix = _add_prefix_prompt(use_alpha, query, num)
+            prefix = self._add_prefix_prompt(use_alpha, query, num)
             rank = 0
             input_context = f"{prefix}\n"
             for hit in result.hits[rank_start:rank_end]:
                 rank += 1
-                # if self._rerank_type == "code": # remove code reranking for simplicity
-                content = hit["content"].replace("Title: Content: ", "").strip()
-                content = " ".join(content.split()[:max_length])
-                identifier = chr(ALPH_START_IDX + rank) if use_alpha else str(rank)
-                input_context += f"[{identifier}] {self._replace_number(content, use_alpha)}\n"
-            input_context += _add_post_prompt(use_alpha, query, num)
+                if self._rerank_type == "code":
+                    content = hit["content"]
+                    content = content.replace("Title: Content: ", "")
+                    tokenized_content = self._tokenizer.tokenize(content)
+                    content_tokens = tokenized_content[:int(max_length)]
+                    truncated_content = self._tokenizer.convert_tokens_to_string(content_tokens)
+                    identifier = chr(ALPH_START_IDX + rank) if use_alpha else str(rank)
+                    input_context += f"[{identifier}] {self._replace_number(truncated_content, use_alpha)}\n"
+                else:
+                    content = hit["content"].replace("Title: Content: ", "").strip()
+                    content = " ".join(content.split()[:max_length])
+                    identifier = chr(ALPH_START_IDX + rank) if use_alpha else str(rank)
+                    input_context += f"[{identifier}] {self._replace_number(content, use_alpha)}\n"
+            input_context += self._add_post_prompt(use_alpha, query, num)
             messages.append({"role": "user", "content": input_context})
             if self._system_message and not self.system_message_supported:
                 messages[0]["content"] = self._system_message + "\n " + messages[0]["content"]
@@ -287,3 +345,12 @@ class RankListwiseOSLLM(RankLLM):
 
     def cost_per_1k_token(self, input_token: bool) -> float:
         return 0
+
+    def max_tokens(self) -> int:
+        """
+        Returns the maximum number of tokens for a given model
+
+        Returns:
+            int: The maximum token count.
+        """
+        return self._context_size
