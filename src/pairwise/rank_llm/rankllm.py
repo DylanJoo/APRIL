@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 
 from pairwise.rank_llm.utils import RankingExecInfo, Result
-from pairwise.rank_llm.messages import (
+from pairwise.prompts.mode import (
     _add_prefix_prompt, 
     _add_post_prompt,
     _add_few_shot_examples_messages,
