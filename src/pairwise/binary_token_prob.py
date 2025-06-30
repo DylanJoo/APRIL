@@ -3,11 +3,8 @@ import os
 import logging
 import json
 import math
-from pairwise.rank_llm.rankllm import PromptMode, RankPairwiseOSLLM
-# from pairwise.rank_llm.reranker import Reranker
-# from pairwise.rank_llm.rank_listwise_os_llm import RankListwiseOSLLM
-from pairwise.rank_llm.utils import Result
 from utils.tools import convert_run_to_result
+from prompts import *
 
 def rerank(
     model, 
