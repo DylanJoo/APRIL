@@ -1,16 +1,12 @@
-"""
-This code is modified from RankFirst repo using rank-llm
-https://github.com/gangiswag/llm-reranker/blob/main/scripts/utils/llm_util.py
-"""
-import csv
 import os
 import logging
 import json
 import math
-from listwise.rank_llm.rankllm import PromptMode, RankLLM
-from listwise.rank_llm.reranker import Reranker
-from listwise.rank_llm.rank_listwise_os_llm import RankListwiseOSLLM
-from listwise.rank_llm.utils import Result
+# from listwise.rank_llm.rankllm import PromptMode, RankLLM
+# from listwise.rank_llm.reranker import Reranker
+# from listwise.rank_llm.rank_listwise_os_llm import RankListwiseOSLLM
+# from listwise.rank_llm.utils import Result
+from reranking
 
 def convert_run_to_result(
     run,

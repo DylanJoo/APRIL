@@ -15,7 +15,6 @@ from pairwise.rank_llm.rankllm import PromptMode, RankLLM
 from pairwise.rank_llm.utils import Result
 from pairwise.rank_llm.messages import _add_prefix_prompt, _add_post_prompt
 
-ALPH_START_IDX = ord('A') - 1
 
 class RankListwiseOSLLM(RankLLM):
     def __init__(

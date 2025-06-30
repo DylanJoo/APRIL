@@ -12,8 +12,8 @@ class LLM:
         model="llama3.3-70b-instruct",
         temperature=0.0,
         top_p=1.0,
-        logprobs=20,
-        max_tokens=10
+        logprobs=None,
+        max_tokens=128,
     ):
         self.model = model
         self.max_tokens = max_tokens
@@ -44,7 +44,7 @@ class LLM:
         self.yes_tokens = [self.tokenizer.tokenize(item)[0] for item in yes_strings]
         self.no_tokens = [self.tokenizer.tokenize(item)[0] for item in no_strings]
 
-    async def _generate_async_prob(self, prompts: List[str]) -> List[float]:
+    async def _agenerate_prob(self, prompts: List[str]) -> List[float]:
 
         # singlge function call of selected token prob
         def _generate_prob(prompt: str) -> float:
@@ -85,11 +85,11 @@ class LLM:
             prompts = [prompts]
         
         if prob:
-            return self.loop.run_until_complete(self._generate_async_prob(prompts))
+            return self.loop.run_until_complete(self._agenerate_prob(prompts))
         else:
-            return self.loop.run_until_complete(self._generate_async_text(prompts))
+            return self.loop.run_until_complete(self._agenerate_text(prompts))
 
-    async def _generate_async_text(self, prompts: List[str]) -> List[float]:
+    async def _agenerate_text(self, prompts: List[str]) -> List[float]:
 
         def _generate_text(prompt: str) -> float:
             response = self.client.completions.create(
@@ -120,4 +120,4 @@ class LLM:
     #         add_generation_prompt=True
     #     ) for user_content in user_contents]
     #
-    #     return self.loop.run_until_complete(self._generate_async_prob(prompts))
+    #     return self.loop.run_until_complete(self._agenerate_prob(prompts))

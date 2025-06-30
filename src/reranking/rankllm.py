@@ -1,30 +1,18 @@
-r""" 
-This is a wrapper for the LLM-based ranking model. The modules include:
-    1. PromptFormatter: Formats the prompts for the LLM based on the specified mode.
-    2. LLM client/server/API calling module: Handles the interaction with the LLM, including sending prompts and receiving responses.
-    3. ResponseProcessor: Processes the LLM responses to extract the ranking permutations.
-
-[TODO] abstract the LLM calling and the parsing pipeline for different ranking modes.
-"""
 import copy
 import random
 import re
-from abc import ABC, abstractmethod
-from enum import Enum
 from typing import Optional, Tuple, List, Dict, Union, Any
 
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 
-ALPH_START_IDX = ord('A')-1
+from ftfy import fix_text
 
 from reranking.utils import PromptMode, Result
+from reranking.prompt_builder import PromptFormatter
+from reranking.result_parser import RankParser
 
-from reranking.prompt_builder.mode import PromptFormatter
-from reranking.litellm_api import LLM
-from reranking.result_parser.mode import RankParser
-from ftfy import fix_text
-from pprint import pprint
+ALPH_START_IDX = ord('A')-1
 
 class RankListwiseLLM:
     # [NOTE] Maybe put the config in the prompt mode
@@ -39,6 +27,7 @@ class RankListwiseLLM:
         window_size: int = 20,
         step_size: int = 10,
         batched: bool = False,
+        vllm_backend: bool = True,
     ) -> None:
 
         self._model_name_or_path = model_name_or_path
@@ -56,7 +45,17 @@ class RankListwiseLLM:
         )
 
         ## [Module] LLM
-        self._llm = LLM(temperature=0.0, top_p=1.0, logprobs=None, max_tokens=100)
+        if backend == 'vllm':
+            from reranking.llm.vllm_api import LLM
+
+        if backend == 'litellm':
+            from reranking.llm.litellm_api import LLM
+
+        self._llm = LLM(
+            temperature=0.0, top_p=1.0, 
+            logprobs=None if prompt_mode == PromptMode.RANK_GPT else 30,
+            max_tokens=100 if prompt_mode == PromptMode.RANK_GPT else 2,
+        )
         # true_list = [' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES']
         # false_list = [' No', 'No', ' no', 'no', 'NO', ' NO']
         # self._llm.set_classification(true_list, false_list)

@@ -29,17 +29,18 @@ class LLM:
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
 
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            'meta-llama/Llama-3.3-70B-Instruct',
-            use_fast=False
-        )
-        self.yes_tokens = None
-        self.no_tokens = None
+        if logprobs:
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                'meta-llama/Llama-3.3-70B-Instruct',
+                use_fast=False
+            )
+            self.yes_tokens = None
+            self.no_tokens = None
 
-    def get_tokenizer(self):
-        return self.tokenizer
-
-    def set_classification(self, yes_strings, no_strings):
+    def set_classification(self, 
+        yes_strings=[' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES'],
+        no_strings=[' No', 'No', ' no', 'no', 'NO', ' NO']
+    ):
         """ Litellm outputs probabilties of each token strings instead of token ids """
         self.yes_tokens = [self.tokenizer.tokenize(item)[0] for item in yes_strings]
         self.no_tokens = [self.tokenizer.tokenize(item)[0] for item in no_strings]
