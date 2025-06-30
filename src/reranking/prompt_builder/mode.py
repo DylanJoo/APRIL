@@ -1,33 +1,10 @@
 from typing import List, Optional, Union, Callable, Dict, Tuple
 from transformers import AutoTokenizer
 from concurrent.futures import ThreadPoolExecutor
-from enum import Enum
 from tqdm import tqdm
+
+from ..utils import PromptMode, Result
 from ._rank_gpt import RankGPTFormatter
-
-class PromptMode(Enum):
-    RANK_GPT = "rank_GPT"
-    LRL = "LRL"
-    APRIL = "APRIL"
-
-    def __str__(self):
-        return self.value
-
-class Result:
-    def __init__(
-        self,
-        qid: str,
-        query: str,
-        hits = None,
-        ranking_exec_summary = None,
-    ):
-        self.qid = qid
-        self.query = query
-        self.hits = hits
-        self.ranking_exec_summary = ranking_exec_summary
-
-    def __repr__(self):
-        return str(self.__dict__)
 
 class PromptFormatter:
     def __init__(
@@ -85,7 +62,7 @@ class PromptFormatter:
 
         all_completed_prompts = []
         with ThreadPoolExecutor() as executor:
-            for batch in tqdm(chunks(results, batch_size), desc="Processing batches"):
+            for batch in tqdm(chunks(results, batch_size), desc="Creating prompts"):
                 completed_prompts = list(
                     executor.map(
                         lambda result: self.create_prompt(result, rank_start, rank_end), 
@@ -94,7 +71,7 @@ class PromptFormatter:
                 )
                 all_completed_prompts.extend(completed_prompts)
 
-        return map(list, zip(*all_completed_prompts))
+        return all_completed_prompts
 
     def create_prompt(
         self, 
@@ -107,8 +84,8 @@ class PromptFormatter:
 
         Returns:
             (str, str): A tuple containing two strings
+        [TODO] adding length truncation based on the `context_size` parameter
         """
-
         # system message (if applicable)
         if self.system_message_supported and self.system_message:
             messages = [{"role": "system", "content": self.system_message}]

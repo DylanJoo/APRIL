@@ -106,18 +106,3 @@ class LLM:
             asyncio.to_thread(_generate_text, prompt) for prompt in prompts
         ])
         return list(outputs)
-
-    # def inference_chat(self, system_content: str, user_contents):
-    #     if isinstance(user_contents, str):
-    #         user_contents = [user_contents]
-    #
-    #     prompts = [self.tokenizer.apply_chat_template(
-    #         conversation=[
-    #             {"role": "system", "content": system_content},
-    #             {"role": "user", "content": user_content}
-    #         ],
-    #         tokenize=False,
-    #         add_generation_prompt=True
-    #     ) for user_content in user_contents]
-    #
-    #     return self.loop.run_until_complete(self._generate_async_prob(prompts))

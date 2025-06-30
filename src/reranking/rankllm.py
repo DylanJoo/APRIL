@@ -1,3 +1,11 @@
+r""" 
+This is a wrapper for the LLM-based ranking model. The modules include:
+    1. PromptFormatter: Formats the prompts for the LLM based on the specified mode.
+    2. LLM client/server/API calling module: Handles the interaction with the LLM, including sending prompts and receiving responses.
+    3. ResponseProcessor: Processes the LLM responses to extract the ranking permutations.
+
+[TODO] abstract the LLM calling and the parsing pipeline for different ranking modes.
+"""
 import copy
 import random
 import re
@@ -10,12 +18,16 @@ from tqdm import tqdm
 
 ALPH_START_IDX = ord('A')-1
 
-from rank_llm.litellm_api import LLM
-from rank_llm.prompts.mode import PromptMode, PromptFormatter, Result
+from reranking.utils import PromptMode, Result
+
+from reranking.prompt_builder.mode import PromptFormatter
+from reranking.litellm_api import LLM
+from reranking.result_parser.mode import RankParser
 from ftfy import fix_text
 from pprint import pprint
 
 class RankListwiseLLM:
+    # [NOTE] Maybe put the config in the prompt mode
 
     def __init__(
         self,
@@ -32,7 +44,8 @@ class RankListwiseLLM:
         self._model_name_or_path = model_name_or_path
         self._prompt_mode = prompt_mode
 
-        ## [Module] Prompt formatting 
+        ## [Module] Formatting the prompt
+        ### [NOTE] use_logits could be useful?
         self.formatter = PromptFormatter(
             model_name_or_path=model_name_or_path,
             prompt_mode=prompt_mode,
@@ -42,16 +55,19 @@ class RankListwiseLLM:
             use_alpha=False,  # default to False for numerical ordering
         )
 
-        ## [Module] LLM with fixed parameters
+        ## [Module] LLM
         self._llm = LLM(temperature=0.0, top_p=1.0, logprobs=None, max_tokens=100)
         # true_list = [' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES']
         # false_list = [' No', 'No', ' no', 'no', 'NO', ' NO']
         # self._llm.set_classification(true_list, false_list)
 
+        ## [Module] Formatting the prompt
+        self.processor = RankParser(prompt_mode=prompt_mode)
+
         ## [Instance] attibutes
         # self._context_size = context_size
-        # self._window_size = window_size
-        # self._step_size = step_size
+        self._window_size = window_size
+        self._step_size = step_size
         # self._batched = batched
 
     def permutation_pipeline_batched(
@@ -61,18 +77,6 @@ class RankListwiseLLM:
         rank_end: int,
         logging: bool = False,
     ) -> List[Result]:
-        """
-        Runs the permutation pipeline on the passed in result set within the passed in rank range for a batch of results.
-        Args:
-            results (List[Result]): The ENTIRE list of result objects to process.
-            rank_start (int): The start index for ranking.
-            rank_end (int): The end index for ranking.
-
-        Returns:
-            List[Result]: The processed list of result objects after applying permutation.
-        """
-
-        prompts = []
 
         ## Create prompts for each result in the batch
         ### 1. [Listwise] (RankGPT): listwise prompts for sliding windows
@@ -80,23 +84,28 @@ class RankListwiseLLM:
         ### 3. [Pairwise] (APRIL): listwise prompts for sliding windows
         prompts = self.formatter.create_prompt_batched(results, rank_start, rank_end)
 
-        ## [TODO] Run LLM on the batched prompts
-        batched_results = self.run_llm_batched(
-            [prompt for prompt, _ in prompts], 
-            use_logits=use_logits,
+        ## Run LLM on the batched prompts
+        responses = self.run_llm_batched(
+            prompt_texts=[prompt for prompt, _ in prompts], 
+            use_logits=False,
             current_window_size=rank_end - rank_start
         )
 
-        ## [TODO] Parse permutations
-        for index, (result, (prompt, in_token_count)) in enumerate(zip(results, prompts)):
-            permutation, out_token_count = batched_results[index]
-            ranking_exec_info = RankingExecInfo(prompt, permutation, in_token_count, out_token_count)
-            if result.ranking_exec_summary is None:
-                result.ranking_exec_summary = []
-            result.ranking_exec_summary.append(ranking_exec_info)
-            # [TODO] Recieve permulation
-            result = self.receive_permutation(result, permutation, rank_start, rank_end)
+        ## Parse permutations
+        # [NOTE] (1) scoring (2) bubble sort
+        reranked_results = self.processor.parse_response(
+            response_texts=[response for response, _ in responses],
+            results=results,
+            rank_start=rank_start,
+            rank_end=rank_end,
+        )
 
+        # for index, (result, (prompt, in_token_count)) in enumerate(zip(results, prompts)):
+        #     permutation, out_token_count = batched_results[index]
+        #     ranking_exec_info = RankingExecInfo(prompt, permutation, in_token_count, out_token_count)
+        #     if result.ranking_exec_summary is None:
+        #         result.ranking_exec_summary = []
+        #     result.ranking_exec_summary.append(ranking_exec_info)
         return results
 
     def sliding_windows_batched(
@@ -111,130 +120,44 @@ class RankListwiseLLM:
             retrieved_results (List[Result]): The list of result objects to process.
             rank_start (int): The start index for ranking.
             rank_end (int): The end index for ranking.
-            window_size (int): The size of each sliding window.
-            step (int): The step size for moving the window.
             logging (bool, optional): Flag to enable logging of operations. Defaults to False.
         """
         rerank_results = [copy.deepcopy(result) for result in retrieved_results]
 
         end_pos = rank_end
-        start_pos = rank_end - window_size
+        start_pos = rank_end - self._window_size
 
         # end_pos > rank_start ensures that the list is non-empty while allowing last window to be smaller than window_size
         # start_pos + step != rank_start prevents processing of redundant windows (e.g. 0-20, followed by 0-10)
-        while end_pos > rank_start and start_pos + step != rank_start:
+        while end_pos > rank_start and start_pos + self._step_size != rank_start:
             start_pos = max(start_pos, rank_start)
-            rerank_results = self.permutation_pipeline_batched(
-                rerank_results, use_logits, start_pos, end_pos, logging
-            )
-            end_pos = end_pos - step
-            start_pos = start_pos - step
+            rerank_results = self.permutation_pipeline_batched(rerank_results, start_pos, end_pos, logging)
+            end_pos = end_pos - self._step_size
+            start_pos = start_pos - self._step_size
         return rerank_results
 
-    # def _clean_response(self, response: str, use_alpha: bool) -> str:
-    #     new_response = ""
-    #     if use_alpha:
-    #         for c in response:
-    #             if not c.isalpha():
-    #                 new_response += " "
-    #             else:
-    #                 new_response += str(ord(c) - ALPH_START_IDX)
-    #         new_response = new_response.strip()
-    #     else:
-    #         for c in response:
-    #             if not c.isdigit():
-    #                 new_response += " "
-    #             else:
-    #                 new_response += c
-    #         new_response = new_response.strip()
-    #         
-    #     return new_response
+    # def num_output_tokens(self, use_alpha: bool, current_window_size: Optional[int] = None) -> int:
+    #     if current_window_size is None:
+    #         current_window_size = self._window_size
     #
-    # def _remove_duplicate(self, response: List[int]) -> List[int]:
-    #     new_response = []
-    #     for c in response:
-    #         if c not in new_response:
-    #             new_response.append(c)
-    #     return new_response
-
-    def receive_permutation(
-        self, result: Result, permutation: str, rank_start: int, rank_end: int, use_alpha: bool
-    ) -> Result:
-        """
-        Processes and applies a permutation to the ranking results.
-
-        This function takes a permutation string, representing the new order of items,
-        and applies it to a subset of the ranking results. It adjusts the ranks and scores in the
-        'result' object based on this permutation.
-
-        Args:
-            result (Result): The result object containing the initial ranking results.
-            permutation (str): A string representing the new order of items.
-                            Each item in the string should correspond to a rank in the results.
-            rank_start (int): The starting index of the range in the results to which the permutation is applied.
-            rank_end (int): The ending index of the range in the results to which the permutation is applied.
-
-        Returns:
-            Result: The updated result object with the new ranking order applied.
-
-        Note:
-            This function assumes that the permutation string is a sequence of integers separated by spaces.
-            Each integer in the permutation string corresponds to a 1-based index in the ranking results.
-            The function first normalizes these to 0-based indices, removes duplicates, and then reorders
-            the items in the specified range of the 'result.hits' list according to the permutation.
-            Items not mentioned in the permutation string remain in their original sequence but are moved after
-            the permuted items.
-        """
-        response = self._clean_response(permutation, use_alpha)
-        response = [int(x) - 1 for x in response.split()]
-        response = self._remove_duplicate(response)
-        cut_range = copy.deepcopy(result.hits[rank_start:rank_end])
-        original_rank = [tt for tt in range(len(cut_range))]
-        response = [ss for ss in response if ss in original_rank]
-        response = response + [tt for tt in original_rank if tt not in response] 
-        # assign the rank to the unappeared document (assuming they are irrelevant)
-        for j, x in enumerate(response):
-            result.hits[j + rank_start] = copy.deepcopy(cut_range[x])
-            if "rank" in result.hits[j + rank_start]:
-                result.hits[j + rank_start]["rank"] = cut_range[j]["rank"]
-            if "score" in result.hits[j + rank_start]:
-                result.hits[j + rank_start]["score"] = cut_range[j]["score"]
-        return result
-
-    def _replace_number(self, s: str, use_alpha) -> str:
-        if use_alpha:
-            return re.sub(r"\[([A-z]+)\]", r"(\1)", s)
-        else:
-            return re.sub(r"\[(\d+)\]", r"(\1)", s)
-
-    def get_num_tokens(self, prompt: str) -> int:
-        return len(self._tokenizer.encode(prompt))
-
-    def max_tokens(self) -> int:
-        return self._context_size
-
-    def num_output_tokens(self, use_alpha: bool, current_window_size: Optional[int] = None) -> int:
-        if current_window_size is None:
-            current_window_size = self._window_size
-
-        if self._output_token_estimate and self._window_size == current_window_size:
-            return self._output_token_estimate
-
-        if use_alpha:
-            token_str = " > ".join([f"[{i+1}]" for i in range(current_window_size)])
-        else:
-            token_str = " > ".join([f"[{chr(ALPH_START_IDX+i+1)}]" for i in range(current_window_size)])
-
-        _output_token_estimate = len(self._tokenizer.encode(token_str)) - 1
-
-        if self._window_size == current_window_size:
-            self._output_token_estimate = _output_token_estimate
-
-        return _output_token_estimate
+    #     if self._output_token_estimate and self._window_size == current_window_size:
+    #         return self._output_token_estimate
+    #
+    #     if use_alpha:
+    #         token_str = " > ".join([f"[{i+1}]" for i in range(current_window_size)])
+    #     else:
+    #         token_str = " > ".join([f"[{chr(ALPH_START_IDX+i+1)}]" for i in range(current_window_size)])
+    #
+    #     _output_token_estimate = len(self._tokenizer.encode(token_str)) - 1
+    #
+    #     if self._window_size == current_window_size:
+    #         self._output_token_estimate = _output_token_estimate
+    #
+    #     return _output_token_estimate
 
     def run_llm_batched(
         self,
-        prompts: List[Union[str, List[Dict[str, str]]]],
+        prompt_texts: List[Union[str, List[Dict[str, str]]]],
         current_window_size: Optional[int] = None,
         use_logits: bool = False,
     ) -> List[Tuple[str, int]]:
@@ -253,17 +176,19 @@ class RankListwiseLLM:
         temp = 0.
         if current_window_size is None:
             current_window_size = self._window_size
+
+        # [NOTE] Stream like the arugment calls
         if use_logits:
             max_new_tokens = 2
             min_new_tokens = 2
             assert current_window_size <= 9, "using logits with numerical ordering can only supports window size <= 9"
             params = None
-            outputs = self._llm.generate(prompts, sampling_params=params, use_tqdm=True)
+            outputs = self._llm.generate(prompt_texts, prob=True)
             arr = [self._get_logits_single_digit_batched(output, use_alpha=use_alpha) for output in outputs]
             return [(s, len(s)) for s, __ in arr]
         else:
             params = None
-            outputs = self._llm.generate(prompts, sampling_params=params, use_tqdm=True)
+            outputs = self._llm.generate(prompt_texts , prob=False)
             return [(output, 0) for output in outputs]
             # return [
             #     (output.outputs[0].text, len(output.outputs[0].token_ids))
@@ -347,4 +272,54 @@ class RankListwiseLLM:
     #         start_pos = start_pos - step
     #     return rerank_result
     #
+
+    # def receive_permutation(
+    #     self, result: Result, permutation: str, rank_start: int, rank_end: int, use_alpha: bool
+    # ) -> Result:
+    #     """
+    #     Processes and applies a permutation to the ranking results.
+    #
+    #     This function takes a permutation string, representing the new order of items,
+    #     and applies it to a subset of the ranking results. It adjusts the ranks and scores in the
+    #     'result' object based on this permutation.
+    #
+    #     Args:
+    #         result (Result): The result object containing the initial ranking results.
+    #         permutation (str): A string representing the new order of items.
+    #                         Each item in the string should correspond to a rank in the results.
+    #         rank_start (int): The starting index of the range in the results to which the permutation is applied.
+    #         rank_end (int): The ending index of the range in the results to which the permutation is applied.
+    #
+    #     Returns:
+    #         Result: The updated result object with the new ranking order applied.
+    #
+    #     Note:
+    #         This function assumes that the permutation string is a sequence of integers separated by spaces.
+    #         Each integer in the permutation string corresponds to a 1-based index in the ranking results.
+    #         The function first normalizes these to 0-based indices, removes duplicates, and then reorders
+    #         the items in the specified range of the 'result.hits' list according to the permutation.
+    #         Items not mentioned in the permutation string remain in their original sequence but are moved after
+    #         the permuted items.
+    #     """
+    #     response = self._clean_response(permutation, use_alpha)
+    #     response = [int(x) - 1 for x in response.split()]
+    #     response = self._remove_duplicate(response)
+    #     cut_range = copy.deepcopy(result.hits[rank_start:rank_end])
+    #     original_rank = [tt for tt in range(len(cut_range))]
+    #     response = [ss for ss in response if ss in original_rank]
+    #     response = response + [tt for tt in original_rank if tt not in response] 
+    #     # assign the rank to the unappeared document (assuming they are irrelevant)
+    #     for j, x in enumerate(response):
+    #         result.hits[j + rank_start] = copy.deepcopy(cut_range[x])
+    #         if "rank" in result.hits[j + rank_start]:
+    #             result.hits[j + rank_start]["rank"] = cut_range[j]["rank"]
+    #         if "score" in result.hits[j + rank_start]:
+    #             result.hits[j + rank_start]["score"] = cut_range[j]["score"]
+    #     return result
+
+    def _replace_number(self, s: str, use_alpha) -> str:
+        if use_alpha:
+            return re.sub(r"\[([A-z]+)\]", r"(\1)", s)
+        else:
+            return re.sub(r"\[(\d+)\]", r"(\1)", s)
 

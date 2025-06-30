@@ -1,3 +1,5 @@
+from enum import Enum
+
 class Result:
     def __init__(
         self,
@@ -25,4 +27,12 @@ class RankingExecInfo:
 
     def __repr__(self):
         return str(self.__dict__)
+
+class PromptMode(Enum):
+    RANK_GPT = "rank_GPT"
+    LRL = "LRL"
+    APRIL = "APRIL"
+
+    def __str__(self):
+        return self.value
 
