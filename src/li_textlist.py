@@ -7,7 +7,6 @@ from reranking
 
 from rankllm import RankListwiseLLM
 
-
 # def convert_run_to_result(
 #     run,
 #     queries=None,

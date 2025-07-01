@@ -1,11 +1,10 @@
-# from vllm_api import LLM
-from llm.utils import cleanup_vllm
+from reranking.llm_provider.utils import cleanup_vllm
 
-# from llm.vllm_api import LLM
+# from reranking.llm_provider.vllm_api import LLM
 # llm = LLM(model='Qwen/Qwen3-1.7B', temperature=0.0, top_p=1.0, logprobs=20, max_tokens=1)
 # cleanup_vllm(llm)
 
-from llm.litellm_api import LLM
+from reranking.llm_provider.litellm_api import LLM
 llm = LLM(model='llama3.3-70b-instruct', temperature=0.0, top_p=1.0, logprobs=20, max_tokens=1)
 llm.set_classification()
 # result = llm.generate([f'write a poem of {i}.' for i in range(10)], prob=True)
