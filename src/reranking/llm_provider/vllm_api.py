@@ -12,7 +12,7 @@ class LLM:
 
     def __init__(
         self,
-        model,
+        model_name_or_path: str,
         temperature=0.0,
         top_p=1.0,
         logprobs=None,
@@ -24,7 +24,7 @@ class LLM:
         max_model_len=20480,
     ):
         args = AsyncEngineArgs(
-            model=model,
+            model=model_name_or_path,
             dtype=dtype,
             enforce_eager=enforce_eager,
             tensor_parallel_size=num_gpus,

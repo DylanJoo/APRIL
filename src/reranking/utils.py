@@ -40,11 +40,36 @@ class RankingExecInfo:
     def __repr__(self):
         return str(self.__dict__)
 
-class PromptMode(Enum):
+class RerankMode(Enum):
     RANK_GPT = "rank_GPT"
     LRL = "LRL"
     APRIL = "APRIL"
 
+    @property
+    def prompt_builder_name(self):
+        return {
+            RerankMode.RANK_GPT: "listwise",
+            RerankMode.LRL: "listwise",
+            RerankMode.APRIL: "listwise"
+        }[self]
+
+    @property
+    def use_logits(self):
+        return {
+            RerankMode.RANK_GPT: False,
+            RerankMode.LRL: False,
+            RerankMode.APRIL: True
+        }[self]
+
+    @property
+    def result_parser_name(self):
+        return {
+            RerankMode.RANK_GPT: "text_list",
+            RerankMode.LRL: "prob_list",
+            RerankMode.APRIL: "prob_list"
+        }[self]
+
     def __str__(self):
-        return self.value
+        return f"[{self.value}]: (prompt_builder_name: {self.prompt_builder_name}) | (result_parser_name: {self.result_parser_name})"
+    #     return self.value
 

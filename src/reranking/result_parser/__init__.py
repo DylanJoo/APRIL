@@ -1,1 +1,1 @@
-from .base import RankParser
+from .base import ResultParser

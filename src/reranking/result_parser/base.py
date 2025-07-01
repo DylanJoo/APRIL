@@ -1,25 +1,25 @@
 import copy
 from typing import List, Optional, Tuple, Callable, Dict, Union
-from ..utils import PromptMode, Result
+from ..utils import RerankMode, Result
 
 from ._rank_gpt import TextListParser
 
-class RankParser:
+class ResultParser:
     def __init__(
         self, 
-        prompt_mode: PromptMode,
+        rerank_mode: RerankMode,
         **kwargs
     ):
-        self.prompt_mode = prompt_mode
-        self.parser = self._get_parser(prompt_mode, **kwargs)
+        self.rerank_mode = rerank_mode
+        self.parser = self._get_parser(rerank_mode, **kwargs)
 
-    def _get_parser(self, prompt_mode: PromptMode, **kwargs) -> Callable:
-        parser_map: Dict[PromptMode, Callable] = {
-            PromptMode.RANK_GPT: TextListParser,
+    def _get_parser(self, rerank_mode: RerankMode, **kwargs) -> Callable:
+        parser_map: Dict[RerankMode, Callable] = {
+            RerankMode.RANK_GPT: TextListParser,
         }
-        if prompt_mode not in parser_map:
-            raise ValueError(f"Unsupported prompt mode: {prompt_mode}")
-        return parser_map[prompt_mode](**kwargs)
+        if rerank_mode not in parser_map:
+            raise ValueError(f"Unsupported prompt mode: {rerank_mode}")
+        return parser_map[rerank_mode](**kwargs)
 
     # [NOTE] parse: response is the input, number as output 
     # [NOTE] update: number to the result object

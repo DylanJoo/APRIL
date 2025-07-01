@@ -13,7 +13,8 @@ class LLM:
         temperature=0.0,
         top_p=1.0,
         logprobs=20,
-        max_tokens=10
+        max_tokens=10,
+        **kwargs
     ):
         self.model = model
         self.max_tokens = max_tokens

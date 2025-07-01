@@ -1,1 +1,1 @@
-from .base import PromptFormatter
+from .base import PromptBuilder

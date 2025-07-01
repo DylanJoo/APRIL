@@ -1,0 +1,112 @@
+# -------Testin llm provider -------
+# from reranking.llm_provider.vllm_api import LLM
+# llm = LLM(model='Qwen/Qwen3-1.7B', temperature=0.0, top_p=1.0, logprobs=20, max_tokens=1)
+# cleanup_vllm(llm)
+
+# from reranking.llm_provider.litellm_api import LLM
+# llm = LLM(model='llama3.3-70b-instruct', temperature=0.0, top_p=1.0, logprobs=20, max_tokens=1)
+# llm.set_classification()
+# result = llm.generate([f'write a poem of {i}.' for i in range(10)], prob=True)
+
+# prompts = [
+# "Is Paris the capital of France?",
+# "Does water boil at 100°C?",
+# "Is the sun a star?",
+# "Can humans breathe underwater unaided?",
+# "Is Mount Everest the tallest mountain?",
+# "Do whales lay eggs?",
+# "Is Mars known as the Red Planet?",
+# "Was Albert Einstein a physicist?",
+# "Is gold a metal?",
+# "Does the Earth orbit the sun?",
+# ]
+# result = llm.generate(prompts, prob=True)
+# print(result)
+
+# >>> Yes # Yes # Yes # No # Yes # No # Yes # Yes # Yes # Yes
+# ----------------------------------
+
+
+# -------Testing utils-------
+import copy
+from reranking.utils import Result, RerankMode
+def get_eaxmple_result():
+    query = "How to improve cardiovascular health?"
+    passages = [
+        "1. Engaging in at least 150 minutes of moderate aerobic exercise weekly significantly boosts heart health.",
+        "2. Eating a balanced diet rich in fruits, vegetables, and whole grains can improve cardiovascular function.",
+        "3. Regular blood pressure monitoring helps in early detection and prevention of heart disease.",
+        "4. Managing cholesterol levels through lifestyle changes and medication protects arteries from plaque buildup.",
+        "5. Reducing sodium intake can lower blood pressure and reduce heart disease risk.",
+        "6. Getting at least seven hours of quality sleep per night supports overall vascular function.",
+        "7. Reducing alcohol consumption has a positive effect on many aspects of physical wellness.",
+        "8. Spending time outdoors can improve mental health and promote light physical activity.",
+        "9. Learning a musical instrument can help improve cognitive functions in adults.",
+        "10. Visiting art galleries fosters creativity and social engagement.",
+    ]
+    pairs = []
+    for i, passage in enumerate(passages):
+        pairs.append({'docid': f"docid_{i}", 'score': float(1/ (i+1)), 'content': passage})
+
+    results = []
+    results.append(Result(qid='qid_0', query=query, hits=pairs))
+    results.append(Result(qid='qid_1', query=query, hits=copy.deepcopy(pairs)))
+
+    temp = results[1].hits[0]
+    results[1].hits[0] = results[1].hits[-1]
+    results[1].hits[-1] = temp
+    return results
+
+example_result = get_eaxmple_result()
+
+# -------Testing llm prompt builder -------
+# from reranking.prompt_builder import PromptBuilder
+# builder = PromptBuilder(
+#     model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
+#     rerank_mode=RerankMode.RANK_GPT,
+#     include_system_message=True,
+#     system_message="You are a helpful assistant that provides concise and informative answers to health-related questions.",
+#     variable_passages=True,
+#     use_alpha=False
+# )
+# prompts, lengths = builder.create_prompt_batched(
+#     results=example_result,
+#     rank_start=0,
+#     rank_end=20
+# )
+# print(lengths)
+# print(prompts[0])
+# ----------------------------------
+
+## --- Unit testing for the RankParser ---
+# from reranking.result_parser import ResultParser
+# rankparser = ResultParser(rerank_mode=RerankMode.RANK_GPT)
+# outputs = rankparser.parse_response(
+#     response_texts=\
+#             ["[10] > [9] > [2] > [4] > [5] > [6] > [7] > [8] > [3] > [1]", \
+#             "[10] > [8] > [3] > [4] > [5] > [6] > [7] > [9] > [2] > [1]"],
+#     results=example_result,
+#     rank_start=0,
+#     rank_end=20
+# )
+# print([h['docid'] for h in outputs[0].hits])
+# print([h['docid'] for h in outputs[1].hits])
+
+## --- Unit testing for the reranking wrapper --- 
+from reranking.input_batcher.sliding_window import SlidingWindow
+rankllm = SlidingWindow(
+    model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
+    rerank_mode=RerankMode.RANK_GPT,
+    include_system_message=True,
+    system_message="You are a helpful assistant.",
+    context_size=4096,
+    window_size=20,
+    step_size=10,
+    backend='litellm',  # 'vllm' or 'litellm'
+)
+reranked_results = rankllm.run(
+    retrieved_results=example_result,
+    rank_start=0,
+    rank_end=20
+)
+print(reranked_results)

@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from ftfy import fix_text
 
-from reranking.utils import PromptMode, Result
+from reranking.utils import RerankMode, Result
 from reranking.prompt_builder import PromptFormatter
 from reranking.result_parser import RankParser
 
@@ -20,7 +20,7 @@ class RankListwiseLLM:
     def __init__(
         self,
         model_name_or_path: str,
-        prompt_mode: PromptMode = PromptMode.RANK_GPT,
+        prompt_mode: RerankMode = RerankMode.RANK_GPT,
         include_system_message: bool = False,
         system_message: str = None,
         context_size: int = 4096,
@@ -53,8 +53,8 @@ class RankListwiseLLM:
 
         self._llm = LLM(
             temperature=0.0, top_p=1.0, 
-            logprobs=None if prompt_mode == PromptMode.RANK_GPT else 30,
-            max_tokens=100 if prompt_mode == PromptMode.RANK_GPT else 2,
+            logprobs=None if prompt_mode == RerankMode.RANK_GPT else 30,
+            max_tokens=100 if prompt_mode == RerankMode.RANK_GPT else 2,
         )
         # true_list = [' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES']
         # false_list = [' No', 'No', ' no', 'no', 'NO', ' NO']
