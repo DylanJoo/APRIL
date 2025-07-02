@@ -1,3 +1,10 @@
+"""
+[NOTE] In the assembler class, we probably need different implementations for different reranking strategies. 
+e.g., bubble sort with sliding window or sth else
+
+`run_pass()` is the main function to run a single pass of reranking.
+`run()` is the main function to run the entire reranking process.
+"""
 import copy
 import random
 import re
@@ -14,7 +21,7 @@ from reranking.result_parser import ResultParser
 
 ALPH_START_IDX = ord('A')-1
 
-class SlidingWindow:
+class BubbleSort:
 
     def __init__(
         self,
@@ -69,67 +76,6 @@ class SlidingWindow:
         self._step_size = step_size
         # self._batched = batched
 
-    def run_pass(
-        self,
-        results: List[Result],
-        rank_start: int,
-        rank_end: int,
-        logging: bool = False,
-    ) -> List[Result]:
-
-        ## Create prompts for each result in the batch
-        ### 1. [Listwise] (RankGPT): listwise prompts for sliding windows
-        ### 2. [Pairwise] (AllPair): Pairwise prompts for exhausted ranking
-        ### 3. [Pairwise] (APRIL): listwise prompts for sliding windows
-        prompts = self.formatter.create_prompt_batched(results, rank_start, rank_end)
-
-        # [NOTE] window size for using logits might have limited to 9
-        ## Run LLM on the batched prompts
-        # responses = self.run_llm_batched(
-        #     prompt_texts=[prompt for prompt, _ in prompts], 
-        #     use_logits=False,
-        #     current_window_size=rank_end - rank_start
-        # )
-
-
-        # [NOTE] this is not used for now
-        # if current_window_size is None:
-        # current_window_size = self._window_size 
-        # assert current_window_size <= 9, "using logits with numerical ordering can only supports window size <= 9"
-
-        # [NOTE] add output length?
-        responses = self._llm.generate(
-            prompts=[prompt for prompt, _ in prompts], 
-            prob=self._rerank_mode.use_logits
-        )
-
-        assert len(responses) == len(prompts), "outputs and prompts should have the same length"
-
-        #     arr = [self._get_logits_single_digit_batched(output, use_alpha=use_alpha) for output in outputs]
-        #     return [(s, len(s)) for s, __ in arr]
-
-        #     outputs = self._llm.generate(prompt_texts , prob=False)
-        #     return [(output, 0) for output in outputs]
-
-        ## Parse permutations
-        # [if adding output length] response_texts=[response for response, _ in responses],
-        # [NOTE] (1) scoring (2) bubble sort
-        reranked_results = self.processor.parse_response(
-            response_texts=responses,
-            results=results,
-            rank_start=rank_start,
-            rank_end=rank_end,
-        )
-
-        # for index, (result, (prompt, in_token_count)) in enumerate(zip(results, prompts)):
-        #     permutation, out_token_count = batched_results[index]
-        #     ranking_exec_info = RankingExecInfo(prompt, permutation, in_token_count, out_token_count)
-        #     if result.ranking_exec_summary is None:
-        #         result.ranking_exec_summary = []
-        #     result.ranking_exec_summary.append(ranking_exec_info)
-        return results
-
-    # def sliding_windows_batched(
     def run(
         self,
         retrieved_results: List[Result],
@@ -158,6 +104,53 @@ class SlidingWindow:
             start_pos = start_pos - self._step_size
         return rerank_results
 
+    def run_pass(
+        self,
+        results: List[Result],
+        rank_start: int,
+        rank_end: int,
+        logging: bool = False,
+    ) -> List[Result]:
+
+        ## Create prompts for each result in the batch
+        ### 1. [Listwise] (RankGPT): listwise prompts for sliding windows
+        ### 2. [Pairwise] (AllPair): Pairwise prompts for exhausted ranking
+        ### 3. [Pairwise] (APRIL): listwise prompts for sliding windows
+        prompts = self.formatter.create_prompt_batched(results, rank_start, rank_end)
+
+        # [NOTE] window size for using logits might have limited to 9, this is not used for now
+        # if current_window_size is None:
+        # current_window_size = self._window_size 
+        # assert current_window_size <= 9, "using logits with numerical ordering can only supports window size <= 9"
+
+        # [NOTE] return input length?
+        responses = self._llm.generate(
+            prompts=[prompt for prompt, _ in prompts], 
+            prob=self._rerank_mode.use_logits
+        )
+
+        assert len(responses) == len(prompts), "outputs and prompts should have the same length"
+
+        reranked_results = self.processor.parse_response(
+            response_texts=responses,
+            results=results,
+            rank_start=rank_start,
+            rank_end=rank_end,
+        )
+        # for index, (result, (prompt, in_token_count)) in enumerate(zip(results, prompts)):
+        #     permutation, out_token_count = batched_results[index]
+        #     ranking_exec_info = RankingExecInfo(prompt, permutation, in_token_count, out_token_count)
+        #     if result.ranking_exec_summary is None:
+        #         result.ranking_exec_summary = []
+        #     result.ranking_exec_summary.append(ranking_exec_info)
+        return results
+
+
+    # def _replace_number(self, s: str, use_alpha) -> str:
+    #     if use_alpha:
+    #         return re.sub(r"\[([A-z]+)\]", r"(\1)", s)
+    #     else:
+    #         return re.sub(r"\[(\d+)\]", r"(\1)", s)
 
     # def run_llm_batched(
     #     self,
@@ -199,8 +192,3 @@ class SlidingWindow:
     #         #     for output in outputs
     #         # ]
 
-    def _replace_number(self, s: str, use_alpha) -> str:
-        if use_alpha:
-            return re.sub(r"\[([A-z]+)\]", r"(\1)", s)
-        else:
-            return re.sub(r"\[(\d+)\]", r"(\1)", s)

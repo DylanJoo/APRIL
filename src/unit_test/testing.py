@@ -93,8 +93,8 @@ example_result = get_eaxmple_result()
 # print([h['docid'] for h in outputs[1].hits])
 
 ## --- Unit testing for the reranking wrapper --- 
-from reranking.input_batcher.sliding_window import SlidingWindow
-rankllm = SlidingWindow(
+from reranking.input_assembler import BubbleSort
+rankllm = BubbleSort(
     model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
     rerank_mode=RerankMode.RANK_GPT,
     include_system_message=True,

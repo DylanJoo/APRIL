@@ -42,7 +42,7 @@ src/
 0. RankingWrapper
 A wrapper class that defines the reranking types for class factory, which can integrates all the following 4 components.
 
-1. InputBatcher (rename? scheduler? handler? ...)
+1. InputAssebler (rename? scheduler? handler? ...)
 - Input: query and results
 - Output: list of query-documents pairs
 
