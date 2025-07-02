@@ -92,9 +92,28 @@ example_result = get_eaxmple_result()
 # print([h['docid'] for h in outputs[0].hits])
 # print([h['docid'] for h in outputs[1].hits])
 
+## --- Unit testing for the input_assembler --- 
+# from reranking.input_assembler import BubbleSort
+# assembler = BubbleSort(
+#     model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
+#     rerank_mode=RerankMode.RANK_GPT,
+#     include_system_message=True,
+#     system_message="You are a helpful assistant.",
+#     context_size=4096,
+#     window_size=20,
+#     step_size=10,
+#     backend='litellm',  # 'vllm' or 'litellm'
+# )
+# reranked_results = assembler.run(
+#     retrieved_results=example_result,
+#     rank_start=0,
+#     rank_end=20
+# )
+# print(reranked_results)
+
 ## --- Unit testing for the reranking wrapper --- 
-from reranking.input_assembler import BubbleSort
-rankllm = BubbleSort(
+from reranking.wrapper import ModularReranker
+rankllm = ModularReranker(
     model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
     rerank_mode=RerankMode.RANK_GPT,
     include_system_message=True,

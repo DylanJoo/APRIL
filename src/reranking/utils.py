@@ -17,16 +17,31 @@ class Result:
     def __repr__(self):
         return str(self.__dict__)
 
-    # @staticmethod
-    # def covert_to_trec_run(
-    #     results: List[Result], 
-    #     file_path: str = 'temp.run'
-    # ) -> str:
-    #     trec_run = ""
-    #     for result in results:
-    #         for i, hit in enumerate(result.hits):
-    #             trec_run += f"{result.qid} Q0 {hit['docid']} {i+1} {hit['score']} reranking\n"
-    #     return trec_run
+    # @classmethod
+    # def from_string(cls, line: str):
+    #     """ the string line of trec run file """
+    #     parts = line.strip().split()
+    #     qid = parts[0]
+    #     query = parts[1]
+    #     hits = []
+    #     return cls(qid=qid, query=query, hits=hits)
+
+    # run_dict = defaultdict(list)
+    # with open(path, 'r') as f:
+    #     for line in f:
+    #         qid, _, docid, rank, score, _ = line.strip().split()
+    #         if int(rank) <= (topk or 9999):
+    #             run_dict[str(qid)] += [(docid, float(rank), float(score))]
+    #
+    # # sort by score and return static dictionary
+    # sorted_run_dict = OrderedDict()
+    # for qid, docid_ranks in run_dict.items():
+    #     sorted_docid_ranks = sorted(docid_ranks, key=lambda x: x[1], reverse=False) 
+    #     if output_score:
+    #         sorted_run_dict[qid] = {docid: rel_score for docid, rel_rank, rel_score in sorted_docid_ranks}
+    #     else:
+    #         sorted_run_dict[qid] = [docid for docid, _, _ in sorted_docid_ranks]
+    # return sorted_run_dict
 
 class RankingExecInfo:
     def __init__(

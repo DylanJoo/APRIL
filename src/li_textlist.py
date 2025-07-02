@@ -7,20 +7,6 @@ from reranking
 
 from rankllm import RankListwiseLLM
 
-# def convert_run_to_result(
-#     run,
-#     queries=None,
-#     corpus=None
-# ):
-#     results = []
-#     for qid, hits in run.items():
-#         query = queries[qid]
-#         pairs = []
-#         for docid, score in hits.items():
-#             pairs.append({'docid': docid, 'score': float(score), 'content': corpus[docid]['contents']})
-#         results.append(Result(qid=qid, query=query, hits=pairs))
-#     return results
-#
 # def rerank(
 #     model, 
 #     run, queries, corpus,
