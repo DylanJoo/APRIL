@@ -15,6 +15,8 @@ src/
 ├── examples/
 │ └── exploration.ipynb
 │ 
+├── config_manager.py (see default_config.yaml)
+│ 
 ├── reranking/result_parser
 │ ├── base.py (abstract class)
 │ └── _rank_gpt.py

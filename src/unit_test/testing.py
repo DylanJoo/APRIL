@@ -105,27 +105,34 @@ example_result = get_eaxmple_result()
 #     backend='litellm',  # 'vllm' or 'litellm'
 # )
 # reranked_results = assembler.run(
-#     retrieved_results=example_result,
+#     init_results=example_result,
 #     rank_start=0,
 #     rank_end=20
 # )
 # print(reranked_results)
 
 ## --- Unit testing for the reranking wrapper --- 
-from reranking.wrapper import ModularReranker
-rankllm = ModularReranker(
-    model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
-    rerank_mode=RerankMode.RANK_GPT,
-    include_system_message=True,
-    system_message="You are a helpful assistant.",
-    context_size=4096,
-    window_size=20,
-    step_size=10,
-    backend='litellm',  # 'vllm' or 'litellm'
-)
-reranked_results = rankllm.run(
-    retrieved_results=example_result,
-    rank_start=0,
-    rank_end=20
-)
-print(reranked_results)
+# from reranking.wrapper import ModularReranker
+# config = {
+#         'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct',
+#         'rerank_mode': RerankMode.RANK_GPT,
+#         'include_system_message': True,
+#         'system_message': "You are a helpful assistant.",
+#         'context_size': 4096,
+#         'window_size': 20,
+#         'step_size': 10,
+#         'backend': 'litellm',  # 'vllm' or 'litellm'
+# }
+#
+# rankllm = ModularReranker(
+#     model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
+#     rerank_mode=RerankMode.RANK_GPT,
+#     include_system_message=True,
+#     system_message="You are a helpful assistant.",
+#     context_size=4096,
+#     window_size=20,
+#     step_size=10,
+#     backend='litellm',  # 'vllm' or 'litellm'
+# )
+# reranked_results = rankllm.rerank()
+# print(reranked_results)

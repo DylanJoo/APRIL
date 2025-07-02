@@ -78,19 +78,19 @@ class BubbleSort:
 
     def run(
         self,
-        retrieved_results: List[Result],
+        init_results: List[Result],
         rank_start: int,
         rank_end: int,
         logging: bool = False,
     ) -> List[Result]:
         r"""Given a list of result files, return a list of reranked results.
         Args:
-            retrieved_results (List[Result]): The list of result objects to process.
+            init_results (List[Result]): The list of result objects to process.
             rank_start (int): The start index for ranking.
             rank_end (int): The end index for ranking.
             logging (bool, optional): Flag to enable logging of operations. Defaults to False.
         """
-        rerank_results = [copy.deepcopy(result) for result in retrieved_results]
+        rerank_results = [copy.deepcopy(result) for result in init_results]
 
         end_pos = rank_end
         start_pos = rank_end - self._window_size
@@ -144,51 +144,3 @@ class BubbleSort:
         #         result.ranking_exec_summary = []
         #     result.ranking_exec_summary.append(ranking_exec_info)
         return results
-
-
-    # def _replace_number(self, s: str, use_alpha) -> str:
-    #     if use_alpha:
-    #         return re.sub(r"\[([A-z]+)\]", r"(\1)", s)
-    #     else:
-    #         return re.sub(r"\[(\d+)\]", r"(\1)", s)
-
-    # def run_llm_batched(
-    #     self,
-    #     prompt_texts: List[Union[str, List[Dict[str, str]]]],
-    #     current_window_size: Optional[int] = None,
-    #     use_logits: bool = False,
-    # ) -> List[Tuple[str, int]]:
-    #     """Run batched inference with appropriate restrictions for code vs text reranking
-    #         [prompt for prompt, _ in prompts], 
-    #         use_logits=use_logits
-    #         current_window_size=rank_end - rank_start
-    #
-    #     params = SamplingParams(
-    #         min_tokens=min_new_tokens,
-    #         max_tokens=max_new_tokens, 
-    #         temperature=temp,
-    #         logprobs=30,
-    #     )
-    #     """
-    #     temp = 0.
-    #     if current_window_size is None:
-    #         current_window_size = self._window_size
-    #
-    #     # [NOTE] Stream like the arugment calls
-    #     if use_logits:
-    #         max_new_tokens = 2
-    #         min_new_tokens = 2
-    #         assert current_window_size <= 9, "using logits with numerical ordering can only supports window size <= 9"
-    #         params = None
-    #         outputs = self._llm.generate(prompt_texts, prob=True)
-    #         arr = [self._get_logits_single_digit_batched(output, use_alpha=use_alpha) for output in outputs]
-    #         return [(s, len(s)) for s, __ in arr]
-    #     else:
-    #         params = None
-    #         outputs = self._llm.generate(prompt_texts , prob=False)
-    #         return [(output, 0) for output in outputs]
-    #         # return [
-    #         #     (output.outputs[0].text, len(output.outputs[0].token_ids))
-    #         #     for output in outputs
-    #         # ]
-

@@ -1,0 +1,25 @@
+# default_config.yaml
+data:
+  dataset_path: ./data/train.jsonl
+  max_samples: 10000
+  shuffle: true
+
+model:
+  name: bert-base-uncased
+  max_length: 512
+  use_fp16: false
+
+output:
+  save_path: ./checkpoints/model.pt
+
+logging:
+  log_dir: ./logs
+  level: info
+  save_every: 100
+
+# training:
+#   learning_rate: 0.001
+#   batch_size: 32
+#   epochs: 5
+#   optimizer: adamw
+
