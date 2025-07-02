@@ -5,7 +5,7 @@ from typing import Any, Dict
 from pprint import pprint
 
 class ConfigManager:
-    def __init__(self, default_config_path: str):
+    def __init__(self, default_config_path: str = 'reranking/configs/default_config.yaml'):
         self.config = self.load_yaml(default_config_path)
         self.parse_and_override()
 
@@ -56,7 +56,6 @@ class ConfigManager:
             else: 
                 base[key] = value
 
-
     def _infer_type(self, value: str) -> Any:
         if value.lower() in {"true", "false"}:
             print(f"Converting '{value}' to boolean")
@@ -70,5 +69,16 @@ class ConfigManager:
         except ValueError:
             return value
 
-    def get_config(self) -> Dict[str, Any]:
-        return self.config
+    def get_config(self, return_dict=False) -> Dict[str, Any]:
+        if return_dict:
+            return self.config
+
+        def dict_to_namespace(d):
+            namespace = argparse.Namespace()
+            for key, value in d.items():
+                if isinstance(value, dict):
+                    setattr(namespace, key, dict_to_namespace(value))
+                else:
+                    setattr(namespace, key, value)
+            return namespace
+        return dict_to_namespace(self.config)

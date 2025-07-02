@@ -1,25 +1,17 @@
 # default_config.yaml
 data:
-  dataset_path: ./data/train.jsonl
-  max_samples: 10000
-  shuffle: true
+  ir_dataset_name: msmarco-passage/trec-dl-2019/judged
+  input_run: ../../runs/run.msmarco-v1-passage.bm25-trec-dl-2019.txt
 
 model:
-  name: bert-base-uncased
-  max_length: 512
-  use_fp16: false
+  model_name_or_path: Qwen/Qwen2.5-7B-Instruct
+  max_length: 4096
+  use_logits: false
+  use_alpha: false
 
 output:
+  output_run: ../../runs/temp.txt
   save_path: ./checkpoints/model.pt
 
 logging:
   log_dir: ./logs
-  level: info
-  save_every: 100
-
-# training:
-#   learning_rate: 0.001
-#   batch_size: 32
-#   epochs: 5
-#   optimizer: adamw
-

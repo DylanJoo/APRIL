@@ -1,3 +1,5 @@
+from pprint import pprint
+
 # -------Testin llm provider -------
 # from reranking.llm_provider.vllm_api import LLM
 # llm = LLM(model='Qwen/Qwen3-1.7B', temperature=0.0, top_p=1.0, logprobs=20, max_tokens=1)
@@ -112,27 +114,11 @@ example_result = get_eaxmple_result()
 # print(reranked_results)
 
 ## --- Unit testing for the reranking wrapper --- 
-# from reranking.wrapper import ModularReranker
-# config = {
-#         'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct',
-#         'rerank_mode': RerankMode.RANK_GPT,
-#         'include_system_message': True,
-#         'system_message': "You are a helpful assistant.",
-#         'context_size': 4096,
-#         'window_size': 20,
-#         'step_size': 10,
-#         'backend': 'litellm',  # 'vllm' or 'litellm'
-# }
-#
-# rankllm = ModularReranker(
-#     model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
-#     rerank_mode=RerankMode.RANK_GPT,
-#     include_system_message=True,
-#     system_message="You are a helpful assistant.",
-#     context_size=4096,
-#     window_size=20,
-#     step_size=10,
-#     backend='litellm',  # 'vllm' or 'litellm'
-# )
-# reranked_results = rankllm.rerank()
-# print(reranked_results)
+from reranking.config_manager import ConfigManager
+config = ConfigManager('reranking/configs/rankgpt_config.yaml').get_config()
+pprint(config)
+
+from reranking.wrapper import ModularReranker
+rankllm = ModularReranker(config)
+reranked_results = rankllm.rerank()
+print(reranked_results)

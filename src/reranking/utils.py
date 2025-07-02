@@ -44,9 +44,7 @@ class Result:
     # return sorted_run_dict
 
 class RankingExecInfo:
-    def __init__(
-        self, prompt, response: str, input_token_count: int, output_token_count: int
-    ):
+    def __init__(self, prompt, response: str, input_token_count: int, output_token_count: int):
         self.prompt = prompt
         self.response = response
         self.input_token_count = input_token_count
@@ -56,35 +54,21 @@ class RankingExecInfo:
         return str(self.__dict__)
 
 class RerankMode(Enum):
-    RANK_GPT = "rank_GPT"
+    RANK_GPT = "RankGPT"
     LRL = "LRL"
     APRIL = "APRIL"
 
     @property
     def prompt_builder_name(self):
-        return {
-            RerankMode.RANK_GPT: "listwise",
-            RerankMode.LRL: "listwise",
-            RerankMode.APRIL: "listwise"
-        }[self]
+        return {"RankGPT": "listwise", "LRL": "listwise", "APRIL": "listwise"}[self.value]
 
     @property
     def use_logits(self):
-        return {
-            RerankMode.RANK_GPT: False,
-            RerankMode.LRL: False,
-            RerankMode.APRIL: True
-        }[self]
+        return {"RankGPT": False, "LRL": False, "APRIL": True}[self.value]
 
     @property
     def result_parser_name(self):
-        return {
-            RerankMode.RANK_GPT: "text_list",
-            RerankMode.LRL: "prob_list",
-            RerankMode.APRIL: "prob_list"
-        }[self]
+        return {"RankGPT": "text_list", "LRL": "prob_list", "APRIL": "prob_list"}[self.value]
 
     def __str__(self):
         return f"[{self.value}]: (prompt_builder_name: {self.prompt_builder_name}) | (result_parser_name: {self.result_parser_name})"
-    #     return self.value
-

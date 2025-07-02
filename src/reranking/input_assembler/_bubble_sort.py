@@ -4,6 +4,9 @@ e.g., bubble sort with sliding window or sth else
 
 `run_pass()` is the main function to run a single pass of reranking.
 `run()` is the main function to run the entire reranking process.
+
+[NOTE] argument setting
+Add some method-specific configs to config files (instead of the rerankmode)
 """
 import copy
 import random
@@ -24,39 +27,23 @@ ALPH_START_IDX = ord('A')-1
 class BubbleSort:
 
     def __init__(
-        self,
-        model_name_or_path: str,
-        rerank_mode: RerankMode = RerankMode.RANK_GPT,
-        include_system_message: bool = False,
-        system_message: str = None,
-        context_size: int = 4096,
-        window_size: int = 20,
-        step_size: int = 10,
-        batched: bool = False,
-        backend: str = 'vllm',
-    ) -> None:
-
-        self._model_name_or_path = model_name_or_path
-        self._rerank_mode = rerank_mode
-
-        print(f"[Model] {model_name_or_path}") 
+        self, 
+        config, 
+        formatter: PromptBuilder,
+        llm_provider: Any, # revise this into a module
+        processor: ResultParser,
+    ):
+        print(f"[Model] {config.model_name_or_path}") 
         print(f"{rerank_mode}")
-
-        ## [Module] Formatting the prompt
-        self.formatter = PromptBuilder(
-            model_name_or_path=model_name_or_path,
-            rerank_mode=rerank_mode,
-            include_system_message=include_system_message,
-            system_message=system_message,
-            variable_passages=False,
-            use_alpha=False,  # default to False for numerical ordering
-        )
+        self._model_name_or_path = config.model.model_name_or_path
+        self._rerank_mode = rerank_mode
 
         ## [Module] Write a provider module to handle differnet backends
         if backend == 'vllm':
             from reranking.llm_provider.vllm_api import LLM
         if backend == 'litellm':
             from reranking.llm_provider.litellm_api import LLM
+            from reranking.llm_provider.vllm_api import LLM
         self._llm = LLM(
             model_name_or_path=model_name_or_path,
             temperature=0.0, top_p=1.0, 
@@ -67,13 +54,25 @@ class BubbleSort:
         # false_list = [' No', 'No', ' no', 'no', 'NO', ' NO']
         # self._llm.set_classification(true_list, false_list)
 
-        ## [Module] Formatting the prompt
-        self.processor = ResultParser(rerank_mode=rerank_mode)
+        # from reranking.llm_provider.vllm_api import LLM
+        # self._llm = LLM(
+        #     model_name_or_path=model_name_or_path,
+        #     temperature=0.0, top_p=1.0, 
+        #     logprobs=None if rerank_mode == RerankMode.RANK_GPT else 30,
+        #     max_tokens=100 if rerank_mode == RerankMode.RANK_GPT else 2,
+        # )
+        # self.formatter = PromptBuilder(
+        #     model_name_or_path=config.model_name_or_path,
+        #     rerank_mode=rerank_mode,
+        #     include_system_message=include_system_message,
+        #     system_message=system_message,
+        # )
+        # self.processor = ResultParser(rerank_mode=rerank_mode)
 
         ## [Attibutes]
         # self._context_size = context_size
-        self._window_size = window_size
-        self._step_size = step_size
+        # self._window_size = window_size
+        # self._step_size = step_size
         # self._batched = batched
 
     def run(

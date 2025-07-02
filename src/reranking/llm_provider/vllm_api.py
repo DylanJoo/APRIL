@@ -45,7 +45,7 @@ class LLM:
         self.yes_tokens = None
         self.no_tokens = None
         if logprobs:
-            self.tokenizer = AutoTokenizer.from_pretrained(model)
+            self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
 
     def set_classification(
         self, 

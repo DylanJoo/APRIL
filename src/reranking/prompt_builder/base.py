@@ -11,8 +11,7 @@ class PromptBuilder:
         self, 
         model_name_or_path: str,
         rerank_mode: RerankMode = RerankMode.RANK_GPT,
-        num_few_shot_examples: int = 0,
-        include_system_message: bool = True,
+        include_system_message: Optional[bool] = None,
         system_message: Optional[str] = None,
         **kwargs
     ):
@@ -20,7 +19,7 @@ class PromptBuilder:
         self.formatter = self._get_formatter(rerank_mode, **kwargs)
         self._tokenizer = AutoTokenizer.from_pretrained(model_name_or_path) if model_name_or_path else None
         self.system_message_supported = "system" in self._tokenizer.chat_template
-        self.system_message = system_message if include_system_message else None
+        self.system_message = system_message
 
     def get_num_tokens(self, prompt: str) -> int:
         if self._tokenizer is None: # switch to use the word tokenizer
