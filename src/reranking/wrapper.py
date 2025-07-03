@@ -10,6 +10,7 @@ from reranking.config_manager import ConfigManager
 from reranking.input_assembler import BubbleSort
 from reranking.prompt_builder import PromptBuilder
 from reranking.llm_provider.vllm_api import LLM
+# from reranking.llm_provider.vllm_back import LLM
 from reranking.result_parser import ResultParser
 
 class ModularReranker:
@@ -32,14 +33,15 @@ class ModularReranker:
             include_system_message=include_system_message,
             system_message=system_message,
             use_alpha=False, 
-            variable_passages=False,
+            variable_passages=True,
         )
         agent = LLM( 
             model_name_or_path=config.llm.model_name_or_path,
             temperature=config.llm.temperature,
             top_p=config.llm.top_p,
             logprobs=30 if rerank_mode.use_logits else None,
-            max_tokens=100 if 'list' in rerank_mode.result_parser_name else 10
+            max_tokens=100 if 'list' in rerank_mode.result_parser_name else 10,
+            max_model_len=32768
         )
         if rerank_mode.use_logits:
             agent.set_classification()

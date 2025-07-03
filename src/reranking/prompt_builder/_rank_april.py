@@ -48,12 +48,12 @@ class RankGPTFormatter:
         return (
             f"I will provide you with {len(doc_list)} passages, "
             f"each indicated by a {self.id_type} identifier []. "
-            f"Rank the passages based on their relevance to the search query: {query}.\n"
+            f"Rank the passages based on their relevance to the search query: {query}.\n\n"
         )
 
     def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:
         return (
-            f"Search Query: {kwargs.get('query', '')}.\n"
+            f"Search Query: {query}.\n"
             f"Rank the {len(doc_list)} passages above based on their relevance to the search query. "
             f"All the passages should be included and listed using identifiers, "
             f"in descending order of relevance. The output format should be [] > [], "

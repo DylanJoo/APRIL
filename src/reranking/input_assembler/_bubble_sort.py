@@ -85,8 +85,6 @@ class BubbleSort:
         ## Create prompts for each result in the batch
         ## [TODO] maybe we need to set the batch size if one query requires huge amount of prompts/inference. 
         prompts = self._prompt_builder.create_prompt_batched(results, rank_start, rank_end)
-        with open('/home/hltcoe/jhueiju/APRIL/prompt.json', 'w') as f:
-            json.dump(prompts, f, indent=4)
 
         # [NOTE] window size for using logits might have limited to 9, this is not used for now
         # [NOTE] return input length?

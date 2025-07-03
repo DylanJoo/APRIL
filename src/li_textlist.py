@@ -7,6 +7,7 @@ home_dir=str(Path.home())
 # Load configuration 
 from reranking.config_manager import ConfigManager
 config = ConfigManager('reranking/configs/rankgpt_config.yaml').get_config()
+# config.data.ir_datasets_name = 'msmarco-passage/trec-dl-2020/judged'
 
 # Prepare data (inout and output)
 os.makedirs(f"{home_dir}/APRIL/pa_reranked_runs", exist_ok=True)
@@ -35,6 +36,7 @@ for dataset in ['trec-dl-2019']:
         query_fields=['text'], 
         doc_fields=['text']
     )
+    run = {qid: hit for qid, hit in run.items() if qid in qrels} # filter
 
     reranked_run = rankllm.rerank(
         run=run,

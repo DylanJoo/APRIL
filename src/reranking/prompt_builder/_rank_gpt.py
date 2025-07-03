@@ -13,7 +13,7 @@ class RankGPTFormatter:
     def __init__(
         self, 
         use_alpha=False, 
-        variable_passages=True,
+        variable_passages=False,
     ):
         self._use_alpha = use_alpha
         self._variable_passages = variable_passages 
@@ -31,12 +31,10 @@ class RankGPTFormatter:
     def _document_format(self, doc: Union[str, Dict]) -> str:
         """{"doc_id": "doc1", "contents": "this is the body", "title":" this is title"}"""
         if isinstance(doc, dict):
-            title = doc.get('title', "").strip()
+            title = doc.get('title', False)
             if 'contents' in doc:
-                if title == "":
-                    text = doc['contents'].strip()
-                else:
-                    text = f"Title (teeting): {title} Content: {doc['contents'].strip()}"
+                text = doc['contents'].strip()
+                text = f"Title: {title} Content: {text}" if title else text
             else:
                 raise ValueError("Incorrect document dictionary format. Expected keys: 'title', 'contents'.")
         elif isinstance(doc, str):
@@ -50,12 +48,12 @@ class RankGPTFormatter:
         return (
             f"I will provide you with {len(doc_list)} passages, "
             f"each indicated by a {self.id_type} identifier []. "
-            f"Rank the passages based on their relevance to the search query: {query}.\n"
+            f"Rank the passages based on their relevance to the search query: {query}.\n\n"
         )
 
     def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:
         return (
-            f"Search Query: {kwargs.get('query', '')}.\n"
+            f"Search Query: {query}.\n"
             f"Rank the {len(doc_list)} passages above based on their relevance to the search query. "
             f"All the passages should be included and listed using identifiers, "
             f"in descending order of relevance. The output format should be [] > [], "
