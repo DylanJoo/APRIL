@@ -1,5 +1,5 @@
 data:
-  ir_dataset_name: msmarco-passage/trec-dl-2019/judged
+  ir_datasets_name: msmarco-passage/trec-dl-2019/judged
   input_run: ../../runs/run.msmarco-v1-passage.bm25-trec-dl-2019.txt
 
 llm:
@@ -9,8 +9,9 @@ llm:
   backend: vllm
 
 rerank_mode: RankGPT # Options: RankGPT, LRL, APRIL
-max_length: 4096
-context_size: 1024
+top_k: 100 
+max_length: 10240
+context_size: 2048
 window_size: 20
 step_size: 10
 

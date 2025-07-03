@@ -36,8 +36,9 @@ class LLM:
         self.sampling_params = SamplingParams(
             temperature=temperature, 
             top_p=top_p,
+            logprobs=logprobs,
             skip_special_tokens=False,
-            logprobs=logprobs
+            max_tokens=max_tokens,
         )
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)

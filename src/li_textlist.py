@@ -1,64 +1,65 @@
 import os
-import logging
-import json
-import math
+from pathlib import Path
+import loader
+from pprint import pprint
+home_dir=str(Path.home())
 
-from reranking
+# Load configuration 
+from reranking.config_manager import ConfigManager
+config = ConfigManager('reranking/configs/rankgpt_config.yaml').get_config()
 
-from rankllm import RankListwiseLLM
+# Prepare data (inout and output)
+os.makedirs(f"{home_dir}/APRIL/pa_reranked_runs", exist_ok=True)
+model_name_or_path='Qwen/Qwen2.5-7B-Instruct'
 
-# def rerank(
-#     model, 
-#     run, queries, corpus,
-#     use_logits, use_alpha, 
-#     variable_passages,
-#     top_k, 
-#     window_size, 
-#     step_size, 
-#     batched, 
-#     context_size, 
-#     rerank_type="text", 
-#     code_prompt_type="docstring"
-# ):
-#     system_message = "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
-#
-#     results_for_rerank = convert_run_to_result(run, queries, corpus)
-#
-#     # Initialize the ranking model
-#     agent = RankListwiseOSLLM(
-#         model=model,
-#         context_size=context_size,
-#         prompt_mode=PromptMode.RANK_GPT,
-#         num_few_shot_examples=0,
-#         device="cuda",
-#         num_gpus=1,
-#         variable_passages=variable_passages,
-#         window_size=window_size,
-#         system_message=system_message,
-#         batched=batched,
-#         rerank_type=rerank_type,
-#         code_prompt_type=code_prompt_type
-#     )
-#
-#     # Perform reranking
-#     reranker = Reranker(agent=agent)
-#     reranked_results = reranker.rerank(
-#         retrieved_results=results_for_rerank,
-#         use_logits=use_logits,
-#         use_alpha=use_alpha,
-#         rank_start=0,
-#         rank_end=top_k,
-#         window_size=window_size,
-#         step=step_size,
-#         logging=False,
-#         batched=batched
-#     )
-#
-#     reranked_run = {}
-#     for result in reranked_results:
-#         reranked_run[result.qid] = {}
-#         for rank, hit in enumerate(result.hits, start=1):
-#             hit['rank'] = rank
-#             reranked_run[result.qid].update({ hit['docid']: hit['score'] })
-#
-#     return reranked_run
+# Prepare reranker
+from reranking.wrapper import ModularReranker
+rankllm = ModularReranker(
+    config, 
+    system_message= "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
+)
+
+
+# start reranking
+import ir_measures
+from ir_measures import *
+
+results = {}
+for dataset in ['trec-dl-2019']:
+    results[dataset] = {}
+
+    run_path = f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"
+    run = loader.load_run(run_path)
+    corpus, queries, qrels = loader.load(
+        config.data.ir_datasets_name, 
+        query_fields=['text'], 
+        doc_fields=['text']
+    )
+
+    reranked_run = rankllm.rerank(
+        run=run,
+        queries=queries,
+        corpus=corpus,
+        query_batch_size=64
+    )
+
+    # prepare output run
+    with open(run_path.replace('runs', 'li_reranked_runs'), 'w') as f:
+        for qid in reranked_run:
+            for i, (docid, score) in enumerate(reranked_run[qid].items()):
+                f.write(f"{qid} Q0 {docid} {i+1} {score} li_rerank\n")
+
+    # evaluation
+    r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)
+    r2 = ir_measures.calc_aggregate([nDCG@10], qrels, reranked_run)
+
+    eval_log = {
+        'model_name_or_path': config.llm.model_name_or_path, 
+        'ir_datasets_name': config.data.ir_datasets_name,
+        'run_path': config.data.input_run,
+        'original': r1, 
+        'reranked': r2
+    }
+    results[dataset] = eval_log
+    pprint(eval_log)
+

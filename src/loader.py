@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import ir_datasets
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from typing import Optional 
 
 logger = logging.getLogger(__name__)
@@ -46,11 +46,6 @@ def load(
     logger.info("Qrel Example: %s (%s)", n, list(qrels.values())[0])
 
     return corpus, queries, qrels
-
-def load_trec_run(path, topk=None):
-    run = load_run(path, topk)
-
-    return sorted_run_dict
 
 # [deprecated] will use the function above instead
 def load_run(path, topk=None):

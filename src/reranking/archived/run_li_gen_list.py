@@ -40,7 +40,7 @@ def main(
         rerank_type="text", 
     )
 
-    with open(run_path.replace('runs', 'li_reranked_runs'), 'w') as f:
+   with open(run_path.replace('runs', 'li_reranked_runs'), 'w') as f:
         for qid in reranked_run:
             for i, (docid, score) in enumerate(reranked_run[qid].items()):
                 f.write(f"{qid} Q0 {docid} {i+1} {score} li_rerank\n")

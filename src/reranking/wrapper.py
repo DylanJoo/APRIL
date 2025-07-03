@@ -1,10 +1,13 @@
+""" # [NOTE] Change the llm provider codes """
 from typing import Optional, Tuple, List, Dict, Union, Any
 from pprint import pprint
-
+from tqdm import tqdm
 from reranking.utils import RerankMode, Result
+from reranking.utils import batch_iterator
 from reranking.config_manager import ConfigManager
-from reranking.input_assembler import BubbleSort
 
+# submodules
+from reranking.input_assembler import BubbleSort
 from reranking.prompt_builder import PromptBuilder
 from reranking.llm_provider.vllm_api import LLM
 from reranking.result_parser import ResultParser
@@ -23,48 +26,42 @@ class ModularReranker:
         print(f"{rerank_mode}")
 
         # initlaize instances 
-        formatter = PromptBuilder(
-            model_name_or_path=config.llm.model_name_or_path,
+        prompt_builder = PromptBuilder(
+            config.llm.model_name_or_path, 
             rerank_mode=rerank_mode,
             include_system_message=include_system_message,
             system_message=system_message,
         )
-        llm = LLM( # [NOTE] assume the backend is vllm, change it later
+        agent = LLM( 
             model_name_or_path=config.llm.model_name_or_path,
             temperature=config.llm.temperature,
             top_p=config.llm.top_p,
-            logprobs=None if config.rerank_mode == RerankMode.RANK_GPT else 30,
-            max_tokens=100 if config.rerank_mode == RerankMode.RANK_GPT else 2,
+            logprobs=30 if rerank_mode.use_logits else None,
+            max_tokens=100 if 'list' in rerank_mode.result_parser_name else 10
         )
-        llm.set_classification()
+        if rerank_mode.use_logits:
+            agent.set_classification()
 
-        processor = ResultParser(
-            rerank_mode=RerankMode(config.rerank_mode),
-            formatter=formatter,
-        )
+        result_parser = ResultParser(rerank_mode)
 
+        # initialize the algorithm module
         self.assembler = BubbleSort(
             config=config, 
-            formatter=formatter,
-            llm_provider=llm,
-            processor=processor,
+            rerank_mode=rerank_mode,
+            prompt_builder=prompt_builder,
+            llm_provider=agent,
+            result_parser=result_parser,
         )
-
-        ## [Attibutes]
-        # self._context_size = context_size
-        # self._window_size = window_size
-        # self._step_size = step_size
-        # self._batched = batched
 
     @staticmethod
     def convert_run_to_result(run, queries=None, corpus=None):
         results = []
         for qid, hits in run.items():
             query = queries[qid]
-            hits = []
+            hit_docs = []
             for docid, score in hits.items():
-                hits.append({'docid': docid, 'score': float(score), 'content': corpus[docid]['contents']})
-            results.append(Result(qid=qid, query=query, hits=hits))
+                hit_docs.append({'docid': docid, 'score': float(score), 'content': corpus[docid]})
+            results.append(Result(qid=qid, query=query, hits=hit_docs))
         return results
 
     def rerank(
@@ -72,30 +69,32 @@ class ModularReranker:
         run: Dict[str, Dict[str, float]],
         queries: Dict[str, str],
         corpus: Dict[str, Dict[str, str]],
-        batch_size: int = 64,
+        query_batch_size: int = 16,
     ) -> Dict[str, Dict[str, float]]:
         """
         Args
             run (Dict[str, Dict[str, float]]): The initial run to be reranked.
             queries: (Dict[str, str]): A dictionary mapping query IDs to query strings.
             corpus (Dict[str, Dict[str, str]]): A dictionary mapping document IDs to their content and title (if applicable).
+            batch_size (int): The number of query (with their results) to process in each batch.
         """
         init_results = self.convert_run_to_result(run, queries, corpus)
 
-        reranked_results = self.assembler.run(
-            retrieved_run=init_results,
-            batch_size=batch_size,
-        )
-        return 0
+        reranked_results = []
+        for batch_results in tqdm(batch_iterator(init_results, size=query_batch_size), desc="Batch reranking"):
+            batch_reranked_results = self.assembler.run(
+                init_results=batch_results, 
+                rank_start=0,
+                rank_end=100,
+            )
+            reranked_results.extend(batch_reranked_results)
 
-if __name__ == '__main__':
-    config = ConfigManager().get_config()
+        # covert back to run
+        reranked_run = {}
+        for result in reranked_results:
+            reranked_run[result.qid] = {}
+            for rank, hit in enumerate(result.hits, start=1):
+                hit['rank'] = rank
+                reranked_run[result.qid].update({ hit['docid']: 1/rank })
 
-    # data loading
-    modurlar_reranker = ModularReranker(config=config)
-    modular_reranker.rerank(
-        run={},
-        queries={},
-        corpus={},
-        batch_size=64
-    )
+        return reranked_run

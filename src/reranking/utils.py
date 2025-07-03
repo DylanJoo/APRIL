@@ -68,7 +68,16 @@ class RerankMode(Enum):
 
     @property
     def result_parser_name(self):
-        return {"RankGPT": "text_list", "LRL": "prob_list", "APRIL": "prob_list"}[self.value]
+        return {"RankGPT": "text_list", "LRL": "text_list", "APRIL": "probs"}[self.value]
 
     def __str__(self):
         return f"[{self.value}]: (prompt_builder_name: {self.prompt_builder_name}) | (result_parser_name: {self.result_parser_name})"
+
+def batch_iterator(iterable, size=1, return_index=False):
+    l = len(iterable)
+    for ndx in range(0, l, size):
+        if return_index:
+            yield (ndx, min(ndx + size, l))
+        else:
+            yield iterable[ndx:min(ndx + size, l)]
+

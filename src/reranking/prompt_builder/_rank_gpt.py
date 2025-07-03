@@ -25,7 +25,7 @@ class RankGPTFormatter:
             self.id_type = "numerical"
             self.example_ordering = "[2] > [1]" if not variable_passages else "[4] > [2]"
 
-        self.max_doc_lenth = 1024
+        self.max_doc_length = 1024
 
     def _document_format(self, doc: Union[Dict, str]) -> str:
         if isinstance(doc, dict):
@@ -38,7 +38,7 @@ class RankGPTFormatter:
         else:
             raise ValueError("Document must be a string or a dictionary with 'content' key.")
 
-        return " ".join(content.split()[:self.max_doc_lenth])  
+        return " ".join(content.split()[:self.max_doc_length])  
 
     def prefix(self, query: str, doc_list: Optional[List[str]] = None, **kwargs) -> str:
         return (

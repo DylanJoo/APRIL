@@ -119,6 +119,7 @@ config = ConfigManager('reranking/configs/rankgpt_config.yaml').get_config()
 pprint(config)
 
 from reranking.wrapper import ModularReranker
-rankllm = ModularReranker(config)
-reranked_results = rankllm.rerank()
-print(reranked_results)
+rankllm = ModularReranker(
+    config, 
+    system_message= "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
+)
