@@ -13,7 +13,7 @@ class RankGPTFormatter:
     def __init__(
         self, 
         use_alpha=False, 
-        variable_passages=False,
+        variable_passages=True,
     ):
         self._use_alpha = use_alpha
         self._variable_passages = variable_passages 
@@ -31,10 +31,12 @@ class RankGPTFormatter:
     def _document_format(self, doc: Union[str, Dict]) -> str:
         """{"doc_id": "doc1", "contents": "this is the body", "title":" this is title"}"""
         if isinstance(doc, dict):
-            title = doc.get('title', False)
+            title = doc.get('title', "").strip()
             if 'contents' in doc:
-                text = doc['contents'].strip()
-                text = f"Title: {title} Content: {text}" if title else text
+                if title == "":
+                    text = doc['contents'].strip()
+                else:
+                    text = f"Title (teeting): {title} Content: {doc['contents'].strip()}"
             else:
                 raise ValueError("Incorrect document dictionary format. Expected keys: 'title', 'contents'.")
         elif isinstance(doc, str):

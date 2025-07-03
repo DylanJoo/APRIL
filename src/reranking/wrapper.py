@@ -31,6 +31,8 @@ class ModularReranker:
             rerank_mode=rerank_mode,
             include_system_message=include_system_message,
             system_message=system_message,
+            use_alpha=False, 
+            variable_passages=False,
         )
         agent = LLM( 
             model_name_or_path=config.llm.model_name_or_path,
