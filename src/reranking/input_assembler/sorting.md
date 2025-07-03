@@ -1,9 +1,9 @@
 # Sorting algoritms 
 
 
-| Method      | Algorithm        | Prompt Builder   | Result Parser  |
-| ---         | ---              | ---              | ---            |
-| RankGPT     | Bubble Sort      |                  |                |
-| RankZephyr  | Bubble Sort      |                  |                |
-| RankFIRST   | Bubble Sort      |                  |                |
-| APRIL       | Partition Sort   |                  |                |
+| Method      | Type      | Algorithm        | Prompt Builder   | Result Parser  |
+| ---         | ---       | ---              | ---              | ---            |
+| RankGPT     | listwise  | Bubble Sort      |                  |                |
+| RankZephyr  | listwise  | Bubble Sort      |                  |                |
+| RankFIRST   | listwise  | Bubble Sort      |                  |                |
+| APRIL       | listwise  | Partition Sort   |                  |                |
