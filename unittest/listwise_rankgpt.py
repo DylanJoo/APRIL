@@ -41,7 +41,8 @@ for dataset in ['trec-dl-2019']:
     )
 
     # prepare output run
-    with open(run_path.replace('runs', 'li_reranked_runs'), 'w') as f:
+    output_path = run_path.replace('runs', config.rerank_mode)
+    with open(output_path, 'w') as f:
         for qid in reranked_run:
             for i, (docid, score) in enumerate(reranked_run[qid].items()):
                 f.write(f"{qid} Q0 {docid} {i+1} {score} li_rerank\n")
