@@ -3,9 +3,13 @@ import yaml
 import os
 from typing import Any, Dict
 from pprint import pprint
+import importlib.resources as pkg_resources
 
 class ConfigManager:
-    def __init__(self, default_config_path: str = 'reranking/configs/default_config.yaml'):
+    def __init__(
+        self, 
+        default_config_path = pkg_resources.files("reranking.configs").joinpath("default_config.yaml")
+    ):
         self.config = self.load_yaml(default_config_path)
         self.parse_and_override()
 
