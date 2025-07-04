@@ -4,3 +4,9 @@ __pycache__/
 *.swp
 src/pairwise/rank_llm_*/
 *py~
+
+# Python packaging
+*.egg-info/
+*.egg
+dist/
+build/

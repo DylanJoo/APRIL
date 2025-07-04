@@ -1,12 +1,12 @@
 import os
 from pathlib import Path
-import loader
+from reranking import loader
 from pprint import pprint
 home_dir=str(Path.home())
 
 # Load configuration 
 from reranking.config_manager import ConfigManager
-config = ConfigManager('reranking/configs/rankgpt_config.yaml').get_config()
+config = ConfigManager().get_config()
 # config.data.ir_datasets_name = 'msmarco-passage/trec-dl-2020/judged'
 
 # Prepare data (inout and output)
