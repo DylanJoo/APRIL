@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reranking"
+version = "0.1.0"
+description = "A modular reranking library with pluggable LLM, prompt, and parser interfaces."
+authors = [{ name = "Dylan Ju", email = "dylanjootw@gmail.com" }]
+dependencies = []
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
