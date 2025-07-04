@@ -29,12 +29,12 @@ class LLM:
         )
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            'meta-llama/Llama-3.3-70B-Instruct',
+            use_fast=False
+        )
 
         if logprobs:
-            self.tokenizer = AutoTokenizer.from_pretrained(
-                'meta-llama/Llama-3.3-70B-Instruct',
-                use_fast=False
-            )
             self.yes_tokens = None
             self.no_tokens = None
 

@@ -1,3 +1,4 @@
+import re
 from typing import List, Optional, Union, Callable, Dict, Tuple
 
 class RankGPTFormatter:
@@ -14,33 +15,33 @@ class RankGPTFormatter:
         self, 
         use_alpha=False, 
         variable_passages=False,
+        max_doc_length=1024
     ):
         self._use_alpha = use_alpha
         self._variable_passages = variable_passages 
 
         if use_alpha: 
             self.id_type = "alphabetical"
-            self.example_ordering = "[B] > [A]" if not variable_passages else "[D] > [B]"
+            self.example_ordering = "[B] > [A]" if variable_passages else "[D] > [B]"
         else:
             self.id_type = "numerical"
-            self.example_ordering = "[2] > [1]" if not variable_passages else "[4] > [2]"
+            self.example_ordering = "[2] > [1]" if variable_passages else "[4] > [2]"
 
-        self.max_doc_length = 1024
+        self.max_doc_length = max_doc_length
 
     # [TODO] Equalize the max length
     def _document_format(self, doc: Union[str, Dict]) -> str:
-        """{"doc_id": "doc1", "contents": "this is the body", "title":" this is title"}"""
         if isinstance(doc, dict):
             title = doc.get('title', False)
             if 'contents' in doc:
                 text = doc['contents'].strip()
                 text = f"Title: {title} Content: {text}" if title else text
             else:
-                raise ValueError("Incorrect document dictionary format. Expected keys: 'title', 'contents'.")
+                raise ValueError(f"Incorrect document dictionary format. Expected keys: 'title', 'contents': got {doc}")
         elif isinstance(doc, str):
             text = doc.strip()
         else:
-            raise ValueError("Document must be a string or a dictionary with 'content' key.")
+            raise ValueError(f"Document must be a string or a dictionary with 'content' key: got {doc}")
 
         return " ".join(text.split()[:self.max_doc_length])  
 
@@ -66,6 +67,13 @@ class RankGPTFormatter:
         for i, doc in enumerate(doc_list, start=1): # chr(65) is 'A'
             identifier = f"[{chr(64 + i)}]" if self._use_alpha else f"[{i}]"
             doc_text = self._document_format(doc)
-            prompt_body += f"{identifier} {doc_text}\n"
+            prompt_body += f"{identifier} {self.replace_number(doc_text)}\n"
         return prompt_body
+
+    def replace_number(self, text: str) -> str:
+        if self._use_alpha:
+            return re.sub(r"\[([A-z]+)\]", r"(\1)", text)
+        else:
+            return re.sub(r"\[(\d+)\]", r"(\1)", text)
+
 

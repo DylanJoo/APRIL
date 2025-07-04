@@ -11,7 +11,6 @@ config = ConfigManager('reranking/configs/rankgpt_config.yaml').get_config()
 
 # Prepare data (inout and output)
 os.makedirs(f"{home_dir}/APRIL/pa_reranked_runs", exist_ok=True)
-model_name_or_path='Qwen/Qwen2.5-7B-Instruct'
 
 # Prepare reranker
 from reranking.wrapper import ModularReranker
@@ -31,18 +30,14 @@ for dataset in ['trec-dl-2019']:
 
     run_path = f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"
     run = loader.load_run(run_path)
-    corpus, queries, qrels = loader.load(
-        config.data.ir_datasets_name, 
-        query_fields=['text'], 
-        doc_fields=['text']
-    )
+    corpus, queries, qrels = loader.load(config.data.ir_datasets_name, query_fields=None, doc_fields=None)
     run = {qid: hit for qid, hit in run.items() if qid in qrels} # filter
 
     reranked_run = rankllm.rerank(
         run=run,
         queries=queries,
         corpus=corpus,
-        query_batch_size=64
+        query_batch_size=32
     )
 
     # prepare output run

@@ -21,6 +21,7 @@ def load(
     query_fields = ['text'] if query_fields is None else query_fields
     doc_fields = ['text'] if doc_fields is None else doc_fields
 
+    # [TODO] revise this to fit all the document format 
     logger.info("Loading Corpus...")
     for doc in dataset.docs_iter():
         contents = [getattr(doc, f) for f in doc_fields]
@@ -48,7 +49,7 @@ def load(
     return corpus, queries, qrels
 
 # [deprecated] will use the function above instead
-def load_run(path, topk=None):
+def load_run(path, topk=100):
     run_dict = defaultdict(list)
     with open(path, 'r') as f:
         for line in f:

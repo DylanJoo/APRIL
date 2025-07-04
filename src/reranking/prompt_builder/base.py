@@ -3,6 +3,7 @@ from typing import List, Optional, Union, Callable, Dict, Tuple
 from transformers import AutoTokenizer
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
+from ftfy import fix_text
 
 from ..utils import RerankMode, Result
 from ._rank_gpt import RankGPTFormatter
@@ -18,7 +19,7 @@ class PromptBuilder:
     ):
         self.rerank_mode = rerank_mode
         self.formatter = self._get_formatter(rerank_mode, **kwargs)
-        self._tokenizer = AutoTokenizer.from_pretrained(model_name_or_path) if model_name_or_path else None
+        self._tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
         self.system_message_supported = "system" in self._tokenizer.chat_template
         self.system_message = system_message
 
@@ -89,16 +90,17 @@ class PromptBuilder:
         ## collect text input data
         query = result.query
         # [NOTE] doc1 and doc2 are not used in this mode, but kept for compatibility
-        doc_list = [hit['content'] for hit in result.hits[rank_start:rank_end]]
+        doc_list = [hit['content_dict'] for hit in result.hits[rank_start:rank_end]]
 
         prefix = self.formatter.prefix(query=query, doc_list=doc_list)
         postfix = self.formatter.postfix(query=query, doc_list=doc_list)
         body = self.formatter.body(query=query, doc_list=doc_list, max_length=None)
         ## [NOTE] dynamically shrink the body size via length of documents?
 
-
         if self.system_message_supported:
-            messages.append({"role": "user", "content": prefix + body + postfix})
+            messages.append({
+                "role": "user", "content": prefix + body + postfix
+            })
             prompt = self._tokenizer.apply_chat_template(
                 messages,
                 tokenize=False, 
@@ -107,6 +109,7 @@ class PromptBuilder:
         else:
             prompt = prefix + body + postfix
 
+        prompt = fix_text(prompt)
         # maybe calculate different types
         num_tokens = self.get_num_tokens(prompt) 
         return prompt, num_tokens

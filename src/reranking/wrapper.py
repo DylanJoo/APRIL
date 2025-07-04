@@ -10,7 +10,6 @@ from reranking.config_manager import ConfigManager
 from reranking.input_assembler import BubbleSort
 from reranking.prompt_builder import PromptBuilder
 from reranking.llm_provider.vllm_api import LLM
-# from reranking.llm_provider.vllm_back import LLM
 from reranking.result_parser import ResultParser
 
 class ModularReranker:
@@ -40,12 +39,10 @@ class ModularReranker:
             temperature=config.llm.temperature,
             top_p=config.llm.top_p,
             logprobs=30 if rerank_mode.use_logits else None,
-            max_tokens=100 if 'list' in rerank_mode.result_parser_name else 10,
-            max_model_len=32768
+            max_tokens=128 if 'list' in rerank_mode.result_parser_name else 8,
         )
         if rerank_mode.use_logits:
             agent.set_classification()
-
         result_parser = ResultParser(rerank_mode)
 
         # initialize the algorithm module
@@ -64,7 +61,7 @@ class ModularReranker:
             query = queries[qid]
             hit_docs = []
             for docid, score in hits.items():
-                hit_docs.append({'docid': docid, 'score': float(score), 'content': corpus[docid]})
+                hit_docs.append({'docid': docid, 'score': float(score), 'content_dict': corpus[docid]})
             results.append(Result(qid=qid, query=query, hits=hit_docs))
         return results
 

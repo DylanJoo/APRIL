@@ -17,7 +17,6 @@ from typing import Optional, Tuple, List, Dict, Union, Any
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 
-from ftfy import fix_text
 
 from reranking.utils import RerankMode, Result
 from reranking.prompt_builder import PromptBuilder
@@ -85,6 +84,9 @@ class BubbleSort:
         ## Create prompts for each result in the batch
         ## [TODO] maybe we need to set the batch size if one query requires huge amount of prompts/inference. 
         prompts = self._prompt_builder.create_prompt_batched(results, rank_start, rank_end)
+        with open('/home/hltcoe/jhueiju/prompts-new.txt', 'a') as f:
+            for prompt, in_token_count in prompts:
+                f.write(f"{prompt}\n")
 
         # [NOTE] window size for using logits might have limited to 9, this is not used for now
         # [NOTE] return input length?
