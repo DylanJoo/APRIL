@@ -100,10 +100,8 @@ class BubbleSort:
             rank_start=rank_start,
             rank_end=rank_end,
         )
-        # for index, (result, (prompt, in_token_count)) in enumerate(zip(results, prompts)):
-        #     permutation, out_token_count = batched_results[index]
-        #     ranking_exec_info = RankingExecInfo(prompt, permutation, in_token_count, out_token_count)
-        #     if result.ranking_exec_summary is None:
-        #         result.ranking_exec_summary = []
-        #     result.ranking_exec_summary.append(ranking_exec_info)
+
+        # [NOTE] legacy 
+        # ranking_exec_info = RankingExecInfo(prompt, permutation, in_token_count, out_token_count)
+        # result.ranking_exec_summary.append(ranking_exec_info)
         return reranked_results
