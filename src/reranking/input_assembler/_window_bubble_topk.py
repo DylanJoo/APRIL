@@ -1,7 +1,4 @@
 """
-[NOTE] In the assembler class, we probably need different implementations for different reranking strategies. 
-e.g., bubble sort with sliding window or sth else
-
 `run_pass()` is the main function to run a single pass of reranking.
 `run()` is the main function to run the entire reranking process.
 
@@ -11,27 +8,26 @@ Add some method-specific configs to config files (instead of the rerankmode)
 import copy
 import random
 import re
+import json
 from typing import Optional, Tuple, List, Dict, Union, Any
 
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 
-from ftfy import fix_text
-
-from reranking.utils import RerankMode, Result
-from reranking.prompt_builder import PromptBuilder
-from reranking.result_parser import ResultParser
+from ..utils import RerankMode, Result
+from ..prompt_builder import PromptBuilder
+from ..result_parser import ResultParser
 
 ALPH_START_IDX = ord('A')-1
 
-class BubbleSort:
+class WindowBubble:
 
     def __init__(
         self, 
         config, 
         rerank_mode: RerankMode,
         prompt_builder: PromptBuilder,
-        llm_provider: Any,  # [TODO] add llm provider
+        llm_provider: Any,
         result_parser: ResultParser,
     ):
         ## [Module] Write a provider module to handle differnet backends
@@ -58,7 +54,6 @@ class BubbleSort:
             rank_start (int): The start index for ranking.
             rank_end (int): The end index for ranking.
         """
-        # [TODO] set batch_
         rerank_results = [copy.deepcopy(result) for result in init_results]
 
         end_pos = rank_end
@@ -73,6 +68,8 @@ class BubbleSort:
             start_pos = start_pos - self._step_size
         return rerank_results
 
+    ## [TODO] maybe we need to set the batch size if one query requires huge amount of prompts/inference. 
+    # [NOTE] window size for using logits might have limited to 9, this is not used for now
     def run_pass(
         self,
         results: List[Result],
@@ -81,11 +78,9 @@ class BubbleSort:
         batch_size: Optional[int] = 8,
     ) -> List[Result]:
 
-        ## Create prompts for each result in the batch
-        ## [TODO] maybe we need to set the batch size if one query requires huge amount of prompts/inference. 
+        ## Create prompts for query-batch-size results
         prompts = self._prompt_builder.create_prompt_batched(results, rank_start, rank_end)
 
-        # [NOTE] window size for using logits might have limited to 9, this is not used for now
         # [NOTE] return input length?
         responses = self._llm.generate(prompts=[prompt for prompt, _ in prompts], prob=self._rerank_mode.use_logits)
 
@@ -97,10 +92,8 @@ class BubbleSort:
             rank_start=rank_start,
             rank_end=rank_end,
         )
-        # for index, (result, (prompt, in_token_count)) in enumerate(zip(results, prompts)):
-        #     permutation, out_token_count = batched_results[index]
-        #     ranking_exec_info = RankingExecInfo(prompt, permutation, in_token_count, out_token_count)
-        #     if result.ranking_exec_summary is None:
-        #         result.ranking_exec_summary = []
-        #     result.ranking_exec_summary.append(ranking_exec_info)
+
+        # [NOTE] legacy 
+        # ranking_exec_info = RankingExecInfo(prompt, permutation, in_token_count, out_token_count)
+        # result.ranking_exec_summary.append(ranking_exec_info)
         return reranked_results

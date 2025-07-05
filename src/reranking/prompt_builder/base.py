@@ -1,3 +1,6 @@
+"""
+Create prompt with list of prompt as output instead of string only.
+"""
 import json
 from typing import List, Optional, Union, Callable, Dict, Tuple
 from transformers import AutoTokenizer
@@ -73,12 +76,10 @@ class PromptBuilder:
         rank_start: int,
         rank_end: int,
         batch_size: int = 32,
-        ) -> str:
+        ) -> Union[Tuple[str, int], List[Tuple[str, int]]]:
         r"""batch processing of results to create prompts using multithreading.
-
         Returns:
             (str, str): A tuple containing two strings
-        [TODO] adding length truncation based on the `context_size` parameter
         """
         # system message (if applicable)
         if self.system_message_supported and self.system_message:
@@ -97,6 +98,12 @@ class PromptBuilder:
         body = self.formatter.body(query=query, doc_list=doc_list, max_length=None)
         ## [NOTE] dynamically shrink the body size via length of documents?
 
+        assert not (isinstance(body, list) and isinstance(postfix, list)), \
+            "Only either of body or postfix can be a list, got {}, {}".format(
+                type(body), type(postfix)
+            )
+
+        # deal with inconsistent length
         if self.system_message_supported:
             messages.append({
                 "role": "user", "content": prefix + body + postfix
@@ -113,4 +120,3 @@ class PromptBuilder:
         # maybe calculate different types
         num_tokens = self.get_num_tokens(prompt) 
         return prompt, num_tokens
-

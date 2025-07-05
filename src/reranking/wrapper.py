@@ -1,16 +1,13 @@
-""" # [NOTE] Change the llm provider codes """
 from typing import Optional, Tuple, List, Dict, Union, Any
 from pprint import pprint
 from tqdm import tqdm
-from reranking.utils import RerankMode, Result
-from reranking.utils import batch_iterator
-from reranking.config_manager import ConfigManager
 
-# submodules
-from reranking.input_assembler import BubbleSort
-from reranking.prompt_builder import PromptBuilder
-from reranking.llm_provider.vllm_api import LLM
-from reranking.result_parser import ResultParser
+from .utils import RerankMode, Result, batch_iterator
+from .config_manager import ConfigManager
+from .input_assembler import WindowBubble
+from .prompt_builder import PromptBuilder
+from .llm_provider.vllm_api import LLM
+from .result_parser import ResultParser
 
 class ModularReranker:
 
@@ -19,6 +16,7 @@ class ModularReranker:
         include_system_message: Optional[bool] = True,
         system_message: Optional[str] = None,
     ) -> None:
+        self.config = config
 
         # initialize method
         rerank_mode = RerankMode(config.rerank_mode)
@@ -46,7 +44,7 @@ class ModularReranker:
         result_parser = ResultParser(rerank_mode)
 
         # initialize the algorithm module
-        self.assembler = BubbleSort(
+        self.assembler = WindowBubble(
             config=config, 
             rerank_mode=rerank_mode,
             prompt_builder=prompt_builder,

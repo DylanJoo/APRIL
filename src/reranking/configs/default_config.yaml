@@ -3,7 +3,7 @@ data:
   input_run: ../../runs/run.msmarco-v1-passage.bm25-trec-dl-2019.txt
 
 llm:
-  model_name_or_path: Qwen/Qwen2.5-7B-Instruct
+  model_name_or_path: meta-llama/Llama-3.1-8B-Instruct
   temperature: 0.0
   top_p: 1.0
   backend: vllm
@@ -14,6 +14,7 @@ max_length: 10240
 context_size: 2048
 window_size: 20
 step_size: 10
+exp: testing
 
 output_run: ../../runs/temp.txt
 save_path: ./checkpoints/model.pt

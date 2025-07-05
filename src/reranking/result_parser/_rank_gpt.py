@@ -1,5 +1,6 @@
 """
->>>>> [TODO] scoring function return or pseud-score return
+[TODO] Take max_doc_length into account
+[TODO] scoring function return or pseud-score return
 """
 import copy
 from typing import List, Optional, Union, Callable, Dict, Tuple
@@ -19,12 +20,8 @@ class TextListParser:
         else:
             self.id_type = "numerical"
 
-        self.max_doc_lenth = 1024
+        self.max_doc_length = 1024
 
-    # def parse(self, text: str) -> List[str]:
-    #     """ Parses a text into a list of strings, each representing a passage. """
-    #     passages = text.strip().split("\n")
-    #     return [passage.strip() for passage in passages if passage.strip()]
     def parse_and_update(
         self, 
         permutation: str, 
