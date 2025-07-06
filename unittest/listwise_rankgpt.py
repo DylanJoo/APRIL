@@ -25,7 +25,7 @@ import ir_measures
 from ir_measures import *
 
 results = {}
-for dataset in ['trec-dl-2019']:
+for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     results[dataset] = {}
 
     run_path = f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"
@@ -41,7 +41,8 @@ for dataset in ['trec-dl-2019']:
     )
 
     # prepare output run
-    output_path = run_path.replace('runs', config.rerank_mode)
+    output_path = os.path.join(run_path.replace('runs', f'runs/{config.rerank_mode}'))
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as f:
         for qid in reranked_run:
             for i, (docid, score) in enumerate(reranked_run[qid].items()):

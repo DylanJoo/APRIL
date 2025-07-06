@@ -51,16 +51,15 @@ class RerankStrategy(ABC):
         Run a single pass of reranking.
         This method is generally shared across strategies, but can be overridden.
         """
-        prompts = self._prompt_builder.create_prompt_batched(results, rank_start, rank_end)
-        responses = self._llm.generate(
-            prompts=[prompt for prompt, _ in prompts],
-            prob=self._rerank_mode.use_logits
-        )
+        prompts, idx_pairs = self._prompt_builder.create_prompt_batched(results, rank_start, rank_end)
+        # prompts, lengths = self._prompt_builder.create_prompt_batched(results, rank_start, rank_end)
+        responses = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
 
         assert len(responses) == len(prompts), "Mismatch between prompts and responses"
 
         reranked_results = self._result_parser.parse_response(
             response_texts=responses,
+            idx_pairs=idx_pairs,
             results=results,
             rank_start=rank_start,
             rank_end=rank_end,

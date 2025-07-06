@@ -17,32 +17,30 @@ class Result:
     def __repr__(self):
         return str(self.__dict__)
 
-class RankingExecInfo:
-    def __init__(self, prompt, response: str, input_token_count: int, output_token_count: int):
-        self.prompt = prompt
-        self.response = response
-        self.input_token_count = input_token_count
-        self.output_token_count = output_token_count
-
-    def __repr__(self):
-        return str(self.__dict__)
-
 class RerankMode(Enum):
     RANK_GPT = "RankGPT"
-    LRL = "LRL"
-    APRIL = "APRIL"
+    PAIRWISE = "Pairwise"
 
     @property
     def prompt_builder_name(self):
-        return {"RankGPT": "listwise", "LRL": "listwise", "APRIL": "listwise"}[self.value]
+        return {
+            "RankGPT": "listwise", 
+            "Pairwise": "pairwise"
+        }[self.value]
 
     @property
     def use_logits(self):
-        return {"RankGPT": False, "LRL": False, "APRIL": True}[self.value]
+        return {
+            "RankGPT": False, 
+            "Pairwise": True, 
+        }[self.value]
 
     @property
     def result_parser_name(self):
-        return {"RankGPT": "text_list", "LRL": "text_list", "APRIL": "probs"}[self.value]
+        return {
+            "RankGPT": "text_list", 
+            "Pairwise": "prob", 
+        }[self.value]
 
     def __str__(self):
         return f"[{self.value}]: (prompt_builder_name: {self.prompt_builder_name}) | (result_parser_name: {self.result_parser_name})"

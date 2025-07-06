@@ -1,27 +1,8 @@
-"""
-[TODO] Take max_doc_length into account
-[TODO] scoring function return or pseud-score return
-"""
 import copy
 from typing import List, Optional, Union, Callable, Dict, Tuple
 from .base import BaseResultParser
 
 class TextListParser(BaseResultParser):
-    """ A parser for text lists that can handle both numerical and alphabetical identifiers. """
-    def __init__(
-        self, 
-        use_alpha=False, 
-        variable_passages=False,
-    ):
-        self._use_alpha = use_alpha
-        self._variable_passages = variable_passages 
-
-        if use_alpha: 
-            self.id_type = "alphabetical"
-        else:
-            self.id_type = "numerical"
-
-        self.max_doc_length = 1024
 
     def parse_and_update(
         self, 

@@ -1,32 +1,40 @@
-import copy
 from typing import List, Optional, Tuple, Callable, Dict, Union
+from abc import ABC, abstractmethod
 from ..utils import RerankMode, Result
 
-from ._rank_gpt import TextListParser
+class BaseResultParser(ABC):
+    """Base class for all parser"""
 
-class ResultParser:
     def __init__(
         self, 
-        rerank_mode: RerankMode,
-        **kwargs
+        use_alpha=False, 
+        variable_passages=False,
     ):
-        self.rerank_mode = rerank_mode
-        self.parser = self._get_parser(rerank_mode, **kwargs)
+        self._use_alpha = use_alpha
+        self._variable_passages = variable_passages 
 
-    def _get_parser(self, rerank_mode: RerankMode, **kwargs) -> Callable:
-        parser_map: Dict[RerankMode, Callable] = {
-            RerankMode.RANK_GPT: TextListParser,
-        }
-        if rerank_mode not in parser_map:
-            raise ValueError(f"Unsupported prompt mode: {rerank_mode}")
-        return parser_map[rerank_mode](**kwargs)
+        if use_alpha: 
+            self.id_type = "alphabetical"
+        else:
+            self.id_type = "numerical"
 
-    # [NOTE] parse: response is the input, number as output 
-    # [NOTE] update: number to the result object
-    # [NOTE] also consider additional info: permutation, out_token_count. Use the origianl for loop
-    # for index, (result, (prompt, in_token_count)) in enumerate(zip(results, prompts)):
+        self.max_doc_length = 1024
+
+    @abstractmethod
+    def parse_and_update(
+        self, 
+        permutation: str, 
+        result, 
+        rank_start: int, 
+        rank_end: int
+    ) -> Result:
+        """Parse the response and update the result object."""
+        pass
+
+    @abstractmethod
     def parse_response(
         self, 
+        response_texts: List[str], 
         response_texts: List[str], 
         results: List[Result], 
         rank_start: int, 
@@ -38,3 +46,7 @@ class ResultParser:
             parsed_result = self.parser.parse_and_update(response, result, rank_start, rank_end)
             results[index] = parsed_result
         return results
+
+    # [NOTE] parse: response is the input, number as output 
+    # [NOTE] update: number to the result object
+    # [NOTE] also consider additional info: permutation, out_token_count. Use the origianl for loop

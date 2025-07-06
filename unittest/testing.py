@@ -1,33 +1,8 @@
 from pprint import pprint
 
-# -------Testin llm provider -------
-# from reranking.llm_provider.vllm_api import LLM
-# llm = LLM(model='Qwen/Qwen3-1.7B', temperature=0.0, top_p=1.0, logprobs=20, max_tokens=1)
-# cleanup_vllm(llm)
-
-# from reranking.llm_provider.litellm_api import LLM
-# llm = LLM(model='llama3.3-70b-instruct', temperature=0.0, top_p=1.0, logprobs=20, max_tokens=1)
-# llm.set_classification()
-# result = llm.generate([f'write a poem of {i}.' for i in range(10)], prob=True)
-
-# prompts = [
-# "Is Paris the capital of France?",
-# "Does water boil at 100°C?",
-# "Is the sun a star?",
-# "Can humans breathe underwater unaided?",
-# "Is Mount Everest the tallest mountain?",
-# "Do whales lay eggs?",
-# "Is Mars known as the Red Planet?",
-# "Was Albert Einstein a physicist?",
-# "Is gold a metal?",
-# "Does the Earth orbit the sun?",
-# ]
-# result = llm.generate(prompts, prob=True)
-# print(result)
-
-# >>> Yes # Yes # Yes # No # Yes # No # Yes # Yes # Yes # Yes
-# ----------------------------------
-
+from reranking.config_manager import ConfigManager
+config = ConfigManager('src/reranking/configs/rankgpt_config.yaml').get_config()
+# pprint(config)
 
 # -------Testing utils-------
 import copy
@@ -48,7 +23,7 @@ def get_eaxmple_result():
     ]
     pairs = []
     for i, passage in enumerate(passages):
-        pairs.append({'docid': f"docid_{i}", 'score': float(1/ (i+1)), 'content': passage})
+        pairs.append({'docid': f"docid_{i}", 'score': float(1/ (i+1)), 'content_dict': passage})
 
     results = []
     results.append(Result(qid='qid_0', query=query, hits=pairs))
@@ -62,22 +37,21 @@ def get_eaxmple_result():
 example_result = get_eaxmple_result()
 
 # -------Testing llm prompt builder -------
-# from reranking.prompt_builder import PromptBuilder
-# builder = PromptBuilder(
-#     model_name_or_path='Qwen/Qwen2.5-7B-Instruct',
-#     rerank_mode=RerankMode.RANK_GPT,
-#     include_system_message=True,
-#     system_message="You are a helpful assistant that provides concise and informative answers to health-related questions.",
-#     variable_passages=True,
-#     use_alpha=False
-# )
-# prompts, lengths = builder.create_prompt_batched(
-#     results=example_result,
-#     rank_start=0,
-#     rank_end=20
-# )
-# print(lengths)
-# print(prompts[0])
+config.rerank_mode = RerankMode.PAIRWISE
+from reranking.prompt_builder import PromptBuilder
+builder = PromptBuilder(
+    config=config,
+    include_system_message=True,
+    system_message="You are a helpful assistant.",
+    variable_passages=True,
+    use_alpha=False
+)
+prompts, lengths = builder.create_prompt_batched(
+    results=example_result,
+    rank_start=0,
+    rank_end=20
+)
+print(prompts[0][0])
 # ----------------------------------
 
 ## --- Unit testing for the RankParser ---
@@ -114,12 +88,12 @@ example_result = get_eaxmple_result()
 # print(reranked_results)
 
 ## --- Unit testing for the reranking wrapper --- 
-from reranking.config_manager import ConfigManager
-config = ConfigManager('reranking/configs/rankgpt_config.yaml').get_config()
-pprint(config)
-
-from reranking.wrapper import ModularReranker
-rankllm = ModularReranker(
-    config, 
-    system_message= "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
-)
+# from reranking.config_manager import ConfigManager
+# config = ConfigManager('reranking/configs/rankgpt_config.yaml').get_config()
+# pprint(config)
+#
+# from reranking.wrapper import ModularReranker
+# rankllm = ModularReranker(
+#     config, 
+#     system_message= "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
+# )
