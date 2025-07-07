@@ -21,6 +21,7 @@ class PairwiseAllFormatter(BaseFormatter):
             "Based on the given query, is Passage 1 more relevant than Passage 2? "
         )
 
+        doc_list = [self._document_format(doc) for doc in doc_list]
         prompt_body = ""
         idx_pairs = [(i, j) for i in range(len(doc_list)) for j in range(len(doc_list)) if i != j]
         prompts = []
