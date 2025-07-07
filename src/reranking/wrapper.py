@@ -4,9 +4,10 @@ from tqdm import tqdm
 
 from .utils import RerankMode, Result, batch_iterator
 from .config_manager import ConfigManager
-from .input_assembler import WindowBubble
+from .input_assembler import AutoAssembler
 from .prompt_builder import PromptBuilder
-from .llm_provider.vllm_api import LLM
+from .llm_provider.vllm_api import LLM # use a llm wrapper to handle
+# from .llm_provider.litellm_api import LLM
 from .result_parser import ResultParser
 
 class ModularReranker:
@@ -36,16 +37,18 @@ class ModularReranker:
             model_name_or_path=config.llm.model_name_or_path,
             temperature=config.llm.temperature,
             top_p=config.llm.top_p,
-            logprobs=30 if rerank_mode.use_logits else None,
-            max_tokens=128 if 'list' in rerank_mode.result_parser_name else 8,
+            logprobs=20 if rerank_mode.use_logits else None,
+            max_tokens=128 if 'list' in rerank_mode.result_parser_name else 3,
+            max_model_len=config.llm.max_model_len,
         )
+
         if rerank_mode.use_logits:
             agent.set_classification()
         result_parser = ResultParser()
 
         # initialize the algorithm module
-        self.assembler = WindowBubble(
-            config=config, 
+        self.assembler = AutoAssembler.from_config(
+            config, 
             rerank_mode=rerank_mode,
             prompt_builder=prompt_builder,
             llm_provider=agent,

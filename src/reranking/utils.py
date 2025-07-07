@@ -43,7 +43,11 @@ class RerankMode(Enum):
         }[self.value]
 
     def __str__(self):
-        return f"[{self.value}]: (prompt_builder_name: {self.prompt_builder_name}) | (result_parser_name: {self.result_parser_name})"
+        return f"""[{self.value}]
+          - prompt_builder_name: {self.prompt_builder_name})
+          - use logits: {self.use_logits}
+          - tresult_parser_name: {self.result_parser_name}
+        """
 
 def batch_iterator(iterable, size=1, return_index=False):
     l = len(iterable)
