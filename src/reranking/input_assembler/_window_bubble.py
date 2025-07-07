@@ -25,3 +25,30 @@ class WindowBubble(RerankStrategy):
             end_pos = end_pos - self._step_size
             start_pos = start_pos - self._step_size
         return rerank_results
+
+    ## [TODO] maybe we need to set the batch size if one query requires huge amount of prompts/inference. 
+    # [NOTE] window size for using logits might have limited to 9, this is not used for now
+    def run_pass(
+        self,
+        results: List[Result],
+        rank_start: int,
+        rank_end: int,
+        batch_size: Optional[int] = 8,
+    ) -> List[Result]:
+        """
+        Run a single pass of reranking.
+        This method is generally shared across strategies, but can be overridden.
+        """
+        prompts = self._prompt_builder.create_prompt_batched(results, rank_start, rank_end)
+        outputs = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
+
+        assert len(outputs) == len(prompts), "Mismatch between prompts and outputs"
+
+        reranked_results = self._result_parser.parse(
+            outputs=outputs,
+            results=results,
+            rank_start=rank_start,
+            rank_end=rank_end,
+        )
+        return reranked_results
+
