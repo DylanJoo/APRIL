@@ -5,7 +5,6 @@ from ..utils import RerankMode, Result
 from ..prompt_builder import PromptBuilder
 from ..result_parser import ResultParser
 
-
 class RerankStrategy(ABC):
     def __init__(
         self,
@@ -51,15 +50,13 @@ class RerankStrategy(ABC):
         Run a single pass of reranking.
         This method is generally shared across strategies, but can be overridden.
         """
-        prompts, idx_pairs = self._prompt_builder.create_prompt_batched(results, rank_start, rank_end)
-        # prompts, lengths = self._prompt_builder.create_prompt_batched(results, rank_start, rank_end)
-        responses = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
+        prompts = self._prompt_builder.create_prompt_batched(results, rank_start, rank_end)
+        outputs = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
 
-        assert len(responses) == len(prompts), "Mismatch between prompts and responses"
+        assert len(outputs) == len(prompts), "Mismatch between prompts and outputs"
 
-        reranked_results = self._result_parser.parse_response(
-            response_texts=responses,
-            idx_pairs=idx_pairs,
+        reranked_results = self._result_parser.parse(
+            outputs=outputs,
             results=results,
             rank_start=rank_start,
             rank_end=rank_end,

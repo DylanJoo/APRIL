@@ -4,7 +4,7 @@ from .base import BaseResultParser
 
 class TextListParser(BaseResultParser):
 
-    def parse_and_update(
+    def _parse_responses(
         self, 
         permutation: str, 
         result,
@@ -29,7 +29,7 @@ class TextListParser(BaseResultParser):
                 result.hits[j + rank_start]["rank"] = cut_range[j]["rank"]
             if "score" in result.hits[j + rank_start]:
                 result.hits[j + rank_start]["score"] = cut_range[j]["score"]
-        return result
+        # return result
 
     def _clean_response(self, response: str) -> str:
         new_response = ""

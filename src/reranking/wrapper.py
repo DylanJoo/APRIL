@@ -25,7 +25,7 @@ class ModularReranker:
 
         # initlaize instances 
         prompt_builder = PromptBuilder(
-            config.llm.model_name_or_path, 
+            config=config,
             rerank_mode=rerank_mode,
             include_system_message=include_system_message,
             system_message=system_message,
@@ -41,7 +41,7 @@ class ModularReranker:
         )
         if rerank_mode.use_logits:
             agent.set_classification()
-        result_parser = ResultParser(rerank_mode)
+        result_parser = ResultParser()
 
         # initialize the algorithm module
         self.assembler = WindowBubble(

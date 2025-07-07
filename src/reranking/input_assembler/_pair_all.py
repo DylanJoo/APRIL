@@ -2,8 +2,6 @@ import copy
 from typing import Optional, Tuple, List, Dict, Union, Any
 
 from ..utils import RerankMode, Result, batch_iterator
-from ..prompt_builder import PromptBuilder
-from ..result_parser import ResultParser
 from .base import RerankStrategy
 
 class PairAll(RerankStrategy):
@@ -38,8 +36,11 @@ class PairAll(RerankStrategy):
 
         # Update and return reranked results
         reranked_results = []
-        reranked_results = self._result_parser.parse_response(
-            response_scores=all_scores, # {qid: [score1, score2, ...]}
+        reranked_results = self._result_parser.parse(
+            response_scores=[all_scores[r.qid] for r in results],
             results=results,
         )
         return reranked_results
+
+    def run_pass(self, **kwargs: Any):
+        raise NotImplementedError("PairAll does not support run_pass. Use run instead.")

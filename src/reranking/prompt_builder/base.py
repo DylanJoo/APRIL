@@ -37,7 +37,7 @@ class PromptBuilder:
         all_completed_prompts = []
         with ThreadPoolExecutor() as executor:
             for batch in tqdm(batch_iterator(results, batch_size), desc="Creating prompts"):
-                # list of tuples: # [(prompt1, num_tokens1), (prompt2, num_tokens2), ...]
+                # list of tuples: # [ [prompt set 1], [prompt set 2], ... ]
                 completed_prompts = list(
                     executor.map(
                         lambda result: self.create_prompt(result, rank_start, rank_end), 
@@ -47,18 +47,11 @@ class PromptBuilder:
                 all_completed_prompts.extend(completed_prompts)
         return all_completed_prompts
 
-# [NOTE] consider this if flatten the prompting 
-# this is for compatibility the list of list
-# # For the scenario that the output is a list of tuples
-# if isinstance(completed_prompts[0], list):
-# completed_prompts = [item for sublist in completed_prompts for item in sublist]
-
     def create_prompt(
         self, 
         result: Result,
         rank_start: int,
         rank_end: int,
-        batch_size: int = 32,
     ) -> Union[Tuple[str, int], List[Tuple[str, int]]]:
         r"""batch processing of results to create prompts using multithreading.
         Returns:
@@ -76,7 +69,6 @@ class PromptBuilder:
         # user message
         # [NOTE] doc1 and doc2 are not used in this mode, but kept for compatibility
         query = result.query
-        qid = result.query_id
         doc_list = [hit['content_dict'] for hit in result.hits[rank_start:rank_end]]
 
         prefix = self.formatter.prefix(query=query, doc_list=doc_list)
@@ -84,19 +76,18 @@ class PromptBuilder:
         body = self.formatter.body(query=query, doc_list=doc_list, max_length=None)
 
         if isinstance(postfix, str) and isinstance(body, str):
-            prefix, body, postfix = [prefix], [body], [postfix]
-            prompt, num_tokens = self._convert_message_to_prompt(messages, prefix, body, postfix)
-            # idx_pairs = [None]
-        elif isinstance(body, tuple) and isinstance(postfix, str):
-            # body, idx_pairs = body
+            # [NOTE] Sacrifice consistency for simplicity
+            # prefix, body, postfix = [prefix], [body], [postfix]
+            prompt, token_count = self._convert_message_to_prompt(messages, prefix, body, postfix)
+            return prompt
+        elif isinstance(body, list) and isinstance(postfix, str):
             prefix = [prefix] * len(body)
             postfix = [postfix] * len(body)
-        elif isinstance(postfix, tuple) and isinstance(body, str):
-            # prefix, idx_pairs = prefix
+        elif isinstance(postfix, list) and isinstance(body, str):
             prefix = [prefix] * len(postfix)
             body = [body] * len(postfix)
         else:
-            raise ValueError("Incorrect input types for prefix, body, or postfix.")
+            raise ValueError(f"Incorrect input types for prefix, body, or postfix, got: {type(prefix)}, {type(body)}, {type(postfix)}")
 
         outputs = [
             self._convert_message_to_prompt(messages, pre, b, post)
@@ -104,7 +95,6 @@ class PromptBuilder:
         ]
         prompts, token_counts = zip(*outputs)
         return list(prompts)
-        # return list(prompts), idx_pairs
 
     def _convert_message_to_prompt(
         self, 
@@ -116,14 +106,22 @@ class PromptBuilder:
 
         if self.system_message_supported:
             messages_ = messages.copy()
-            messages_[1]['content'] = fix_text(prefix + body + postfix)
+            messages_[1]['content'] = prefix + body + postfix
             prompt = self._tokenizer.apply_chat_template(
                 messages_,
                 tokenize=False, 
                 add_generation_prompt=True
             )
         else:
-            prompt = fix_text(prefix + body + postfix)
+            prompt = prefix + body + postfix
+        prompt = fix_text(prompt)
 
         num_tokens = self.get_num_tokens(prompt) 
         return prompt, num_tokens
+
+# [NOTE] consider this if flatten the prompting 
+# this is for compatibility the list of list
+# # For the scenario that the output is a list of tuples
+# if isinstance(completed_prompts[0], list):
+# completed_prompts = [item for sublist in completed_prompts for item in sublist]
+

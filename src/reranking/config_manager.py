@@ -8,10 +8,12 @@ import importlib.resources as pkg_resources
 class ConfigManager:
     def __init__(
         self, 
-        default_config_path = pkg_resources.files("reranking.configs").joinpath("default_config.yaml")
+        default_config_path = pkg_resources.files("reranking.configs").joinpath("default_config.yaml"),
+        **kwargs
     ):
         self.config = self.load_yaml(default_config_path)
         self.parse_and_override()
+        self.apply_overrides(self.config, kwargs)
 
     def load_yaml(self, path: str) -> Dict[str, Any]:
         path = os.path.abspath(path)

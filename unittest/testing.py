@@ -37,7 +37,8 @@ def get_eaxmple_result():
 example_result = get_eaxmple_result()
 
 # -------Testing llm prompt builder -------
-config.rerank_mode = RerankMode.PAIRWISE
+# config.rerank_mode = RerankMode.PAIRWISE
+config.rerank_mode = RerankMode.RANK_GPT
 from reranking.prompt_builder import PromptBuilder
 builder = PromptBuilder(
     config=config,
@@ -46,12 +47,12 @@ builder = PromptBuilder(
     variable_passages=True,
     use_alpha=False
 )
-prompts, lengths = builder.create_prompt_batched(
+prompts = builder.create_prompt_batched(
     results=example_result,
     rank_start=0,
     rank_end=20
 )
-print(prompts[0][0])
+print(prompts[0])
 # ----------------------------------
 
 ## --- Unit testing for the RankParser ---

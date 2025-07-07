@@ -17,4 +17,4 @@ class AutoPromptFormatter:
                 f"No prompt builder found for mode: {rerank_mode}\n" 
                 f"available modes: {list(cls._builder_map.keys())}"
             )
-        return builder_cls(max_doc_length=1024)
+        return builder_cls(max_doc_length=1024, **kwargs)
