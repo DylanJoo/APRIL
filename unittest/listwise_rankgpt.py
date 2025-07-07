@@ -2,30 +2,29 @@ import os
 from pathlib import Path
 from reranking import loader
 from pprint import pprint
+import ir_measures
+from ir_measures import *
 home_dir=str(Path.home())
 
 # Prepare data (inout and output)
 os.makedirs(f"{home_dir}/APRIL/pa_reranked_runs", exist_ok=True)
 
-# Prepare reranker
-from reranking.wrapper import ModularReranker
-rankllm = ModularReranker(config, 
-    system_message= "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
-)
-
-
 # start reranking
-import ir_measures
-from ir_measures import *
 
 results = {}
 for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     results[dataset] = {}
 
     from reranking.config_manager import ConfigManager
-    config = ConfigManager().get_config()
-    config.data.ir_datasets_name = f'msmarco-passage/{dataset}/judged'
-    config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"
+    config = ConfigManager(
+        data={'ir_datasets_name': f'msmarco-passage/{dataset}/judged',
+              'input_run': f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"},
+    ).get_config()
+
+    from reranking.wrapper import ModularReranker
+    rankllm = ModularReranker(config, 
+        system_message= "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
+    )
 
     run = loader.load_run(config.data.input_run)
     corpus, queries, qrels = loader.load(

@@ -4,14 +4,13 @@ from reranking import loader
 from pprint import pprint
 import ir_measures
 from ir_measures import *
-
 home_dir=str(Path.home())
 
 # Prepare data (inout and output)
 os.makedirs(f"{home_dir}/APRIL/pa_reranked_runs", exist_ok=True)
 
 results = {}
-for dataset in ['trec-dl-2019', 'trec-dl-2020']:
+for dataset in ['trec-dl-2019']:
     results[dataset] = {}
 
     from reranking.config_manager import ConfigManager
@@ -19,7 +18,8 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
         data={'ir_datasets_name': f'msmarco-passage/{dataset}/judged',
               'input_run': f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"},
         rerank_mode='Pairwise',
-        top_k=20,
+        top_k=10,
+        llm={'max_model_len': 4096, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
     ).get_config()
 
     from reranking.wrapper import ModularReranker
