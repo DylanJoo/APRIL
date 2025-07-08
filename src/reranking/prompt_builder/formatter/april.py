@@ -3,20 +3,23 @@ from .base import BaseFormatter
 
 class PairwiseAllFormatter(BaseFormatter):
 
-    def prefix(self, query: str, doc_list: Optional[List[Dict]] = None, *kwargs) -> str:
+    def prefix(self, query: str, **kwargs, doc_list: Optional[List[Dict]] = None) -> str:
         return (
-            f"I will provide you with two passages. Read and memorize both carefully. "
-            f"Your task is to determine which the following passage is more relevant to the search query: {query}\n\n"
+            f"I will provide you with {len(doc_list)} passages. Read and memorize them carefully. "
+            f"Your task is to determine which passage is more relevant to the query.\n\n"
+            f"Query: {query}\n\n"
         )
 
     def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:
-        return (
-            "Based on the query, is the Passage 1 more relevant than Passage 2?\n"
-            "Please answer 'Yes' or 'No'.\nAnswer: "
-        )
+        return "Please answer 'Yes' or 'No'.\nAnswer: "
 
+    # def body(self, query: str, doc1: str, doc2: str, **kwargs) -> str:
     def body(self, query: str, doc_list: List[Union[Dict, str]], **kwargs) -> str:
-        template = "Passage 1: {doc1}\nPassage 2: {doc2}\nQuery: {query}\n\n"
+        template = (
+            "Passage 1: {doc1}\n"
+            "Passage 2: {doc2}\n\n"
+            "Based on the given query, is Passage 1 more relevant than Passage 2? "
+        )
 
         doc_list = [self._document_format(doc) for doc in doc_list]
         prompt_body = ""

@@ -6,8 +6,8 @@ from .utils import RerankMode, Result, batch_iterator
 from .config_manager import ConfigManager
 from .input_assembler import AutoAssembler
 from .prompt_builder import PromptBuilder
-from .llm_provider.vllm_api import LLM # use a llm wrapper to handle
-# from .llm_provider.litellm_api import LLM
+# from .llm_provider.vllm_api import LLM # use a llm wrapper to handle
+from .llm_provider.litellm_api import LLM
 from .result_parser import ResultParser
 
 class ModularReranker:
@@ -91,6 +91,9 @@ class ModularReranker:
                 batch_size=query_batch_size,
             )
             reranked_results.extend(batch_reranked_results)
+
+        # sort 
+        reranked_results.sort_by(field='score')
 
         # covert back to run
         reranked_run = {}

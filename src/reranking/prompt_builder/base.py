@@ -119,6 +119,9 @@ class PromptBuilder:
         num_tokens = self.get_num_tokens(prompt) 
         return prompt, num_tokens
 
+    def __str__(self) -> str:
+        return self.formatter.prefix("") + self.formatter.body("", []) + self.formatter.postfix("")
+
 # [NOTE] consider this if flatten the prompting 
 # this is for compatibility the list of list
 # # For the scenario that the output is a list of tuples

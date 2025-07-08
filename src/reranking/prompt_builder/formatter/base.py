@@ -34,7 +34,7 @@ class BaseFormatter(ABC):
         pass
 
     @abstractmethod
-    def body(self, query: str, doc_list: Optional[List[Dict]], **kwargs) -> str:
+    def body(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:
         """Returns the body of the prompt."""
         pass
 
@@ -60,5 +60,3 @@ class BaseFormatter(ABC):
             return re.sub(r"\[([A-z]+)\]", r"(\1)", text)
         else:
             return re.sub(r"\[(\d+)\]", r"(\1)", text)
-
-

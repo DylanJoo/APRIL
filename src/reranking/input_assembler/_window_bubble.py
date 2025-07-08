@@ -11,6 +11,7 @@ class WindowBubble(RerankStrategy):
         init_results: List[Result],
         rank_start: int,
         rank_end: int,
+        **kwargs
     ) -> List[Result]:
 
         rerank_results = [copy.deepcopy(result) for result in init_results]

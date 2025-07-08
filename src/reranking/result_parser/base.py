@@ -49,7 +49,7 @@ class ResultParser(ABC):
         # [NOTE] separate this as a standalone function?
         # assign the rank to the unappeared document (assuming they are irrelevant)
         for j, x in enumerate(response):
-            result.hits[j + rank_start] = copy.deepcopy(cut_range[x])
+            result.hits[j + rank_start] = copy.deepcopy(cut_range[x]) # copy the document
             if "rank" in result.hits[j + rank_start]:
                 result.hits[j + rank_start]["rank"] = cut_range[j]["rank"]
             if "score" in result.hits[j + rank_start]:

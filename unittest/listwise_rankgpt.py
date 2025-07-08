@@ -42,7 +42,7 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     )
 
     # prepare output run
-    output_path = os.path.join(run_path.replace('runs', f'runs/{config.rerank_mode}'))
+    output_path = os.path.join(config.data.input_run.replace('runs', f'runs/{config.rerank_mode}'))
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as f:
         for qid in reranked_run:

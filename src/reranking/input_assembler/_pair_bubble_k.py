@@ -18,7 +18,7 @@ class PairAll(RerankStrategy):
         all_scores = {}
         
         # [NOTE] As the pairall would run larger batch. LLM is less likely to be the bottleneck.
-        for index, result in enumerate(results):
+        for result in results:
             result.hits = [hit for hit in result.hits[:rank_end]]
             all_scores[result.qid] = [0 for _ in result.hits]
 

@@ -19,13 +19,13 @@ for dataset in ['trec-dl-2019']:
               'input_run': f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"},
         rerank_mode='Pairwise',
         top_k=100,
-        rank_end=50,
+        rank_end=10,
         llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
     ).get_config()
 
     from reranking.wrapper import ModularReranker
     rankllm = ModularReranker(config, 
-        system_message= "You are RelevanceJudgeLLM, an intelligent assistant that can compare two passages based on their relevancy to the query"
+        system_message= "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
     )
 
     run = loader.load_run(config.data.input_run)
@@ -40,7 +40,7 @@ for dataset in ['trec-dl-2019']:
         run=run,
         queries=queries,
         corpus=corpus,
-        query_batch_size=32
+        query_batch_size=128
     )
 
     # prepare output run
@@ -64,4 +64,3 @@ for dataset in ['trec-dl-2019']:
     }
     results[dataset] = eval_log
     pprint(eval_log)
-
