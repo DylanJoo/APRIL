@@ -30,10 +30,8 @@ class LLM:
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         self.tokenizer = AutoTokenizer.from_pretrained('meta-llama/Llama-3.3-70B-Instruct')
-
-        if logprobs:
-            self.yes_tokens = None
-            self.no_tokens = None
+        self.yes_tokens = None
+        self.no_tokens = None
 
     def set_classification(self, 
         yes_strings=[' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES'],

@@ -87,7 +87,8 @@ class ModularReranker:
             batch_reranked_results = self.assembler.run(
                 init_results=batch_results, 
                 rank_start=0,
-                rank_end=100,
+                rank_end=min(self.config.rank_end, self.config.top_k),
+                batch_size=query_batch_size,
             )
             reranked_results.extend(batch_reranked_results)
 
@@ -97,6 +98,9 @@ class ModularReranker:
             reranked_run[result.qid] = {}
             for rank, hit in enumerate(result.hits, start=1):
                 hit['rank'] = rank
-                reranked_run[result.qid].update({ hit['docid']: 1/rank })
+                if 'score' in hit:
+                    reranked_run[result.qid].update({ hit['docid']: hit['score'] })
+                else:
+                    reranked_run[result.qid].update({ hit['docid']: 1/rank })
 
         return reranked_run

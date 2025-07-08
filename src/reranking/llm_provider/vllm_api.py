@@ -7,6 +7,8 @@ from vllm.sampling_params import SamplingParams
 from transformers import AutoTokenizer
 import uuid
 from typing import List
+import logging
+logging.getLogger("vllm.engine.async_llm_engine").setLevel(logging.WARNING)
 
 class LLM:
 
@@ -27,6 +29,7 @@ class LLM:
             dtype=dtype,
             tensor_parallel_size=num_gpus,
             gpu_memory_utilization=gpu_memory_utilization,
+            enable_prefix_caching=False,
             max_model_len=max_model_len,
         )
         self.model = AsyncLLMEngine.from_engine_args(AsyncEngineArgs.from_cli_args(args))

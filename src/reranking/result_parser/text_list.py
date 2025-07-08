@@ -1,3 +1,6 @@
+"""
+[TODO] output the score and rank of hits
+"""
 import copy
 from typing import List, Optional, Union, Callable, Dict, Tuple
 from .base import BaseResultParser

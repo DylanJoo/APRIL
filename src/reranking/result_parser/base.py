@@ -14,8 +14,8 @@ class ResultParser(ABC):
         self, 
         outputs: Union[List[List[Union[float, int]]], List[str]],
         results: List[Result],
-        rank_start: int, 
-        rank_end: int
+        rank_start: int = None,
+        rank_end: int = None,
     ) -> Result:
         assert len(outputs) == len(results), "outputs and results must have the same length."
 
@@ -23,7 +23,7 @@ class ResultParser(ABC):
             if isinstance(output, str):
                 parsed_result = self._parse_responses(output, result, rank_start, rank_end)
             elif all(isinstance(x, list) for x in outputs):
-                parsed_result = self._parse_scores(output, result, rank_start, rank_end)
+                parsed_result = self._parse_scores(output, result)
             else:
                 raise TypeError(f"Unsupported outputs type: {type(outputs)}")
             results[index] = parsed_result
@@ -56,20 +56,18 @@ class ResultParser(ABC):
                 result.hits[j + rank_start]["score"] = cut_range[j]["score"]
         return result
 
-    def parse_scores(
+    def _parse_scores(
         self, 
         scores: List[Union[int, float]], 
         result: Result,
-        rank_start: int = 0,
-        rank_end: Optional[int] = None,
     ) -> List[Result]:
         """ Only focus on the top-k docs, the other will be the same order?"""
 
-        old_hits = copy.deepcopy(result.hits[rank_start:rank_end])
+        old_hits = copy.deepcopy(result.hits)
         min_score = min(scores) - 1
 
         for i, score in enumerate(scores):
-            result.hits[i]["score"] = s
+            result.hits[i]["score"] = score
 
         if len(scores) < len(old_hits):
             for i in range(len(scores), len(old_hits)):

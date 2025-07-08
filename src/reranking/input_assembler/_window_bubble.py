@@ -11,7 +11,6 @@ class WindowBubble(RerankStrategy):
         init_results: List[Result],
         rank_start: int,
         rank_end: int,
-        batch_size: Optional[int] = 8,
     ) -> List[Result]:
 
         rerank_results = [copy.deepcopy(result) for result in init_results]
@@ -33,7 +32,6 @@ class WindowBubble(RerankStrategy):
         results: List[Result],
         rank_start: int,
         rank_end: int,
-        batch_size: Optional[int] = 8,
     ) -> List[Result]:
         """
         Run a single pass of reranking.

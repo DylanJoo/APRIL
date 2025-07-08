@@ -10,12 +10,10 @@ class ScoreParser(BaseResultParser):
         self, 
         scores: List[Union[int, float]], 
         result: Result,
-        rank_start: int = 0,
-        rank_end: Optional[int] = None,
     ) -> List[Result]:
         """ Only focus on the top-k docs, the other will be the same order?"""
 
-        old_hits = copy.deepcopy(result.hits[rank_start:rank_end])
+        old_hits = copy.deepcopy(result.hits)
         min_score = min(scores) - 1
 
         for i, score in enumerate(scores):
@@ -25,4 +23,5 @@ class ScoreParser(BaseResultParser):
             for i in range(len(scores), len(old_hits)):
                 result.hits[i]["score"] = result.hits[i-1]["score"] - 1
 
+        result.sort_by("score")
         return result

@@ -1,3 +1,4 @@
+from copy import deepcopy
 from enum import Enum
 
 class Result:
@@ -16,6 +17,13 @@ class Result:
 
     def __repr__(self):
         return str(self.__dict__)
+
+    def sort_by(self, field: str = 'score'):
+        hits = deepcopy(self.hits)
+        hits.sort(key=lambda x: x[field], reverse=True)
+        for i, hit in enumerate(hits):
+            hit['rank'] = i + 1
+        self.hits = old_hits
 
 class RerankMode(Enum):
     RANK_GPT = "RankGPT"

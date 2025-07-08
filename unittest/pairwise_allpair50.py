@@ -18,13 +18,14 @@ for dataset in ['trec-dl-2019']:
         data={'ir_datasets_name': f'msmarco-passage/{dataset}/judged',
               'input_run': f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"},
         rerank_mode='Pairwise',
-        top_k=10,
-        llm={'max_model_len': 4096, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
+        top_k=100,
+        rank_end=50,
+        llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
     ).get_config()
 
     from reranking.wrapper import ModularReranker
     rankllm = ModularReranker(config, 
-        system_message= "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
+        system_message= "You are RelevanceJudgeLLM, an intelligent assistant that can compare two passages based on their relevancy to the query"
     )
 
     run = loader.load_run(config.data.input_run)
@@ -43,12 +44,12 @@ for dataset in ['trec-dl-2019']:
     )
 
     # prepare output run
-    output_path = os.path.join(run_path.replace('runs', f'runs/{config.rerank_mode}'))
+    output_path = os.path.join(config.data.input_run.replace('runs', f'runs/{config.rerank_mode}'))
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as f:
         for qid in reranked_run:
             for i, (docid, score) in enumerate(reranked_run[qid].items()):
-                f.write(f"{qid} Q0 {docid} {i+1} {score} li_rerank\n")
+                f.write(f"{qid} Q0 {docid} {i+1} {score} pa_rerank\n")
 
     # evaluation
     r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)

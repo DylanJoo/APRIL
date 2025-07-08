@@ -11,23 +11,23 @@ class PairAll(RerankStrategy):
         init_results: List[Result],
         rank_start: int,
         rank_end: int,
-        batch_size: Optional[int] = 8, # for fair comparison, this one would should be as same as the query-batch size of listwise
+        batch_size: Optional[int] = 32, # for fair comparison, this one would should be as same as the query-batch size of listwise
     ) -> List[Result]:
 
         results = [copy.deepcopy(result) for result in init_results]
-        all_scores = {result.qid: [0 for _ in result.hits] for result in init_results}
+        all_scores = {}
         
         # [NOTE] As the pairall would run larger batch. LLM is less likely to be the bottleneck.
         for result in results:
-            # prompts = self._prompt_builder.create_prompt_batched(result, rank_start, rank_end) # not using the batch
-            prompts = self._prompt_builder.create_prompt(result, rank_start, rank_end)
+            result.hits = [hit for hit in result.hits[:rank_end]]
+            all_scores[result.qid] = [0 for _ in result.hits]
+
+            prompts = self._prompt_builder.create_prompt(result, rank_start=0, rank_end=rank_end)
             idx_pairs = [(i, j) for i in range(len(result.hits)) for j in range(len(result.hits)) if i != j]
             assert len(prompts) == len(idx_pairs), f"Mismatch between prompts and index pairs, got {len(prompts)} and {len(idx_pairs)} index pairs."
 
             scores = []
             for batch_prompts in batch_iterator(prompts, batch_size):
-                # print([len(p) for p in batch_prompts])
-                # batch_scores = self._llm.generate(prompts=batch_prompts, prob=False)
                 batch_scores = self._llm.generate(prompts=batch_prompts, prob=self._rerank_mode.use_logits)
                 scores.extend(batch_scores)
             assert len(scores) == len(idx_pairs), "Mismatch between responses and prompts"
@@ -38,10 +38,9 @@ class PairAll(RerankStrategy):
                 all_scores[result.qid][j] += (1 - score)
 
         # Update and return reranked results
-        reranked_results = []
         reranked_results = self._result_parser.parse(
-            response_scores=[all_scores[result.qid] for result in results],
-            results=results,
+            [all_scores[result.qid] for result in results], 
+            init_results
         )
         return reranked_results
 
