@@ -5,11 +5,11 @@ from abc import ABC, abstractmethod
 from ..utils import Result
 
 class ResultParser(ABC):
-    """Base class for all parser"""
 
     def __init__(self, use_alpha=False):
         self._use_alpha = use_alpha
 
+    # [TODO] parse all, or maybe multithreading
     def parse(
         self, 
         outputs: Union[List[List[Union[float, int]]], List[str]],
@@ -29,14 +29,9 @@ class ResultParser(ABC):
             results[index] = parsed_result
         return results
 
-    def _parse_responses(
-        self, 
-        permutation: str, 
-        result,
-        rank_start: int, 
-        rank_end: int, 
-    ):
-        print(f"permutation: {permutation}")
+    def _parse_responses(self, permutation: str, result, rank_start: int, rank_end: int):
+
+        # print(f"permutation: {permutation}")
         response = self._clean_response(permutation)
         response = [int(x) - 1 for x in response.split()]
         response = self._remove_duplicate(response)
@@ -44,7 +39,7 @@ class ResultParser(ABC):
         original_rank = [tt for tt in range(len(cut_range))]
         response = [ss for ss in response if ss in original_rank]
         response = response + [tt for tt in original_rank if tt not in response] 
-        print(f"response: {response}, original_rank: {original_rank}")
+        # print(f"response: {response}, original_rank: {original_rank}")
 
         # [NOTE] separate this as a standalone function?
         # assign the rank to the unappeared document (assuming they are irrelevant)
@@ -56,22 +51,18 @@ class ResultParser(ABC):
                 result.hits[j + rank_start]["score"] = cut_range[j]["score"]
         return result
 
-    def _parse_scores(
-        self, 
-        scores: List[Union[int, float]], 
-        result: Result,
-    ) -> List[Result]:
-        """ Only focus on the top-k docs, the other will be the same order?"""
+    def _parse_scores(self, scores: List[Union[int, float]], result: Result):
+        assert len(scores) == len(result.hits), "scores and hits must have the same length."
 
-        old_hits = copy.deepcopy(result.hits)
+        init_hits = copy.deepcopy(result.hits)
         min_score = min(scores) - 1
 
-        for i, score in enumerate(scores):
-            result.hits[i]["score"] = score
-
-        if len(scores) < len(old_hits):
-            for i in range(len(scores), len(old_hits)):
-                result.hits[i]["score"] = result.hits[i-1]["score"] - 1
+        for i in range(len(init_hits)):
+            if i <= len(scores) - 1:
+                result.hits[i]["score"] = scores[i]
+            else:
+                result.hits[i]["score"] = min_score
+                min_score -= 1
 
         return result
 
