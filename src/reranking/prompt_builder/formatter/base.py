@@ -45,7 +45,6 @@ class BaseFormatter(ABC):
             title = doc.get('title', False)
             if 'contents' in doc:
                 text = doc['contents'].strip()
-                text = f"Title: {title} Content: {text}" if title else text
             else:
                 raise ValueError(f"Incorrect document dictionary format. Expected keys: 'title', 'contents': got {doc}")
         elif isinstance(doc, str):

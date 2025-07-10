@@ -18,13 +18,14 @@ class PairAll(RerankStrategy):
         all_scores = {}
         
         # [NOTE] As the pairall would run larger batch. LLM is less likely to be the bottleneck.
-        for result in results:
+        for index, result in enumerate(results):
             result.hits = [hit for hit in result.hits[:rank_end]]
             all_scores[result.qid] = [0 for _ in result.hits]
 
             idx_pairs = [(i, j) for i in range(len(result.hits)) for j in range(len(result.hits)) if i != j]
             prompts = self._prompt_builder.create_prompt(result, rank_start=0, rank_end=rank_end)
-            assert len(prompts) == len(idx_pairs), f"Mismatch between prompts and index pairs, got {len(prompts)} and {len(idx_pairs)} index pairs."
+            assert len(prompts) == len(idx_pairs), \
+                    f"Mismatch between prompts and index pairs, got {len(prompts)} and {len(idx_pairs)} index pairs."
 
             scores = []
             for batch_prompts in batch_iterator(prompts, batch_size):

@@ -25,8 +25,8 @@ def main(
     model = LLM(model_name_or_path, temperature=0, top_p=1, logprobs=20, max_tokens=3, max_model_len=8196)
 
     system_prompt = """You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"""
-    user_prompt = """I will provide you with two passages. Read and memorize both carefully. Your task is to determine which the following passage is more relevant to the search query: {query}\n\n"""
-    user_prompt += """"Passage 1: {cand1}\nPassage 2: {cand2}\nQuery: {query}\n\nBased on the query, is the Passage 1 more relevant than Passage 2?\nPlease answer 'Yes' or 'No'.\nAnswer: """
+    user_prompt = """I will provide you with two passages. Read and memorize both carefully. Your task is to determine which passage is more relevant to the query: {query}\n\n"""
+    user_prompt += """Passage 1: {cand1}\nPassage 2: {cand2}\nQuery: {query}\n\nBased on the query, is the Passage 1 more relevant than Passage 2?\nPlease answer 'Yes' or 'No'.\nAnswer: """
     template = model.tokenizer.apply_chat_template(
         conversation=[
             {"role": "system", "content": system_prompt},
@@ -45,11 +45,10 @@ def main(
         template=template,
     )
 
-    if topk >= 50:
-        with open(run_path.replace('runs', 'pa_reranked_runs'), 'w') as f:
-            for qid in reranked_run:
-                for i, (docid, score) in enumerate(reranked_run[qid].items()):
-                    f.write(f"{qid} Q0 {docid} {i+1} {score} pa_rerank\n")
+    with open(run_path.replace('runs', 'pa_reranked_runs'), 'w') as f:
+        for qid in reranked_run:
+            for i, (docid, score) in enumerate(reranked_run[qid].items()):
+                f.write(f"{qid} Q0 {docid} {i+1} {score} pa_rerank\n")
 
     # evaluation
     r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)
@@ -73,7 +72,7 @@ for dataset in ['trec-dl-2019']:
     results[dataset] = main(
         model_name_or_path=model_name_or_path,
         run_path=run_path,
-        topk=100,
+        topk=10,
         ir_datasets_name=f'msmarco-passage/{dataset}/judged',
         use_logits=True, use_alpha=True,
         variable_passages=False,

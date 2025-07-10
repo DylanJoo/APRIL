@@ -23,7 +23,8 @@ class Result:
         hits.sort(key=lambda x: x[field], reverse=True)
         for i, hit in enumerate(hits):
             hit['rank'] = i + 1
-        self.hits = old_hits
+        self.hits = hits
+        return hits
 
 class RerankMode(Enum):
     RANK_GPT = "RankGPT"

@@ -5,10 +5,10 @@ from typing import List
 from reranking.utils import batch_iterator
 import logging
 from itertools import combinations
+from ftfy import fix_text
 
 logger = logging.getLogger(__name__)
 
-# template = "Passage: {doc}\nQuery: {query}\nIs this passage relevant to the query?\nPlease answer 'Yes' or 'No'.\nAnswer: "
 
 def rerank(
     model: str,
@@ -26,15 +26,17 @@ def rerank(
         candidates = [docid for docid in run[qid]]
         pairs = [(i, j) for i in range(len(candidates)) for j in range(len(candidates)) if i != j]
         for i, j in pairs:
-            prompts.append(template.format(
-                cand1=corpus[candidates[i]]["contents"], 
-                cand2=corpus[candidates[j]]["contents"], 
-                query=query
+            prompts.append(
+                    template.format(
+                    cand1=" ".join(corpus[candidates[i]]["contents"].split()), 
+                    cand2=" ".join(corpus[candidates[j]]["contents"].split()),
+                    query=query
             ))
             id_pairs.append((qid, i, j))
 
     with open('rerank_prompts-old.txt', 'w') as f:
-        f.write(prompts[0])
+        for p in prompts:
+            f.write(f"{p}\n")
 
     # token identifier
     tokenizer = model.tokenizer

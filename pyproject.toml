@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reranking"
-version = "0.1.0"
+version = "0.1.10"
 description = "A modular reranking library with pluggable LLM, prompt, and parser interfaces."
 authors = [{ name = "Dylan Ju", email = "dylanjootw@gmail.com" }]
 dependencies = []

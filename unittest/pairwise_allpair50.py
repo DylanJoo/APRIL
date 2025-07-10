@@ -20,6 +20,7 @@ for dataset in ['trec-dl-2019']:
         rerank_mode='Pairwise',
         top_k=100,
         rank_end=10,
+        score_aggregation="symsumlog",
         llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
     ).get_config()
 

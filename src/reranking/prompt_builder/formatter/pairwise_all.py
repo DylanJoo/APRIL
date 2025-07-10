@@ -6,7 +6,7 @@ class PairwiseAllFormatter(BaseFormatter):
     def prefix(self, query: str, doc_list: Optional[List[Dict]] = None, *kwargs) -> str:
         return (
             f"I will provide you with two passages. Read and memorize both carefully. "
-            f"Your task is to determine which the following passage is more relevant to the search query: {query}\n\n"
+            f"Your task is to determine which passage is more relevant to the query: {query}\n\n"
         )
 
     def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:
@@ -19,7 +19,6 @@ class PairwiseAllFormatter(BaseFormatter):
         template = "Passage 1: {doc1}\nPassage 2: {doc2}\nQuery: {query}\n\n"
 
         doc_list = [self._document_format(doc) for doc in doc_list]
-        prompt_body = ""
         idx_pairs = [(i, j) for i in range(len(doc_list)) for j in range(len(doc_list)) if i != j]
         prompts = []
         for i, j in idx_pairs:

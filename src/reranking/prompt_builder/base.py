@@ -45,7 +45,6 @@ class PromptBuilder:
                     )
                 )
                 all_completed_prompts.extend(completed_prompts)
-        return all_completed_prompts
 
     def create_prompt(
         self, 
@@ -75,9 +74,7 @@ class PromptBuilder:
         postfix = self.formatter.postfix(query=query, doc_list=doc_list)
         body = self.formatter.body(query=query, doc_list=doc_list, max_length=None)
 
-        if isinstance(postfix, str) and isinstance(body, str):
-            # [NOTE] Sacrifice consistency for simplicity
-            # prefix, body, postfix = [prefix], [body], [postfix]
+        if isinstance(postfix, str) and isinstance(body, str): # [NOTE] Sacrifice consistency for simplicity
             prompt, token_count = self._convert_message_to_prompt(messages, prefix, body, postfix)
             return prompt
         elif isinstance(body, list) and isinstance(postfix, str):
@@ -114,8 +111,8 @@ class PromptBuilder:
             )
         else:
             prompt = prefix + body + postfix
-        prompt = fix_text(prompt)
 
+        prompt = fix_text(prompt)
         num_tokens = self.get_num_tokens(prompt) 
         return prompt, num_tokens
 
