@@ -29,15 +29,14 @@ class PromptBuilder:
     def create_prompt_batched(
         self,
         results: List[Result],
-        rank_start: int,
-        rank_end: int,
+        rank_start: int = 0,
+        rank_end: int = None,
         batch_size: int = 32,
     ) -> List[Tuple[str, int]]:
 
         all_completed_prompts = []
         with ThreadPoolExecutor() as executor:
-            for batch in tqdm(batch_iterator(results, batch_size), desc="Creating prompts"):
-                # list of tuples: # [ [prompt set 1], [prompt set 2], ... ]
+            for batch in batch_iterator(results, batch_size):
                 completed_prompts = list(
                     executor.map(
                         lambda result: self.create_prompt(result, rank_start, rank_end), 
@@ -50,8 +49,8 @@ class PromptBuilder:
     def create_prompt(
         self, 
         result: Result,
-        rank_start: int,
-        rank_end: int,
+        rank_start: int = 0,
+        rank_end: int = None,
     ) -> Union[Tuple[str, int], List[Tuple[str, int]]]:
         """
         Only consider the result in the range of [rank_start, rank_end].
@@ -72,7 +71,7 @@ class PromptBuilder:
 
         prefix = self.formatter.prefix(query=query, doc_list=doc_list)
         postfix = self.formatter.postfix(query=query, doc_list=doc_list)
-        body = self.formatter.body(query=query, doc_list=doc_list)
+        body = self.formatter.body(query=query, doc_list=doc_list, rank_end=rank_end)
 
         if isinstance(postfix, str) and isinstance(body, str): # [NOTE] Sacrifice consistency for simplicity
             prompt, token_count = self._convert_message_to_prompt(messages, prefix, body, postfix)

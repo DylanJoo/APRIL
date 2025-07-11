@@ -15,13 +15,11 @@ class PairwiseTopKFormatter(BaseFormatter):
             "Only respond with Yes or No. Do not exaplain.\nAnswer: "
         )
 
-    def body(self, query: str, doc_list: List[Union[Dict, str]], **kwargs) -> str:
+    def body(self, query: str, doc_list: List[Union[Dict, str]], rank_end: int, **kwargs) -> str:
         template = "Passages\n[1] {doc1}\n[2] {doc2}\nQuery: {query}\n\n"
 
-        doc_list = [self._document_format(doc) for doc in doc_list]
-        # idx_pairs = [(i, j) for i in range(len(doc_list)) for j in range(len(doc_list)) if i != j]
-        prompts = []
-        # for i, j in idx_pairs:
-        #     prompt = template.format(query=query, doc1=doc_list[i], doc2=doc_list[j])
-        #     prompts.append(prompt)
-        # return prompts
+        # Assume the doc at bottom should be moved 
+        doc1 = self._document_format(doc_list[rank_end-1]) 
+        doc2 = self._document_format(doc_list[rank_end-2])
+        prompt = template.format(query=query, doc1=doc1, doc2=doc2)
+        return prompt

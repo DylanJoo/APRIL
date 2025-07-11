@@ -20,9 +20,11 @@ class ResultParser(ABC):
         assert len(outputs) == len(results), "outputs and results must have the same length."
 
         for index, (output, result) in enumerate(zip(outputs, results)):
-            if isinstance(output, str):
+            if isinstance(output, str): # e.g., RankGPT
                 parsed_result = self._parse_responses(output, result, rank_start, rank_end)
-            elif all(isinstance(x, list) for x in outputs):
+            if isinstance(output, float): # e.g., Pairwise topk
+                parsed_result = self._parse_swap(output, result, rank_end)
+            elif all(isinstance(x, list) for x in outputs): # e.g., Pairwise All, Pointwise
                 parsed_result = self._parse_scores(output, result)
             else:
                 raise TypeError(f"Unsupported outputs type: {type(outputs)}")
@@ -42,6 +44,16 @@ class ResultParser(ABC):
 
         for j, x in enumerate(response):
             result.hits[j + rank_start] = copy.deepcopy(cut_range[x])
+        return result
+
+    # [NOTE] dylan: i dont think the score matter in this ranking, ignore it for now.
+    def _parse_swap(self, swap: float, result: Result, rank_end: int) -> Result:
+        if swap < 0.5: # means passage [1] > [2] (hits[rank_end-1] > hits[rank_end-2])
+            return result
+
+        init_hits = copy.deepcopy(result.hits)
+        result.hits[rank_end - 1] = init_hits[rank_end - 2]
+        result.hits[rank_end - 2] = init_hits[rank_end - 1]
         return result
 
     def _parse_scores(self, scores: List[Union[int, float]], result: Result):

@@ -20,8 +20,10 @@ class ModularReranker:
 
         # initialize method
         rerank_mode = RerankMode(config.rerank_mode)
-        print(f"[Model] {config.llm.model_name_or_path}") 
-        print(f"{rerank_mode}")
+        print(f"""
+        [Model] {config.llm.model_name_or_path} # [TODO] make this as __str__ also.
+        {rerank_mode}
+        """)
 
         # initlaize instances 
         prompt_builder = PromptBuilder(
@@ -83,12 +85,17 @@ class ModularReranker:
         init_results = self.convert_run_to_result(run, queries, corpus)
 
         reranked_results = []
-        for batch_results in tqdm(batch_iterator(init_results, size=query_batch_size), desc="Batch reranking"):
+        for batch_results in tqdm(
+            batch_iterator(init_results, size=query_batch_size), 
+            desc=f"Reranking with query batch size {query_batch_size}",
+            total=len(init_results) // query_batch_size + 1
+        ):
             batch_reranked_results = self.assembler.run(
                 init_results=batch_results, 
                 rank_start=0,
                 rank_end=min(self.config.rank_end, self.config.top_k),
                 batch_size=query_batch_size,
+                num_runs=self.config.num_runs,
             )
             reranked_results.extend(batch_reranked_results)
 

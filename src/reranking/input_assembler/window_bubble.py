@@ -13,6 +13,7 @@ class WindowBubble(RerankStrategy):
         rank_end: int,
         **kwargs
     ) -> List[Result]:
+        """ [TODO] replace with for loop """
 
         rerank_results = [copy.deepcopy(result) for result in init_results]
 

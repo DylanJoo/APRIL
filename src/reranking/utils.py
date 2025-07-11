@@ -28,22 +28,25 @@ class Result:
 
 class RerankMode(Enum):
     RANK_GPT = "RankGPT"
-    PAIRWISE_ALL = "AllPair"
+    PAIRWISE_ALL = "PairAll"
+    PAIRWISE_TOPK = "PairTopK"
     APRIL = "April"
 
     @property
     def prompt_builder_name(self):
         return {
             "RankGPT": "listwise", 
-            "AllPair": "pairwise",
-            "APRIL": "listwise"
+            "PairAll": "pairwise",
+            "PairTopK": "pairwise",
+            "APRIL": "listwise",
         }[self.value]
 
     @property
     def use_logits(self):
         return {
             "RankGPT": False, 
-            "AllPair": True, 
+            "PairAll": True, 
+            "PairTopK": True,
             "April": True, 
         }[self.value]
 
@@ -51,7 +54,8 @@ class RerankMode(Enum):
     def result_parser_name(self):
         return {
             "RankGPT": "text_list", 
-            "AllPair": "prob", 
+            "PairAll": "prob", 
+            "PairTopK": "prob",
             "April": "prob", 
         }[self.value]
 

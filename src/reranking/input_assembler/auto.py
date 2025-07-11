@@ -2,12 +2,13 @@
 from ..utils import RerankMode
 from .window_bubble import WindowBubble
 from .pair_all import PairAll
+from ._pair_bubble_topk import PairBubbleTopK
 
 class AutoAssembler:
     _builder_map = {
         RerankMode.RANK_GPT: WindowBubble,
         RerankMode.PAIRWISE_ALL: PairAll,
-        # RerankMode.APRIL: April,
+        RerankMode.PAIRWISE_TOPK: PairBubbleTopK,
     }
     @classmethod
     def from_config(cls, config=None, rerank_mode=None, **kwargs):
