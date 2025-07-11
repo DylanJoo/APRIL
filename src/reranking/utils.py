@@ -28,34 +28,38 @@ class Result:
 
 class RerankMode(Enum):
     RANK_GPT = "RankGPT"
-    PAIRWISE = "Pairwise"
+    PAIRWISE_ALL = "AllPair"
+    APRIL = "April"
 
     @property
     def prompt_builder_name(self):
         return {
             "RankGPT": "listwise", 
-            "Pairwise": "pairwise"
+            "AllPair": "pairwise",
+            "APRIL": "listwise"
         }[self.value]
 
     @property
     def use_logits(self):
         return {
             "RankGPT": False, 
-            "Pairwise": True, 
+            "AllPair": True, 
+            "April": True, 
         }[self.value]
 
     @property
     def result_parser_name(self):
         return {
             "RankGPT": "text_list", 
-            "Pairwise": "prob", 
+            "AllPair": "prob", 
+            "April": "prob", 
         }[self.value]
 
     def __str__(self):
-        return f"""[{self.value}]
-          - prompt_builder_name: {self.prompt_builder_name})
-          - use logits: {self.use_logits}
-          - tresult_parser_name: {self.result_parser_name}
+        return f"""
+        [{self.value}]
+        - PROMPT_BUILDER FORMATTER: {self.prompt_builder_name}
+        - RESULT_PARSER: {self.result_parser_name}
         """
 
 def batch_iterator(iterable, size=1, return_index=False):

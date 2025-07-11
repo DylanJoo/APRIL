@@ -31,7 +31,6 @@ class ResultParser(ABC):
 
     def _parse_responses(self, permutation: str, result, rank_start: int, rank_end: int):
 
-        # print(f"permutation: {permutation}")
         response = self._clean_response(permutation)
         response = [int(x) - 1 for x in response.split()]
         response = self._remove_duplicate(response)
@@ -41,15 +40,11 @@ class ResultParser(ABC):
         response = response + [tt for tt in original_rank if tt not in response] 
         # print(f"response: {response}, original_rank: {original_rank}")
 
-        # assign the rank to the unappeared document (assuming they are irrelevant)
         for j, x in enumerate(response):
-            result.hits[j + rank_start] = copy.deepcopy(cut_range[x]) # copy the document
-
-        # result = 
+            result.hits[j + rank_start] = copy.deepcopy(cut_range[x])
         return result
 
     def _parse_scores(self, scores: List[Union[int, float]], result: Result):
-        assert len(scores) <= len(result.hits), f"scores and hits must have the same length, got {len(scores)} and {len(result.hits)}"
 
         init_hits = copy.deepcopy(result.hits)
         min_score = min(scores) - 1

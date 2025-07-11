@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 from ftfy import fix_text
 
-from ..utils import RerankMode, Result, batch_iterator
+from ..utils import Result, batch_iterator
 from .formatter.auto import AutoPromptFormatter
 
 class PromptBuilder:
@@ -45,6 +45,7 @@ class PromptBuilder:
                     )
                 )
                 all_completed_prompts.extend(completed_prompts)
+        return all_completed_prompts
 
     def create_prompt(
         self, 
@@ -52,9 +53,8 @@ class PromptBuilder:
         rank_start: int,
         rank_end: int,
     ) -> Union[Tuple[str, int], List[Tuple[str, int]]]:
-        r"""batch processing of results to create prompts using multithreading.
-        Returns:
-            (str, str): A tuple containing two strings
+        """
+        Only consider the result in the range of [rank_start, rank_end].
         """
         # system message (if applicable)
         if self.system_message_supported and self.system_message:
@@ -72,7 +72,7 @@ class PromptBuilder:
 
         prefix = self.formatter.prefix(query=query, doc_list=doc_list)
         postfix = self.formatter.postfix(query=query, doc_list=doc_list)
-        body = self.formatter.body(query=query, doc_list=doc_list, max_length=None)
+        body = self.formatter.body(query=query, doc_list=doc_list)
 
         if isinstance(postfix, str) and isinstance(body, str): # [NOTE] Sacrifice consistency for simplicity
             prompt, token_count = self._convert_message_to_prompt(messages, prefix, body, postfix)
@@ -112,7 +112,7 @@ class PromptBuilder:
         else:
             prompt = prefix + body + postfix
 
-        prompt = fix_text(prompt)
+        prompt = fix_text(prompt) # [NOTE] this is odd but it helps...
         num_tokens = self.get_num_tokens(prompt) 
         return prompt, num_tokens
 

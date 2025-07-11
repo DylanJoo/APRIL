@@ -22,8 +22,9 @@ class ListwiseFormatter(BaseFormatter):
 
     def body(self, query: str, doc_list: Optional[List[Dict]], **kwargs) -> str:
         prompt_body = ""
+        doc_list = [self._document_format(doc) for doc in doc_list]
         for i, doc in enumerate(doc_list, start=1): # chr(65) is 'A'
             identifier = f"[{chr(64 + i)}]" if self._use_alpha else f"[{i}]"
-            doc_text = self._document_format(doc)
-            prompt_body += f"{identifier} {self.replace_number(doc_text)}\n"
+            doc_text = self.replace_number(doc)
+            prompt_body += f"{identifier} {doc_text}\n"
         return prompt_body

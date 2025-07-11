@@ -16,6 +16,7 @@ class WindowBubble(RerankStrategy):
 
         rerank_results = [copy.deepcopy(result) for result in init_results]
 
+        # Bubble sort (from bottom-window to top-window)
         end_pos = rank_end
         start_pos = rank_end - self._window_size
 
@@ -24,6 +25,11 @@ class WindowBubble(RerankStrategy):
             rerank_results = self.run_pass(rerank_results, start_pos, end_pos)
             end_pos = end_pos - self._step_size
             start_pos = start_pos - self._step_size
+
+        for result in rerank_results: # reciprocal rank
+            for rank, hit in enumerate(result.hits, start=1):
+                hit['score'] = float(1/rank)
+                hit['rank'] = rank
         return rerank_results
 
     ## [TODO] maybe we need to set the batch size if one query requires huge amount of prompts/inference. 
@@ -34,14 +40,9 @@ class WindowBubble(RerankStrategy):
         rank_start: int,
         rank_end: int,
     ) -> List[Result]:
-        """
-        Run a single pass of reranking.
-        This method is generally shared across strategies, but can be overridden.
-        """
+
         prompts = self._prompt_builder.create_prompt_batched(results, rank_start, rank_end)
         outputs = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
-
-        assert len(outputs) == len(prompts), "Mismatch between prompts and outputs"
 
         reranked_results = self._result_parser.parse(
             outputs=outputs,

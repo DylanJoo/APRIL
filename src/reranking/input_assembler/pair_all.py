@@ -1,7 +1,8 @@
+import math
 import copy
 from typing import Optional, Tuple, List, Dict, Union, Any
 
-from ..utils import RerankMode, Result, batch_iterator
+from ..utils import Result, batch_iterator
 from .base import RerankStrategy
 
 class PairAll(RerankStrategy):
@@ -33,14 +34,10 @@ class PairAll(RerankStrategy):
             for batch_prompts in batch_iterator(prompts, batch_size):
                 batch_scores = self._llm.generate(prompts=batch_prompts, prob=self._rerank_mode.use_logits)
                 scores.extend(batch_scores)
-            assert len(prompts) == len(idx_pairs), \
-                    f"Mismatch between prompts and index pairs, got {len(prompts)} and {len(idx_pairs)} index pairs."
-            assert len(scores) == len(idx_pairs), "Mismatch between responses and prompts"
 
             ## Pairwise score aggregation
-            ### * r(d_i) = P(d_i > d_j) + ( 1 - P(d_j > d_i))
-            ### * r(d_i) = log(P(d_i > d_j)) + ( 1 - P(d_j > d_i))
             for (i, j), score in zip(idx_pairs, scores):
+                score = math.log(score) if self.config.score_aggregation == 'symsumlog' else score
                 all_scores[result.qid][i] += score
                 all_scores[result.qid][j] += (1 - score)
 
@@ -52,4 +49,4 @@ class PairAll(RerankStrategy):
         return reranked_results
 
     def run_pass(self, **kwargs: Any):
-        raise NotImplementedError("PairAll does not support run_pass. Use run instead.")
+        raise NotImplementedError("PairAll does not support `run_pass`. Use run instead.")

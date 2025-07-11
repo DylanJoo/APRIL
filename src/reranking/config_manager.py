@@ -66,6 +66,9 @@ class ConfigManager:
         if value.lower() in {"true", "false"}:
             print(f"Converting '{value}' to boolean")
             return value.lower() == "true"
+        if value.lower() in {"none", "null"}:
+            print(f"Converting '{value}' to None")
+            return None
         try:
             return int(value)
         except ValueError:

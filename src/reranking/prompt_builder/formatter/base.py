@@ -9,7 +9,7 @@ class BaseFormatter(ABC):
         self, 
         use_alpha=False, 
         variable_passages=False,
-        max_doc_length=1024
+        max_doc_length=None
     ):
         self._use_alpha = use_alpha
         self._variable_passages = variable_passages 
@@ -38,7 +38,6 @@ class BaseFormatter(ABC):
         """Returns the body of the prompt."""
         pass
 
-    # Unified preprocessing function for documents
     # [TODO] Equalize the max length
     def _document_format(self, doc: Union[str, Dict]) -> str:
         if isinstance(doc, dict):
@@ -52,7 +51,10 @@ class BaseFormatter(ABC):
         else:
             raise ValueError(f"Document must be a string or a dictionary with 'content' key: got {doc}")
 
-        return " ".join(text.split()[:self.max_doc_length])  
+        if self.max_doc_length is not None:
+            return " ".join(text.split()[:self.max_doc_length])  
+        else:
+            return text
 
     def replace_number(self, text: str) -> str:
         if self._use_alpha:

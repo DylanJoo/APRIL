@@ -2,11 +2,13 @@
 from ...utils import RerankMode
 from .listwise import ListwiseFormatter
 from .pairwise_all import PairwiseAllFormatter
+from .april import AprilFormatter
 
 class AutoPromptFormatter:
     _builder_map = {
         RerankMode.RANK_GPT: ListwiseFormatter,
-        RerankMode.PAIRWISE: PairwiseAllFormatter,
+        RerankMode.PAIRWISE_ALL: PairwiseAllFormatter,
+        # RerankMode.APRIL: AprilFormatter,
     }
     @classmethod
     def from_config(cls, config=None, rerank_mode=None, **kwargs):
@@ -17,4 +19,4 @@ class AutoPromptFormatter:
                 f"No prompt builder found for mode: {rerank_mode}\n" 
                 f"available modes: {list(cls._builder_map.keys())}"
             )
-        return builder_cls(max_doc_length=1024, **kwargs)
+        return builder_cls(**kwargs)

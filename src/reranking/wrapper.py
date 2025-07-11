@@ -7,8 +7,6 @@ from .config_manager import ConfigManager
 from .input_assembler import AutoAssembler
 from .prompt_builder import PromptBuilder
 from .llm_provider.vllm_api import LLM 
-# from .llm_provider.vllm_back import LLM # use a llm wrapper to handle
-# from .llm_provider.litellm_api import LLM
 from .result_parser import ResultParser
 
 class ModularReranker:
@@ -31,6 +29,7 @@ class ModularReranker:
             rerank_mode=rerank_mode,
             include_system_message=include_system_message,
             system_message=system_message,
+            max_doc_length=config.max_doc_length,
             use_alpha=False, 
             variable_passages=True,
         )

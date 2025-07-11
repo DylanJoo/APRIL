@@ -1,12 +1,13 @@
 ## [NOTE] dynamically shrink the body size via length of documents?
 from ..utils import RerankMode
-from ._window_bubble import WindowBubble
-from ._pair_all import PairAll
+from .window_bubble import WindowBubble
+from .pair_all import PairAll
 
 class AutoAssembler:
     _builder_map = {
         RerankMode.RANK_GPT: WindowBubble,
-        RerankMode.PAIRWISE: PairAll,
+        RerankMode.PAIRWISE_ALL: PairAll,
+        # RerankMode.APRIL: April,
     }
     @classmethod
     def from_config(cls, config=None, rerank_mode=None, **kwargs):

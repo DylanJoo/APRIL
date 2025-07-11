@@ -83,23 +83,6 @@ class LLM:
                 output = last_text = output.outputs[0].text
         return output
 
-    # [TODO] not working on vllm v1 engine
-    # async def _iterate_over_output(self, output_iterator, use_logprobs=False) -> str:
-    #     output = None
-    #     otuput = await output_iterator.get()
-    #     return output
-
-    # async def _iterate_over_output(self, collector, use_logprobs=False):
-    #     while True:
-    #         try:
-    #             print(f"Collector: {collector}")
-    #             output = await collector.get()
-    #             print(f"output: {output}")
-    #             yield output
-    #         except Exception as e:
-    #             # Handle or re-raise depending on your needs
-    #             raise e
-
     async def _agenerate_text(self, prompts, sampling_params):
         request_ids = [str(uuid.uuid4()) for _ in range(len(prompts))]
 

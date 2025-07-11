@@ -9,15 +9,16 @@ llm:
   backend: vllm
 
 rerank_mode: Pairwise
-aggregation: symsum
+score_aggregation: symsum
 top_k: 100 
 rank_start: 0
 rank_end: 50
 
-max_length: 10240
+max_model_length: 10240
+max_doc_length: null
 context_size: 2048
-window_size: 20
-step_size: 10
+window_size: null
+step_size: null
 
 output_run: ../../runs/temp.txt
 save_path: ./checkpoints/model.pt
