@@ -10,7 +10,7 @@ home_dir=str(Path.home())
 os.makedirs(f"{home_dir}/APRIL/pa_reranked_runs", exist_ok=True)
 
 results = {}
-for dataset in ['trec-dl-2019']:
+for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     results[dataset] = {}
 
     from reranking.config_manager import ConfigManager
@@ -19,8 +19,8 @@ for dataset in ['trec-dl-2019']:
               'input_run': f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"},
         rerank_mode='Pairwise',
         top_k=100,
-        rank_end=10,
-        score_aggregation="symsumlog",
+        rank_end=100,
+        score_aggregation="symsum",
         llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
     ).get_config()
 

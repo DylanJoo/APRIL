@@ -26,7 +26,7 @@ def main(
 
     system_prompt = """You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"""
     user_prompt = """I will provide you with two passages. Read and memorize both carefully. Your task is to determine which passage is more relevant to the query: {query}\n\n"""
-    user_prompt += """Passage 1: {cand1}\nPassage 2: {cand2}\nQuery: {query}\n\nBased on the query, is the Passage 1 more relevant than Passage 2?\nPlease answer 'Yes' or 'No'.\nAnswer: """
+    user_prompt += """Passage [1] {cand1}\n[2] {cand2}\n\nQuery:\n{query}\n\nBased on the query, is the Passage [1] more relevant than Passage [2]?\nPlease answer 'Yes' or 'No'.\nAnswer: """
     template = model.tokenizer.apply_chat_template(
         conversation=[
             {"role": "system", "content": system_prompt},

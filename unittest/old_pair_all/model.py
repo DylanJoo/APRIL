@@ -27,10 +27,10 @@ def rerank(
         pairs = [(i, j) for i in range(len(candidates)) for j in range(len(candidates)) if i != j]
         for i, j in pairs:
             prompts.append(
-                    template.format(
+                    fix_text(template.format(
                     cand1=" ".join(corpus[candidates[i]]["contents"].split()), 
                     cand2=" ".join(corpus[candidates[j]]["contents"].split()),
-                    query=query
+                    query=query)
             ))
             id_pairs.append((qid, i, j))
 
