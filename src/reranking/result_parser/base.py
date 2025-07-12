@@ -48,7 +48,7 @@ class ResultParser(ABC):
 
     # [NOTE] dylan: i dont think the score matter in this ranking, ignore it for now.
     def _parse_swap(self, swap: float, result: Result, rank_end: int) -> Result:
-        if swap < 0.5: # means passage [1] > [2] (hits[rank_end-1] > hits[rank_end-2])
+        if swap < 0: # means passage [1] > [2] (hits[rank_end-1] > hits[rank_end-2])
             return result
 
         init_hits = copy.deepcopy(result.hits)

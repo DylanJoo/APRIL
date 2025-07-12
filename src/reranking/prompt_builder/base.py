@@ -26,12 +26,14 @@ class PromptBuilder:
             return [self._tokenizer(p, return_tensors="pt").input_ids.shape[1] for p in prompt]
         return self._tokenizer(prompt, return_tensors="pt").input_ids.shape[1]
 
+    # remove the kwargs later
     def create_prompt_batched(
         self,
         results: List[Result],
         rank_start: int = 0,
         rank_end: int = None,
         batch_size: int = 32,
+        **kwargs
     ) -> List[Tuple[str, int]]:
 
         all_completed_prompts = []
@@ -39,7 +41,7 @@ class PromptBuilder:
             for batch in batch_iterator(results, batch_size):
                 completed_prompts = list(
                     executor.map(
-                        lambda result: self.create_prompt(result, rank_start, rank_end), 
+                        lambda result: self.create_prompt(result, rank_start, rank_end, **kwargs), 
                         batch,
                     )
                 )
@@ -51,6 +53,7 @@ class PromptBuilder:
         result: Result,
         rank_start: int = 0,
         rank_end: int = None,
+        reverse: bool = False,
     ) -> Union[Tuple[str, int], List[Tuple[str, int]]]:
         """
         Only consider the result in the range of [rank_start, rank_end].
@@ -71,7 +74,7 @@ class PromptBuilder:
 
         prefix = self.formatter.prefix(query=query, doc_list=doc_list)
         postfix = self.formatter.postfix(query=query, doc_list=doc_list)
-        body = self.formatter.body(query=query, doc_list=doc_list, rank_end=rank_end)
+        body = self.formatter.body(query=query, doc_list=doc_list, rank_end=rank_end, reverse=reverse)
 
         if isinstance(postfix, str) and isinstance(body, str): # [NOTE] Sacrifice consistency for simplicity
             prompt, token_count = self._convert_message_to_prompt(messages, prefix, body, postfix)

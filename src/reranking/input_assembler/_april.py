@@ -6,11 +6,8 @@ from typing import Optional, Tuple, List, Dict, Union, Any
 from .base import RerankStrategy
 from ..utils import Result
 
-class PairBubbleTopK(RerankStrategy):
-    """ 
-    To better compare between squential dependence reranking (e.g., listwise).  The pairwise reranking run LLM calls teratively.  
-    [TODO] add number of passes as a parameter.
-    """
+class April(RerankStrategy):
+
     def run(
         self,
         init_results: List[Result],
@@ -19,14 +16,14 @@ class PairBubbleTopK(RerankStrategy):
         num_runs: Optional[int] = 1,
         **kwargs
     ) -> List[Result]:
-
         # w_end = [rank_end, rank_end - step_size, ...] 
+
         rerank_results = [copy.deepcopy(result) for result in init_results]
 
         for i_run in range(num_runs):
             for w_end in tqdm(   
                 range(rank_end, rank_start, -self._step_size), 
-                desc=f"Pairwise Bubble (the {i_run+1} run) from {rank_start}",
+                desc=f"APRIL (the {i_run+1} run) from {rank_start}",
             ):
                 w_start = max(rank_start, w_end - self._window_size)
                 rerank_results = self.run_pass(rerank_results, w_start, w_end)
@@ -34,8 +31,9 @@ class PairBubbleTopK(RerankStrategy):
                 # ignore the last pass as it was done and also not a full window
                 if w_start == rank_start: 
                     break
-                # update the rank_start for the next run (or maybe not)
-                # rank_start = rank_start + self._step_size
+
+            # update the rank_start for the next run
+            rank_start = rank_start + self._step_size
 
         # Assign reciprocal rank
         for result in rerank_results:
@@ -55,11 +53,6 @@ class PairBubbleTopK(RerankStrategy):
         prompts = self._prompt_builder.create_prompt_batched(results=results, rank_end=rank_end)
         outputs = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
 
-        # do the reverse
-        prompts = self._prompt_builder.create_prompt_batched(results=results, rank_end=rank_end, reverse=True)
-        outputs_reverse = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
-        outputs = [o - o_reverse for o, o_reverse in zip(outputs, outputs_reverse)]
-
         reranked_results = self._result_parser.parse(
             outputs=outputs,
             results=results,
@@ -67,4 +60,3 @@ class PairBubbleTopK(RerankStrategy):
             rank_end=rank_end,
         )
         return reranked_results
-

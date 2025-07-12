@@ -12,7 +12,7 @@ class PairwiseAllFormatter(BaseFormatter):
     def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:
         return (
             "Based on the query, is the Passage [1] more relevant than Passage [2]?\n"
-            "Only respond with Yes or No. Do not exaplain.\nAnswer: "
+            "Only respond with Yes or No, do not explain.\nAnswer: "
         )
 
     def body(self, query: str, doc_list: List[Union[Dict, str]], **kwargs) -> str:
