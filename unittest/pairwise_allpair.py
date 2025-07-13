@@ -10,8 +10,8 @@ home_dir=str(Path.home())
 from reranking.config_manager import ConfigManager
 config = ConfigManager(
     rerank_mode='PairAll',
-    top_k=100,
-    rank_end=100,
+    top_k=50,
+    rank_end=50,
     score_aggregation="symsum",
     llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
 ).get_config()
@@ -23,11 +23,11 @@ rankllm = ModularReranker(
 )
 
 results = {}
-for dataset in ['trec-dl-2019', 'trec-dl-2020']:
+for dataset in ['trec-dl-2021', 'trec-dl-2022']:
     results[dataset] = {}
 
-    config.data.ir_datasets_name = f'msmarco-passage/{dataset}/judged'
-    config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"
+    config.data.ir_datasets_name = f'msmarco-passage-v2/{dataset}/judged'
+    config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-passage-v2.bm25.{dataset}.txt"
 
     run = loader.load_run(config.data.input_run)
     corpus, queries, qrels = loader.load(
@@ -64,4 +64,4 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
         'reranked': r2
     }
     results[dataset] = eval_log
-    pprint(eval_log)
+    pprint(results)

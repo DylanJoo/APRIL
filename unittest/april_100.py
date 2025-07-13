@@ -9,9 +9,9 @@ home_dir=str(Path.home())
 # Initialize the reranker with the configuration
 from reranking.config_manager import ConfigManager
 config = ConfigManager(
-    rerank_mode='PairTopK',
+    rerank_mode='April',
     top_k=100,
-    rank_end=50,
+    rank_end=100,
     window_size=2,
     step_size=1,
     num_runs=10,
@@ -25,12 +25,11 @@ rankllm = ModularReranker(
 )
 
 results = {}
-for dataset in ['trec-dl-2020', 'trec-dl-2019']:
+for dataset in ['trec-dl-2019']:
     results[dataset] = {}
 
     config.data.ir_datasets_name = f'msmarco-passage/{dataset}/judged'
     config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"
-    config.data.input_run = f"{home_dir}/APRIL/runs/RankGPT/run.msmarco-v1-passage.bm25-{dataset}.txt"
 
     run = loader.load_run(config.data.input_run)
     corpus, queries, qrels = loader.load(
