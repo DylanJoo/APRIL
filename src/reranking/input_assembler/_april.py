@@ -7,7 +7,9 @@ from .base import RerankStrategy
 from ..utils import Result
 
 class April(RerankStrategy):
+    """ To make sure the prompts with same body can be done in the same batch. iterate over the query """
 
+    @RerankStrategy.timer
     def run(
         self,
         init_results: List[Result],
@@ -20,20 +22,50 @@ class April(RerankStrategy):
 
         rerank_results = [copy.deepcopy(result) for result in init_results]
 
-        for i_run in range(num_runs):
+        for index, result in enumerate(rerank_results):
+
             for w_end in tqdm(   
                 range(rank_end, rank_start, -self._step_size), 
-                desc=f"APRIL (the {i_run+1} run) from {rank_start}",
+                desc=f"APRIL for query:{index}",
             ):
+            # for w_end in range(rank_end, rank_start, -self._step_size):
                 w_start = max(rank_start, w_end - self._window_size)
-                rerank_results = self.run_pass(rerank_results, w_start, w_end)
+                w_size = w_end - w_start
+                idx_pairs = [(i, j) for i in range(w_size) for j in range(w_size) if i != j]
+
+                ## prefix caching ## [NOTE] this seems not necessary. it takes 4.5s per window
+                # first_prefix_cached_prompt = self._prompt_builder.create_prompt(
+                #     result=result, rank_start=w_start, rank_end=w_end, 
+                #     prefix_cached=True
+                # )
+                # self._llm.generate(prompts=first_prefix_cached_prompt, prob=self._rerank_mode.use_logits)
+                ## prefix caching ##
+                prompts = self._prompt_builder.create_prompt(result=result, rank_start=w_start, rank_end=w_end)
+                outputs = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
+
+                # the last window
+                scores = [0 for _ in range(w_size)]
+                for (i, j), output in zip(idx_pairs, outputs):
+                    scores[i] += output
+                    scores[j] += 1 - output
+
+                # outputs
+                result = self._result_parser.parse(
+                    outputs=[scores],
+                    results=[result],
+                    rank_start=w_start,
+                    rank_end=w_end,
+                )[0]
 
                 # ignore the last pass as it was done and also not a full window
                 if w_start == rank_start: 
                     break
 
-            # update the rank_start for the next run
-            rank_start = rank_start + self._step_size
+            # update the rerank result
+            rerank_results[index] = result
+
+        # update the rank_start for the next run
+        rank_start = rank_start + self._step_size
 
         # Assign reciprocal rank
         for result in rerank_results:
@@ -43,20 +75,5 @@ class April(RerankStrategy):
 
         return rerank_results
 
-    def run_pass(
-        self,
-        results: List[Result],
-        rank_start: int,
-        rank_end: int,
-    ) -> List[Result]:
-
-        prompts = self._prompt_builder.create_prompt_batched(results=results, rank_end=rank_end)
-        outputs = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
-
-        reranked_results = self._result_parser.parse(
-            outputs=outputs,
-            results=results,
-            rank_start=rank_start,
-            rank_end=rank_end,
-        )
-        return reranked_results
+    def run_pass(self, **kwargs: Any):
+        raise NotImplementedError("APRIL does not support `run_pass`. Use run instead.")

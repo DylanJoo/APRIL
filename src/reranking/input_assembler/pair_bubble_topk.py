@@ -59,7 +59,7 @@ class PairBubbleTopK(RerankStrategy):
         # do the reverse
         prompts = self._prompt_builder.create_prompt_batched(results=results, rank_end=rank_end, reverse=True)
         outputs_reverse = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
-        outputs = [o - o_reverse for o, o_reverse in zip(outputs, outputs_reverse)]
+        outputs = [ (o - o_reverse) > 0 for o, o_reverse in zip(outputs, outputs_reverse)]
 
         reranked_results = self._result_parser.parse(
             outputs=outputs,

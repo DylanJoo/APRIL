@@ -10,3 +10,5 @@ src/pairwise/rank_llm_*/
 *.egg
 dist/
 build/
+
+*.log
