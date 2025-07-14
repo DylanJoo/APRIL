@@ -6,28 +6,34 @@ import ir_measures
 from ir_measures import *
 home_dir=str(Path.home())
 
-# Prepare data (inout and output)
-os.makedirs(f"{home_dir}/APRIL/pa_reranked_runs", exist_ok=True)
+# Initialize the reranker with the configuration
+from reranking.config_manager import ConfigManager
+config = ConfigManager(
+    rerank_mode='April',
+    top_k=100,
+    rank_end=50,
+    window_size=50,
+    step_size=25,
+    llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct', 'dtype': 'float16'}
+).get_config()
+
+from reranking.wrapper import ModularReranker
+rankllm = ModularReranker(
+    config, 
+    system_message= "You are RankLLM, an intelligent assistant that can compare passages based on their relevancy to the query"
+)
 
 results = {}
-for dataset in ['trec-dl-2019', 'trec-dl-2020']:
+for dataset in ['trec-dl-2019', 'trec-dl-2020', 'trec-dl-2021', 'trec-dl-2022']:
     results[dataset] = {}
 
-    from reranking.config_manager import ConfigManager
-    config = ConfigManager(
-        data={'ir_datasets_name': f'msmarco-passage/{dataset}/judged',
-              'input_run': f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"},
-        rerank_mode='Pairwise',
-        top_k=100,
-        rank_end=100,
-        score_aggregation="symsum",
-        llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
-    ).get_config()
+    if ('2019' in dataset) or ('2020' in dataset):
+        config.data.ir_datasets_name = f'msmarco-passage/{dataset}/judged'
+        config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-passage.bm25.{dataset}.txt"
 
-    from reranking.wrapper import ModularReranker
-    rankllm = ModularReranker(config, 
-        system_message= "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
-    )
+    if ('2021' in dataset) or ('2022' in dataset):
+        config.data.ir_datasets_name = f'msmarco-passage-v2/{dataset}/judged'
+        config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-passage-v2.bm25.{dataset}.txt"
 
     run = loader.load_run(config.data.input_run)
     corpus, queries, qrels = loader.load(
@@ -64,4 +70,4 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
         'reranked': r2
     }
     results[dataset] = eval_log
-    pprint(eval_log)
+    pprint(results)

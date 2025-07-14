@@ -9,16 +9,20 @@ home_dir=str(Path.home())
 # Prepare data (inout and output)
 os.makedirs(f"{home_dir}/APRIL/pa_reranked_runs", exist_ok=True)
 
+from reranking.config_manager import ConfigManager
+config = ConfigManager(rerank_mode='oracle_top100').get_config()
+
 results = {}
-for dataset in ['trec-dl-2019', 'trec-dl-2020']:
+for dataset in ['trec-dl-2019', 'trec-dl-2020', 'trec-dl-2021', 'trec-dl-2022']:
     results[dataset] = {}
 
-    from reranking.config_manager import ConfigManager
-    config = ConfigManager(
-        data={'ir_datasets_name': f'msmarco-passage/{dataset}/judged',
-              'input_run': f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"},
-        rerank_mode='oracle_top100',
-    ).get_config()
+    if ('2019' in dataset) or ('2020' in dataset):
+        config.data.ir_datasets_name = f'msmarco-passage/{dataset}/judged'
+        config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-passage.bm25.{dataset}.txt"
+
+    if ('2021' in dataset) or ('2022' in dataset):
+        config.data.ir_datasets_name = f'msmarco-passage-v2/{dataset}/judged'
+        config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-passage-v2.bm25.{dataset}.txt"
 
     run = loader.load_run(config.data.input_run)
     corpus, queries, qrels = loader.load(

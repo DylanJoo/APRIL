@@ -33,10 +33,7 @@ class PairBubbleTopK(RerankStrategy):
 
                 # ignore the last pass as it was done and also not a full window
                 if w_start == rank_start: 
-                    break
-
-                # update the rank_start for the next run (or maybe not)
-                # rank_start = rank_start + self._step_size # [TODO] test the impact of this
+                    break  # [TODO] test the impact of this
 
         # Assign reciprocal rank
         for result in rerank_results:

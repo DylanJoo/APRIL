@@ -17,3 +17,8 @@ def cleanup_vllm(llm):
 
     return 'vllm engine has been cleaned up'
 
+def is_ampere_gpu():
+    if torch.cuda.is_available():
+        major, minor = torch.cuda.get_device_capability()
+        return major == 8
+    return False

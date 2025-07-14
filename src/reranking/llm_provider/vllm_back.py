@@ -48,6 +48,7 @@ class LLM:
         self.yes_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in yes_strings]
         self.no_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in no_strings]
 
+    # self.engine.reset_prefix_cache
     def generate(self, prompts, **kwargs):
         if isinstance(prompts, str):
             prompts = [prompts]

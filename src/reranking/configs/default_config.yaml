@@ -19,6 +19,7 @@ window_size: 20
 step_size: 10
 exp: testing
 num_runs: 1
+dtype: float16
  
 
 output_run: ../../runs/temp.txt

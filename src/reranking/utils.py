@@ -31,6 +31,7 @@ class RerankMode(Enum):
     PAIRWISE_ALL = "PairAll"
     PAIRWISE_TOPK = "PairTopK"
     APRIL = "April"
+    DEV = "Dev"
 
     @property
     def prompt_builder_name(self):
@@ -38,7 +39,8 @@ class RerankMode(Enum):
             "RankGPT": "listwise", 
             "PairAll": "pairwise",
             "PairTopK": "pairwise",
-            "APRIL": "listwise",
+            "April": "listwise",
+            "Dev": "pairwise",
         }[self.value]
 
     @property
@@ -48,6 +50,7 @@ class RerankMode(Enum):
             "PairAll": True, 
             "PairTopK": True,
             "April": True, 
+            "Dev": True,
         }[self.value]
 
     @property
@@ -57,6 +60,7 @@ class RerankMode(Enum):
             "PairAll": "prob", 
             "PairTopK": "prob",
             "April": "prob", 
+            "Dev": "prob",
         }[self.value]
 
     def __str__(self):

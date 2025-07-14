@@ -20,16 +20,20 @@ class LLM:
         logprobs=None,
         max_tokens=128,
         dtype='half',
-        gpu_memory_utilization=0.9,
+        gpu_memory_utilization=0.95,
         num_gpus=1, 
-        max_model_len=20480,
+        max_model_len=10240,
     ):
+        """
+        # AMPERE GPU: dtype='float16', enable_prefix_caching=True
+        # VOLTA GPU: dtype='float32', enable_prefix_caching=True
+        """
         args = AsyncEngineArgs(
             model=model_name_or_path,
             dtype=dtype,
             tensor_parallel_size=num_gpus,
             gpu_memory_utilization=gpu_memory_utilization,
-            enable_prefix_caching=False,
+            enable_prefix_caching=True if dtype == 'float32' else False,
             max_model_len=max_model_len,
         )
         self.model = AsyncLLMEngine.from_engine_args(AsyncEngineArgs.from_cli_args(args))

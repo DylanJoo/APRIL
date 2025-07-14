@@ -13,6 +13,8 @@ config = ConfigManager(
     top_k=100,
     rank_start=0,
     rank_end=100,
+    window_size=20,
+    step_size=5,
     llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
 ).get_config()
 
@@ -24,11 +26,16 @@ rankllm = ModularReranker(config,
 # start reranking
 
 results = {}
-for dataset in ['trec-dl-2019', 'trec-dl-2020']:
+for dataset in ['trec-dl-2019', 'trec-dl-2020', 'trec-dl-2021', 'trec-dl-2022']:
     results[dataset] = {}
 
-    config.data.ir_datasets_name = f'msmarco-passage/{dataset}/judged'
-    config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"
+    if ('2019' in dataset) or ('2020' in dataset):
+        config.data.ir_datasets_name = f'msmarco-passage/{dataset}/judged'
+        config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-passage.bm25.{dataset}.txt"
+
+    if ('2021' in dataset) or ('2022' in dataset):
+        config.data.ir_datasets_name = f'msmarco-passage-v2/{dataset}/judged'
+        config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-passage-v2.bm25.{dataset}.txt"
 
     run = loader.load_run(config.data.input_run)
     corpus, queries, qrels = loader.load(

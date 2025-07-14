@@ -54,6 +54,8 @@ class PromptBuilder:
         rank_start: int = 0,
         rank_end: int = None,
         reverse: bool = False,
+        idx_pairs: Optional[List[Tuple[int, int]]] = None,
+        prefix_cached: bool = False
     ) -> Union[Tuple[str, int], List[Tuple[str, int]]]:
         """
         Only consider the result in the range of [rank_start, rank_end].
@@ -68,13 +70,22 @@ class PromptBuilder:
             messages = [{"role": "user", "content": None}]
 
         # user message
-        # [NOTE] doc1 and doc2 are not used in this mode, but kept for compatibility
+        # [NOTE] Maybe make every inputs as consistent for prefix, body, postfix
         query = result.query
         doc_list = [hit['content_dict'] for hit in result.hits[rank_start:rank_end]]
 
         prefix = self.formatter.prefix(query=query, doc_list=doc_list)
         postfix = self.formatter.postfix(query=query, doc_list=doc_list)
-        body = self.formatter.body(query=query, doc_list=doc_list, rank_end=rank_end, reverse=reverse)
+        body = self.formatter.body(
+            query=query, doc_list=doc_list, rank_end=rank_end, 
+            reverse=reverse, 
+            idx_pairs=idx_pairs
+        )
+
+        if prefix_cached:
+            prompt, token_count = self._convert_message_to_prompt(messages, prefix, body, "<CACEHD_PREFIX>")
+            prompt = prompt.split("<CACEHD_PREFIX>")[0]
+            return prompt
 
         if isinstance(postfix, str) and isinstance(body, str): # [NOTE] Sacrifice consistency for simplicity
             prompt, token_count = self._convert_message_to_prompt(messages, prefix, body, postfix)
