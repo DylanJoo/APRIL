@@ -3,7 +3,8 @@ from ...utils import RerankMode
 from .listwise import ListwiseFormatter
 from .pairwise_all import PairwiseAllFormatter
 from .pairwise_topk import PairwiseTopKFormatter
-from .april import AprilFormatter
+from ._april import AprilFormatter
+from ._dev import DevFormatter
 
 class AutoPromptFormatter:
     _builder_map = {
@@ -11,6 +12,7 @@ class AutoPromptFormatter:
         RerankMode.PAIRWISE_ALL: PairwiseAllFormatter,
         RerankMode.PAIRWISE_TOPK: PairwiseTopKFormatter,
         RerankMode.APRIL: AprilFormatter,
+        RerankMode.DEV: DevFormatter,
     }
     @classmethod
     def from_config(cls, config=None, rerank_mode=None, **kwargs):

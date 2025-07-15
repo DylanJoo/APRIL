@@ -6,8 +6,10 @@ from .utils import RerankMode, Result, batch_iterator
 from .config_manager import ConfigManager
 from .input_assembler import AutoAssembler
 from .prompt_builder import PromptBuilder
-from .llm_provider.vllm_api import LLM 
 from .result_parser import ResultParser
+from .llm_provider.utils import is_ampere_gpu
+# from .llm_provider.vllm_back import LLM 
+from .llm_provider.vllm_api import LLM 
 
 class ModularReranker:
 
@@ -42,6 +44,7 @@ class ModularReranker:
             logprobs=20 if rerank_mode.use_logits else None,
             max_tokens=128 if 'list' in rerank_mode.result_parser_name else 3,
             max_model_len=config.llm.max_model_len,
+            dtype='half' if config.llm.dtype == 'float16' else 'float32',
         )
 
         if rerank_mode.use_logits:

@@ -82,11 +82,6 @@ class PromptBuilder:
             idx_pairs=idx_pairs
         )
 
-        if prefix_cached:
-            prompt, token_count = self._convert_message_to_prompt(messages, prefix, body, "<CACEHD_PREFIX>")
-            prompt = prompt.split("<CACEHD_PREFIX>")[0]
-            return prompt
-
         if isinstance(postfix, str) and isinstance(body, str): # [NOTE] Sacrifice consistency for simplicity
             prompt, token_count = self._convert_message_to_prompt(messages, prefix, body, postfix)
             return prompt

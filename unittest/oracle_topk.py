@@ -13,7 +13,8 @@ from reranking.config_manager import ConfigManager
 config = ConfigManager(rerank_mode='oracle_top100').get_config()
 
 results = {}
-for dataset in ['trec-dl-2019', 'trec-dl-2020', 'trec-dl-2021', 'trec-dl-2022']:
+# for dataset in ['trec-dl-2019', 'trec-dl-2020', 'trec-dl-2021', 'trec-dl-2022']:
+for dataset in ['trec-dl-2021', 'trec-dl-2022']:
     results[dataset] = {}
 
     if ('2019' in dataset) or ('2020' in dataset):
@@ -28,7 +29,8 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020', 'trec-dl-2021', 'trec-dl-2022']:
     corpus, queries, qrels = loader.load(
         config.data.ir_datasets_name, 
         query_fields=None, 
-        doc_fields=None
+        doc_fields=None,
+        ignore_corpus=True
     )
     run = {qid: hit for qid, hit in run.items() if qid in qrels} # filter
 

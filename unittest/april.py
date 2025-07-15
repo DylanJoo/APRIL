@@ -11,9 +11,9 @@ from reranking.config_manager import ConfigManager
 config = ConfigManager(
     rerank_mode='April',
     top_k=100,
-    rank_end=50,
-    window_size=50,
-    step_size=25,
+    rank_end=100,
+    window_size=10,
+    step_size=5,
     llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct', 'dtype': 'float16'}
 ).get_config()
 

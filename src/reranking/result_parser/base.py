@@ -22,16 +22,35 @@ class ResultParser(ABC):
         for index, (output, result) in enumerate(zip(outputs, results)):
             if isinstance(output, str): # e.g., RankGPT
                 parsed_result = self._parse_responses(output, result, rank_start, rank_end)
-            if isinstance(output, float): # e.g., Pairwise topk
+            elif isinstance(output, bool): # e.g., Pairwise topk
                 parsed_result = self._parse_swap(output, result, rank_end)
-            elif all(isinstance(x, list) for x in outputs): # e.g., Pairwise All, Pointwise
-                parsed_result = self._parse_scores(output, result)
+            # elif all(isinstance(x, list) for x in outputs): 
+            elif isinstance(output, list):
+                # e.g., Pairwise All, Pointwise: [ [scores of q1], [scores of q2], ... ]
+                if len(output) == len(result.hits):
+                    parsed_result = self._parse_absolute_scores(output, result)
+                else: # e.g. APRIL: [ [scores of d1, d2, ...] of the window1 ]
+                    parsed_result = self._parse_scores(output, result, rank_start, rank_end)
             else:
-                raise TypeError(f"Unsupported outputs type: {type(outputs)}")
+                raise TypeError(f"Unsupported outputs type: {type(output)}, {output}")
             results[index] = parsed_result
         return results
+            # elif isinstance(output, float): # e.g., APRIL
+            #     parsed_result = self._parse_scores(output, result, rank_start, rank_end)
+
+    def _parse_scores(self, scores: List[float], result: Result, rank_start: int, rank_end: int) -> Result:
+        """ Assign the scores from top to bottom, and fill the rest with decreasing scores. """
+        cut_range = copy.deepcopy(result.hits[rank_start:rank_end])
+
+        permutation = [(idx, s) for idx, s in zip(range(len(scores)), scores)]
+        permutation.sort(key=lambda x: x[1], reverse=True)
+        print(permutation)
+        for j, (p, s) in enumerate(permutation):
+            result.hits[j + rank_start] = copy.deepcopy(cut_range[p])
+        return result
 
     def _parse_responses(self, permutation: str, result, rank_start: int, rank_end: int):
+        """ Only update the specific part of result """
 
         response = self._clean_response(permutation)
         response = [int(x) - 1 for x in response.split()]
@@ -47,8 +66,8 @@ class ResultParser(ABC):
         return result
 
     # [NOTE] dylan: i dont think the score matter in this ranking, ignore it for now.
-    def _parse_swap(self, swap: float, result: Result, rank_end: int) -> Result:
-        if swap < 0: # means passage [1] > [2] (hits[rank_end-1] > hits[rank_end-2])
+    def _parse_swap(self, swap: bool, result: Result, rank_end: int) -> Result:
+        if swap is False: # means passage [1] > [2] (hits[rank_end-1] > hits[rank_end-2])
             return result
 
         init_hits = copy.deepcopy(result.hits)
@@ -56,8 +75,8 @@ class ResultParser(ABC):
         result.hits[rank_end - 2] = init_hits[rank_end - 1]
         return result
 
-    def _parse_scores(self, scores: List[Union[int, float]], result: Result):
-
+    def _parse_absolute_scores(self, scores: List[Union[int, float]], result: Result):
+        """ Assign the scores from top to bottom, and fill the rest with decreasing scores. """
         init_hits = copy.deepcopy(result.hits)
         min_score = min(scores) - 1
 

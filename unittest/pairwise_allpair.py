@@ -10,10 +10,10 @@ home_dir=str(Path.home())
 from reranking.config_manager import ConfigManager
 config = ConfigManager(
     rerank_mode='PairAll',
-    top_k=50,
-    rank_end=50,
+    top_k=100,
+    rank_end=100,
     score_aggregation="symsum",
-    llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
+    llm={'max_model_len': 10240, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
 ).get_config()
 
 from reranking.wrapper import ModularReranker
@@ -23,7 +23,7 @@ rankllm = ModularReranker(
 )
 
 results = {}
-for dataset in ['trec-dl-2019', 'trec-dl-2020', 'trec-dl-2021', 'trec-dl-2022']:
+for dataset in ['trec-dl-2021', 'trec-dl-2022']:
     results[dataset] = {}
 
     if ('2019' in dataset) or ('2020' in dataset):

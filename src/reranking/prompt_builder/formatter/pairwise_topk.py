@@ -1,3 +1,4 @@
+""" Use idx_pairs instead, maybe the logic is more generalizable. """
 from typing import List, Optional, Union, Callable, Dict, Tuple
 from .base import BaseFormatter
 
@@ -9,7 +10,9 @@ class PairwiseTopKFormatter(BaseFormatter):
             f"Your task is to determine which passage is more relevant to the query: {query}\n\n"
         )
 
-    def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:
+    def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, prefix_cached: bool = False, **kwargs) -> str:
+        if prefix_cached:
+            return ""
         return (
             "Based on the query, is the Passage [1] more relevant than Passage [2]?\n"
             "Only respond with Yes or No, do not explain.\nAnswer: "
