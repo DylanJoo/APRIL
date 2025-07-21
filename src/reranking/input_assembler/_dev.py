@@ -1,12 +1,12 @@
 import math
 import copy
+from tqdm import tqdm
 from typing import Optional, Tuple, List, Dict, Union, Any
 
 from ..utils import Result, batch_iterator
 from .base import RerankStrategy
 
 class Dev(RerankStrategy):
-    """To better compare between squential dependence reranking (e.g., listwise).  The pairwise reranking run LLM calls teratively. """
 
     def run(
         self,
@@ -17,55 +17,109 @@ class Dev(RerankStrategy):
         **kwargs
     ) -> List[Result]:
 
-        reranked_results = [copy.deepcopy(result) for result in init_results]
+        reranked_results = [None for _ in init_results]
         results = [copy.deepcopy(result) for result in init_results]
-        all_scores = {}
-        
+        all_points = {}
+
         for index, result in enumerate(results):
 
-            ## Placeholder for scores
-            result.hits = [hit for hit in result.hits[:rank_end]]
-            all_scores[result.qid] = [0 for _ in result.hits]
+            # Initialize points
+            for hit in result.hits:
+                hit['score'] = 0.0
 
-            ## Create prompts for enumerating pairs
             i_run = 0
-            pivot = len(result.hits) // 2
-            idx_pairs = [(pivot, j) for j in range(len(result.hits)) if j != pivot] + [(i, pivot) for i in range(len(result.hits)) if i != pivot]
+            while i_run < num_runs:
 
-            while (pivot > 1) and (i_run < num_runs):
-                print(f"Index: {index}, Pivot: {pivot}, Iteration: {i_run}")
-                prompts = self._prompt_builder.create_prompt(result, rank_start=0, rank_end=rank_end, idx_pairs=idx_pairs) # Same as PairALL
+                tour_scores = [result.hits[i]['score'] for i in range(rank_end)]
 
-                ## Iterate over pairs
-                scores = []
-                for batch_prompts in batch_iterator(prompts, batch_size):
-                    batch_scores = self._llm.generate(prompts=batch_prompts, prob=self._rerank_mode.use_logits)
-                    scores.extend(batch_scores)
+                ## Tour with pivot
+                # cand_pivot = [i for i, s in enumerate(points) if (s == 0) and i in range(0, rank_end)]
+                # pivot = cand_pivot[len(cand_pivot) // 2] if len(cand_pivot) > 0 else (rank_end // 2)
+                pivot = 0
+                idx_pairs = [(pivot, j) for j in range(rank_end) if j != pivot] + \
+                            [(i, pivot) for i in range(rank_end) if i != pivot]
 
-                ## Pairwise score aggregation
-                curr_scores = [0 for _ in result.hits]
-                for (i, j), score in zip(idx_pairs, scores):
-                    score = math.log(score) if self.config.score_aggregation == 'symsumlog' else score
-                    if (j == pivot) and (i == pivot):
-                        continue
-                    if j == pivot:
-                        all_scores[result.qid][i] += score * math.log(abs(i-pivot))
-                        curr_scores[i] += score
-                    if i == pivot:
-                        all_scores[result.qid][j] -= score * math.log(abs(j-pivot))
-                        curr_scores[j] -= score
+                scores = self.run_pass(
+                    result=result,
+                    rank_start=0,
+                    rank_end=rank_end,
+                    pivot=pivot,
+                    idx_pairs=idx_pairs,
+                    batch_size=batch_size
+                )
+                for i, score in enumerate(scores):
+                    tour_scores[i] += score
 
-                i_run += 1
-                curr_scores = sorted(curr_scores, reverse=True)
-                pivot = curr_scores.index(0) - 1
-                # idx_pairs = [(pivot, j) for j in range(len(result.hits)) if j < pivot] + [(i, pivot) for i in range(len(result.hits)) if i < pivot]
-                idx_pairs = [(pivot, j) for j in range(len(result.hits)) if j < max(pivot, 10)] + [(i, pivot) for i in range(len(result.hits)) if i < max(pivot, 10)]
+                pivot = scores.index(0)
 
-                ## Update # Iteratively add the scores with different anchor
-                result = self._result_parser.parse([all_scores[result.qid]], [result])[0]
+                ## Tour with top-pivot
+                # cand_pivot = [i for i, s in enumerate(points) if (s == 0) and i in range(0, pivot)]
+                # top_pivot = cand_pivot[len(cand_pivot) // 2] if len(cand_pivot) > 0 else pivot - 1
+                # top_pivot = pivot - 1
+                # top_idx_pairs = [(i, top_pivot) for i in range(0, pivot) if i != top_pivot] + \
+                #                 [(top_pivot, j) for j in range(0, pivot) if j != top_pivot]
+
+                # if len(top_idx_pairs) != 0:
+                #     scores = self.run_pass(
+                #         result=result,
+                #         rank_start=0,
+                #         rank_end=rank_end,
+                #         pivot=top_pivot,
+                #         idx_pairs=top_idx_pairs,
+                #         batch_size=batch_size
+                #     )
+                #     for i, score in enumerate(scores):
+                #         tour_points[i] += score
+
+                ## Tour with bottom-pivot
+                # cand_pivot = [i for i, s in enumerate(points) if (s == 0) and i in range(pivot + 1, rank_end)]
+                # bottom_pivot = cand_pivot[len(cand_pivot) // 2] if len(cand_pivot) > 0 else pivot + 1
+                # bottom_pivot = pivot + 1
+                # bottom_idx_pairs = [(i, bottom_pivot) for i in range(pivot + 1, rank_end) if i != bottom_pivot] + \
+                #                    [(bottom_pivot, j) for j in range(pivot + 1, rank_end) if j != bottom_pivot]
+
+                # if len(bottom_idx_pairs) != 0:
+                #     scores = self.run_pass(
+                #         result=result,
+                #         rank_start=0,
+                #         rank_end=rank_end,
+                #         pivot=bottom_pivot,
+                #         idx_pairs=bottom_idx_pairs,
+                #         batch_size=batch_size
+                #     )
+                #     for i, score in enumerate(scores):
+                #         tour_scores[i] += score
+
+                # i_run += 1
+                result = self._result_parser.parse([tour_scores], [result])[0]
+                tour_scores = sorted(tour_scores, reverse=True)
 
             reranked_results[index] = result
         return reranked_results
 
-    def run_pass(self, **kwargs: Any):
-        raise NotImplementedError("PairAll does not support `run_pass`. Use run instead.")
+    def run_pass(
+        self, 
+        result, 
+        rank_start: int, 
+        rank_end: int, 
+        pivot: int,
+        idx_pairs: List[Tuple[int, int]],
+        batch_size: Optional[int] = 32,
+        **kwargs: Any
+    ):
+        ## create prompts
+        win_differences = [0 for _ in result.hits]
+        prompts = self._prompt_builder.create_prompt(result, rank_start=rank_start, rank_end=rank_end, idx_pairs=idx_pairs)
+
+        scores = []
+        for batch_prompts in batch_iterator(prompts, batch_size):
+            batch_scores = self._llm.generate(prompts=batch_prompts, prob=self._rerank_mode.use_logits)
+            scores.extend(batch_scores)
+
+        for (i, j), score in zip(idx_pairs, scores):
+            if j == pivot:
+                win_differences[i] += score
+            if i == pivot:
+                win_differences[j] -= score
+
+        return win_differences

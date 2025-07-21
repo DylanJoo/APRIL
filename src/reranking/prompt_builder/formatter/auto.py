@@ -3,6 +3,8 @@ from ...utils import RerankMode
 from .listwise import ListwiseFormatter
 from .pairwise_all import PairwiseAllFormatter
 from .pairwise_topk import PairwiseTopKFormatter
+from .pairwise_ref import PairwiseRefFormatter
+from .pairwise_genref import PairwiseGenRefFormatter
 from ._april import AprilFormatter
 from ._dev import DevFormatter
 
@@ -11,6 +13,8 @@ class AutoPromptFormatter:
         RerankMode.RANK_GPT: ListwiseFormatter,
         RerankMode.PAIRWISE_ALL: PairwiseAllFormatter,
         RerankMode.PAIRWISE_TOPK: PairwiseTopKFormatter,
+        RerankMode.PAIRWISE_REF: PairwiseRefFormatter,
+        RerankMode.PAIRWISE_GENREF: PairwiseGenRefFormatter,
         RerankMode.APRIL: AprilFormatter,
         RerankMode.DEV: DevFormatter,
     }

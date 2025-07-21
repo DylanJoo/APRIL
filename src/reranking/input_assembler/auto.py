@@ -1,8 +1,10 @@
-## [NOTE] dynamically shrink the body size via length of documents?
+# [TODO] Adapt to utils rerank mode directly.
 from ..utils import RerankMode
 from .window_bubble import WindowBubble
 from .pair_all import PairAll
 from .pair_bubble_topk import PairBubbleTopK
+from .ref_rerank import RefRerank
+from .genref_rerank import GenRefRerank
 from ._april import April
 from ._dev import Dev
 
@@ -12,6 +14,8 @@ class AutoAssembler:
         RerankMode.PAIRWISE_ALL: PairAll,
         RerankMode.PAIRWISE_TOPK: PairBubbleTopK,
         RerankMode.APRIL: April,
+        RerankMode.PAIRWISE_REF: RefRerank,
+        RerankMode.PAIRWISE_GENREF: GenRefRerank,
         RerankMode.DEV: Dev,
     }
     @classmethod

@@ -9,11 +9,12 @@ home_dir=str(Path.home())
 # Initialize the reranker with the configuration
 from reranking.config_manager import ConfigManager
 config = ConfigManager(
-    rerank_mode='Dev',
+    rerank_mode='GenRefRerank',
     top_k=100,
+    rank_start=0,
     rank_end=100,
-    score_aggregation="symsum",
-    llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
+    llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'},
+    data={'reference': 'intfloat/query2doc_msmarco'}
 ).get_config()
 
 from reranking.wrapper import ModularReranker
@@ -23,11 +24,17 @@ rankllm = ModularReranker(
 )
 
 results = {}
+
 for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     results[dataset] = {}
 
-    config.data.ir_datasets_name = f'msmarco-passage/{dataset}/judged'
-    config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-v1-passage.bm25-{dataset}.txt"
+    if ('2019' in dataset) or ('2020' in dataset):
+        config.data.ir_datasets_name = f'msmarco-passage/{dataset}/judged'
+        config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-passage.bm25.{dataset}.txt"
+
+    if ('2021' in dataset) or ('2022' in dataset):
+        config.data.ir_datasets_name = f'msmarco-passage-v2/{dataset}/judged'
+        config.data.input_run = f"{home_dir}/APRIL/runs/run.msmarco-passage-v2.bm25.{dataset}.txt"
 
     run = loader.load_run(config.data.input_run)
     corpus, queries, qrels = loader.load(

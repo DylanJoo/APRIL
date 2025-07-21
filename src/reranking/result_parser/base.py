@@ -14,7 +14,7 @@ class ResultParser(ABC):
         self, 
         outputs: Union[List[List[Union[float, int]]], List[str]],
         results: List[Result],
-        rank_start: int = None,
+        rank_start: int = 0,
         rank_end: int = None,
     ) -> Result:
         assert len(outputs) == len(results), "outputs and results must have the same length."
@@ -35,8 +35,6 @@ class ResultParser(ABC):
                 raise TypeError(f"Unsupported outputs type: {type(output)}, {output}")
             results[index] = parsed_result
         return results
-            # elif isinstance(output, float): # e.g., APRIL
-            #     parsed_result = self._parse_scores(output, result, rank_start, rank_end)
 
     def _parse_scores(self, scores: List[float], result: Result, rank_start: int, rank_end: int) -> Result:
         """ Assign the scores from top to bottom, and fill the rest with decreasing scores. """

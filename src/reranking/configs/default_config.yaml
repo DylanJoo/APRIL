@@ -12,6 +12,7 @@ llm:
 
 rerank_mode: RankGPT # Options: RankGPT, LRL, APRIL
 top_k: 100 
+rank_start: 0
 rank_end: 100 
 max_model_length: 10240
 max_doc_length: null

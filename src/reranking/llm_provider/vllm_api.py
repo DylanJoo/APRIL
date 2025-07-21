@@ -20,7 +20,7 @@ class LLM:
         logprobs=None,
         max_tokens=128,
         dtype='half',
-        gpu_memory_utilization=0.95,
+        gpu_memory_utilization=0.9,
         num_gpus=1, 
         max_model_len=10240,
     ):

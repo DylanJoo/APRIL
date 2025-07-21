@@ -30,6 +30,8 @@ class RerankMode(Enum):
     RANK_GPT = "RankGPT"
     PAIRWISE_ALL = "PairAll"
     PAIRWISE_TOPK = "PairTopK"
+    PAIRWISE_REF = "RefRerank"
+    PAIRWISE_GENREF = "GenRefRerank"
     APRIL = "April"
     DEV = "Dev"
 
@@ -39,6 +41,8 @@ class RerankMode(Enum):
             "RankGPT": "listwise", 
             "PairAll": "pairwise",
             "PairTopK": "pairwise",
+            "RefRerank": "pairwise",
+            "GenRefRerank": "pairwise",
             "April": "listwise",
             "Dev": "pairwise",
         }[self.value]
@@ -49,6 +53,8 @@ class RerankMode(Enum):
             "RankGPT": False, 
             "PairAll": True, 
             "PairTopK": True,
+            "RefRerank": True,
+            "GenRefRerank": True,
             "April": True, 
             "Dev": True,
         }[self.value]
@@ -59,6 +65,8 @@ class RerankMode(Enum):
             "RankGPT": "text_list", 
             "PairAll": "prob", 
             "PairTopK": "prob",
+            "RefRerank": "prob",
+            "GenRefRerank": "prob",
             "April": "prob", 
             "Dev": "prob",
         }[self.value]

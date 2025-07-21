@@ -48,6 +48,7 @@ class PromptBuilder:
                 all_completed_prompts.extend(completed_prompts)
         return all_completed_prompts
 
+    # NOTE: move reverse as kwargs as it is not commonly used. or remove becuase we already have reverse
     def create_prompt(
         self, 
         result: Result,
@@ -55,7 +56,7 @@ class PromptBuilder:
         rank_end: int = None,
         reverse: bool = False,
         idx_pairs: Optional[List[Tuple[int, int]]] = None,
-        prefix_cached: bool = False
+        **kwargs
     ) -> Union[Tuple[str, int], List[Tuple[str, int]]]:
         """
         Only consider the result in the range of [rank_start, rank_end].
@@ -79,7 +80,8 @@ class PromptBuilder:
         body = self.formatter.body(
             query=query, doc_list=doc_list, rank_end=rank_end, 
             reverse=reverse, 
-            idx_pairs=idx_pairs
+            idx_pairs=idx_pairs,
+            **kwargs
         )
 
         if isinstance(postfix, str) and isinstance(body, str): # [NOTE] Sacrifice consistency for simplicity

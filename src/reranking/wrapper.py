@@ -71,6 +71,20 @@ class ModularReranker:
             results.append(Result(qid=qid, query=query, hits=hit_docs))
         return results
 
+    def _load_references(self, hf_dataset_name: str = 'intfloat/query2doc_msmarco'):
+        from datasets import load_dataset
+        self.references = {}
+
+        if '2019' in self.config.data.input_run:
+            df = load_dataset(hf_dataset_name)
+            for example in df['trec_dl2019']:
+                self.references[example['query_id']] = example['pseudo_doc']
+
+        if '2020' in self.config.data.input_run:
+            df = load_dataset(hf_dataset_name)
+            for example in df['trec_dl2020']:
+                self.references[example['query_id']] = example['pseudo_doc']
+
     def rerank(
         self,
         run: Dict[str, Dict[str, float]],
@@ -86,6 +100,8 @@ class ModularReranker:
             batch_size (int): The number of query (with their results) to process in each batch.
         """
         init_results = self.convert_run_to_result(run, queries, corpus)
+        if self.config.data.reference:
+            self._load_references(self.config.data.reference)
 
         reranked_results = []
         for batch_results in tqdm(
@@ -99,6 +115,7 @@ class ModularReranker:
                 rank_end=min(self.config.rank_end, self.config.top_k),
                 batch_size=query_batch_size,
                 num_runs=self.config.num_runs,
+                references=self.references if hasattr(self, 'references') else None,
             )
             reranked_results.extend(batch_reranked_results)
 
