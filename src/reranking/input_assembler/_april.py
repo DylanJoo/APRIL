@@ -34,12 +34,6 @@ class April(RerankStrategy):
                 idx_pairs = [(i, j) for i in range(w_size) for j in range(w_size) if i != j]
 
                 ## prefix caching ## [NOTE] this seems not necessary. it takes 4.5s per window
-                # first_prefix_cached_prompt = self._prompt_builder.create_prompt(
-                #     result=result, rank_start=w_start, rank_end=w_end, 
-                #     prefix_cached=True
-                # )
-                # self._llm.generate(prompts=first_prefix_cached_prompt, prob=self._rerank_mode.use_logits)
-                ## prefix caching ##
                 prompts = self._prompt_builder.create_prompt(result=result, rank_start=w_start, rank_end=w_end)
                 outputs = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
 

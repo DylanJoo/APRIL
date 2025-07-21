@@ -1,6 +1,7 @@
 data:
   ir_datasets_name: msmarco-passage/trec-dl-2019/judged
   input_run: ../../runs/run.msmarco-v1-passage.bm25-trec-dl-2019.txt
+  reference: null
 
 llm:
   model_name_or_path: Qwen/Qwen2.5-7B-Instruct
