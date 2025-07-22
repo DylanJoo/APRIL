@@ -21,21 +21,22 @@ class Dev(RerankStrategy):
         results = [copy.deepcopy(result) for result in init_results]
         all_points = {}
 
-        for index, result in enumerate(results):
+        for index, result in tqdm(
+            enumerate(results), total=len(results), 
+            desc="Dev Reranking"
+        ):
 
             # Initialize points
             for hit in result.hits:
                 hit['score'] = 0.0
 
-            i_run = 0
-            while i_run < num_runs:
+            for i_run in tqdm(range(num_runs), desc=f"Pairiwise Dev for {result.qid}"):
 
                 tour_scores = [result.hits[i]['score'] for i in range(rank_end)]
+                # bottom_pivot = cand_pivot[len(cand_pivot) // 2] if len(cand_pivot) > 0 else pivot + 1
 
                 ## Tour with pivot
-                # cand_pivot = [i for i, s in enumerate(points) if (s == 0) and i in range(0, rank_end)]
-                # pivot = cand_pivot[len(cand_pivot) // 2] if len(cand_pivot) > 0 else (rank_end // 2)
-                pivot = 0
+                pivot = tour_scores.index(min([s for s in tour_scores if s >= 0]))
                 idx_pairs = [(pivot, j) for j in range(rank_end) if j != pivot] + \
                             [(i, pivot) for i in range(rank_end) if i != pivot]
 
@@ -51,46 +52,46 @@ class Dev(RerankStrategy):
                     tour_scores[i] += score
 
                 pivot = scores.index(0)
+                print(f"Scores of first run: {tour_scores}, pivot={pivot}")
 
-                ## Tour with top-pivot
-                # cand_pivot = [i for i, s in enumerate(points) if (s == 0) and i in range(0, pivot)]
-                # top_pivot = cand_pivot[len(cand_pivot) // 2] if len(cand_pivot) > 0 else pivot - 1
-                # top_pivot = pivot - 1
-                # top_idx_pairs = [(i, top_pivot) for i in range(0, pivot) if i != top_pivot] + \
-                #                 [(top_pivot, j) for j in range(0, pivot) if j != top_pivot]
+                ## Tour with top-pivot (select the smallest positive score)
+                top_pivot_score = min([s for s in tour_scores if s > 0])
+                top_pivot = tour_scores.index(top_pivot_score) if len(top_pivot_score) > 0 else rank_end // 2
+                top_idx_pairs = [(i, top_pivot) for i in range(top_pivot) if i != top_pivot] + \
+                                [(top_pivot, j) for j in range(top_pivot) if j != top_pivot]
 
-                # if len(top_idx_pairs) != 0:
-                #     scores = self.run_pass(
-                #         result=result,
-                #         rank_start=0,
-                #         rank_end=rank_end,
-                #         pivot=top_pivot,
-                #         idx_pairs=top_idx_pairs,
-                #         batch_size=batch_size
-                #     )
-                #     for i, score in enumerate(scores):
-                #         tour_points[i] += score
+                if len(top_idx_pairs) != 0:
+                    scores = self.run_pass(
+                        result=result,
+                        rank_start=0,
+                        rank_end=rank_end,
+                        pivot=top_pivot,
+                        idx_pairs=top_idx_pairs,
+                        batch_size=batch_size
+                    )
+                    for i, score in enumerate(scores):
+                        tour_scores[i] += score
+                print(f"Second run {tour_scores}")
 
                 ## Tour with bottom-pivot
-                # cand_pivot = [i for i, s in enumerate(points) if (s == 0) and i in range(pivot + 1, rank_end)]
-                # bottom_pivot = cand_pivot[len(cand_pivot) // 2] if len(cand_pivot) > 0 else pivot + 1
-                # bottom_pivot = pivot + 1
-                # bottom_idx_pairs = [(i, bottom_pivot) for i in range(pivot + 1, rank_end) if i != bottom_pivot] + \
-                #                    [(bottom_pivot, j) for j in range(pivot + 1, rank_end) if j != bottom_pivot]
+                cand_pivot = [i for i, s in enumerate(points) if (s == 0) and i in range(pivot + 1, rank_end)]
+                bottom_pivot = cand_pivot[len(cand_pivot) // 2] if len(cand_pivot) > 0 else pivot + 1
+                bottom_pivot = pivot + 1
+                bottom_idx_pairs = [(i, bottom_pivot) for i in range(pivot + 1, rank_end) if i != bottom_pivot] + \
+                                   [(bottom_pivot, j) for j in range(pivot + 1, rank_end) if j != bottom_pivot]
 
-                # if len(bottom_idx_pairs) != 0:
-                #     scores = self.run_pass(
-                #         result=result,
-                #         rank_start=0,
-                #         rank_end=rank_end,
-                #         pivot=bottom_pivot,
-                #         idx_pairs=bottom_idx_pairs,
-                #         batch_size=batch_size
-                #     )
-                #     for i, score in enumerate(scores):
-                #         tour_scores[i] += score
+                if len(bottom_idx_pairs) != 0:
+                    scores = self.run_pass(
+                        result=result,
+                        rank_start=0,
+                        rank_end=rank_end,
+                        pivot=bottom_pivot,
+                        idx_pairs=bottom_idx_pairs,
+                        batch_size=batch_size
+                    )
+                    for i, score in enumerate(scores):
+                        tour_scores[i] += score
 
-                # i_run += 1
                 result = self._result_parser.parse([tour_scores], [result])[0]
                 tour_scores = sorted(tour_scores, reverse=True)
 

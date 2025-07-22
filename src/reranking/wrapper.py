@@ -8,8 +8,8 @@ from .input_assembler import AutoAssembler
 from .prompt_builder import PromptBuilder
 from .result_parser import ResultParser
 from .llm_provider.utils import is_ampere_gpu
-# from .llm_provider.vllm_back import LLM 
-from .llm_provider.vllm_api import LLM 
+# from .llm_provider.vllm_back import LLM  # for l40s
+from .llm_provider.vllm_api import LLM  # for v100
 
 class ModularReranker:
 

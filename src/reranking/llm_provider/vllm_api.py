@@ -7,16 +7,8 @@ from vllm.sampling_params import SamplingParams
 from transformers import AutoTokenizer
 import uuid
 from typing import List
-
-# logger = logging.getLogger("vllm.engine.async_llm_engine").setLevel(logging.WARNING)
-## Verbose filtered for HTTP200
 import logging
-class ThroughputFilter(logging.Filter):
-    def filter(self, record):
-        return '"Avg prompt throughput"' not in record.getMessage()
-logger = logging.getLogger()  # root logger
-logger.addFilter(ThroughputFilter())
-
+logger = logging.getLogger("vllm.engine.async_llm_engine").setLevel(logging.WARNING)
 
 class LLM:
 
