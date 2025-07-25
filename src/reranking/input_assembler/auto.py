@@ -1,10 +1,12 @@
-# [TODO] Adapt to utils rerank mode directly.
+# TODO Adapt to utils rerank mode directly.
 from ..utils import RerankMode
 from .window_bubble import WindowBubble
 from .pair_all import PairAll
 from .pair_bubble_topk import PairBubbleTopK
 from .ref_rerank import RefRerank
 from .genref_rerank import GenRefRerank
+from .pair_quick_topk import PairQuickTopK
+from .set_tournament import SetTouranment
 from ._april import April
 from ._dev import Dev
 
@@ -13,11 +15,12 @@ class AutoAssembler:
         RerankMode.RANK_GPT: WindowBubble,
         RerankMode.PAIRWISE_ALL: PairAll,
         RerankMode.PAIRWISE_TOPK: PairBubbleTopK,
-        RerankMode.APRIL: April,
         RerankMode.PAIRWISE_REF: RefRerank,
-        RerankMode.PAIRWISE_GENREF: GenRefRerank,
-        RerankMode.DEV: Dev,
+        RerankMode.SETWISE_TOPK: SetTouranment,
     }
+        # RerankMode.DEV: Dev,
+        # RerankMode.PAIRWISE_GENREF: GenRefRerank,
+        # RerankMode.APRIL: April,
     @classmethod
     def from_config(cls, config=None, rerank_mode=None, **kwargs):
         rerank_mode = rerank_mode or RerankMode(config.rerank_mode)

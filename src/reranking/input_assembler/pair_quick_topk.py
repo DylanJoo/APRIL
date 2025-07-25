@@ -1,16 +1,17 @@
 import math
 import copy
+from tqdm import tqdm
 from typing import Optional, Tuple, List, Dict, Union, Any
 
 from ..utils import Result, batch_iterator
 from .base import RerankStrategy
 
 class PairQuickTopK(RerankStrategy):
-    """To better compare between squential dependence reranking (e.g., listwise).  The pairwise reranking run LLM calls teratively. """
 
     def run(
         self,
         init_results: List[Result],
+        rank_start: int,
         rank_end: int,
         batch_size: Optional[int] = 32,
         num_runs: int = 1,
@@ -20,8 +21,11 @@ class PairQuickTopK(RerankStrategy):
         reranked_results = [copy.deepcopy(result) for result in init_results]
         results = [copy.deepcopy(result) for result in init_results]
         all_scores = {}
-        
-        for index, result in enumerate(results):
+
+        for index, result in tqdm(
+            enumerate(results), total=len(results),
+            desc="PairQuickTopK Reranking"
+        ):
 
             ## Placeholder for scores
             result.hits = [hit for hit in result.hits[:rank_end]]

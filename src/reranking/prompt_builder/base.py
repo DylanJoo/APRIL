@@ -54,7 +54,6 @@ class PromptBuilder:
         result: Result,
         rank_start: int = 0,
         rank_end: int = None,
-        reverse: bool = False,
         idx_pairs: Optional[List[Tuple[int, int]]] = None,
         **kwargs
     ) -> Union[Tuple[str, int], List[Tuple[str, int]]]:
@@ -71,18 +70,20 @@ class PromptBuilder:
             messages = [{"role": "user", "content": None}]
 
         # user message
-        # [NOTE] Maybe make every inputs as consistent for prefix, body, postfix
         query = result.query
         doc_list = [hit['content_dict'] for hit in result.hits[rank_start:rank_end]]
 
-        prefix = self.formatter.prefix(query=query, doc_list=doc_list)
-        postfix = self.formatter.postfix(query=query, doc_list=doc_list)
-        body = self.formatter.body(
-            query=query, doc_list=doc_list, rank_end=rank_end, 
-            reverse=reverse, 
-            idx_pairs=idx_pairs,
-            **kwargs
-        )
+        # NOTE: Maybe make every inputs as consistent for prefix, body, postfix
+        inputs = {
+            "query": query,
+            "doc_list": doc_list,
+            "rank_start": rank_start,
+            "rank_end": rank_end,
+            "idx_pairs": idx_pairs,
+        }
+        prefix = self.formatter.prefix(**inputs)
+        postfix = self.formatter.postfix(**inputs)
+        body = self.formatter.body(**inputs)
 
         if isinstance(postfix, str) and isinstance(body, str): # [NOTE] Sacrifice consistency for simplicity
             prompt, token_count = self._convert_message_to_prompt(messages, prefix, body, postfix)
@@ -94,7 +95,8 @@ class PromptBuilder:
             prefix = [prefix] * len(postfix)
             body = [body] * len(postfix)
         else:
-            raise ValueError(f"Incorrect input types for prefix, body, or postfix, got: {type(prefix)}, {type(body)}, {type(postfix)}")
+            raise ValueError(f"Incorrect input types for prefix, body, or postfix, \
+                    got: {type(prefix)}, {type(body)}, {type(postfix)}")
 
         outputs = [
             self._convert_message_to_prompt(messages, pre, b, post)

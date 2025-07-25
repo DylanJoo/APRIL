@@ -1,3 +1,4 @@
+# NOTE: rank_start is not used.
 import math
 import copy
 from tqdm import tqdm
@@ -7,12 +8,12 @@ from ..utils import Result, batch_iterator
 from .base import RerankStrategy
 
 class PairAll(RerankStrategy):
-    """To better compare between squential dependence reranking (e.g., listwise).  The pairwise reranking run LLM calls teratively. """
 
     def run(
         self,
         init_results: List[Result],
-        rank_end: int,
+        rank_start: int = 0,
+        rank_end: int = None,
         batch_size: Optional[int] = 32,
         **kwargs
     ) -> List[Result]:
@@ -28,7 +29,11 @@ class PairAll(RerankStrategy):
 
             ## Create prompts for enumerating pairs
             idx_pairs = [(i, j) for i in range(len(result.hits)) for j in range(len(result.hits)) if i != j]
-            prompts = self._prompt_builder.create_prompt(result, rank_start=0, rank_end=rank_end)
+            prompts = self._prompt_builder.create_prompt(
+                    result, 
+                    rank_start=0, rank_end=rank_end,
+                    idx_pairs=idx_pairs,
+            )
 
             ## Iterate over pairs
             scores = []

@@ -13,8 +13,10 @@ config = ConfigManager(
     top_k=100,
     rank_start=0,
     rank_end=100,
-    num_pass=1,
-    llm={'max_model_len': 10240, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
+    step_size=10,
+    window_size=20,
+    num_runs=5,
+    llm={'max_model_len': 8196, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
 ).get_config()
 
 from reranking.wrapper import ModularReranker
@@ -23,9 +25,8 @@ rankllm = ModularReranker(config,
 )
 
 # start reranking
-
 results = {}
-for dataset in ['trec-dl-2019', 'trec-dl-2020', 'trec-dl-2021', 'trec-dl-2022']:
+for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     results[dataset] = {}
 
     if ('2019' in dataset) or ('2020' in dataset):

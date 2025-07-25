@@ -9,7 +9,7 @@ home_dir=str(Path.home())
 # Initialize the reranker with the configuration
 from reranking.config_manager import ConfigManager
 config = ConfigManager(
-    rerank_mode='Dev',
+    rerank_mode='SetTopK',
     top_k=100,
     rank_start=0,
     rank_end=100,

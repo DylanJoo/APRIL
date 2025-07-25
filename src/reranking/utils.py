@@ -32,6 +32,7 @@ class RerankMode(Enum):
     PAIRWISE_TOPK = "PairTopK"
     PAIRWISE_REF = "RefRerank"
     PAIRWISE_GENREF = "GenRefRerank"
+    SETWISE_TOPK = "SetTopK"
     APRIL = "April"
     DEV = "Dev"
 
@@ -43,10 +44,12 @@ class RerankMode(Enum):
             "PairTopK": "pairwise",
             "RefRerank": "pairwise",
             "GenRefRerank": "pairwise",
+            "SetTopK": "setwise",
             "April": "listwise",
             "Dev": "pairwise",
         }[self.value]
 
+    # NOTE: use logits can be either binary or the specified number of document indices
     @property
     def use_logits(self):
         return {
@@ -55,6 +58,7 @@ class RerankMode(Enum):
             "PairTopK": True,
             "RefRerank": True,
             "GenRefRerank": True,
+            "SetTopK": True,
             "April": True, 
             "Dev": True,
         }[self.value]
@@ -66,7 +70,8 @@ class RerankMode(Enum):
             "PairAll": "prob", 
             "PairTopK": "prob",
             "RefRerank": "prob",
-            "GenRefRerank": "prob",
+            "genrefrerank": "prob",
+            "SetTopK": "prob",
             "April": "prob", 
             "Dev": "prob",
         }[self.value]

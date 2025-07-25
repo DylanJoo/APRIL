@@ -17,14 +17,29 @@ class ResultParser(ABC):
         rank_start: int = 0,
         rank_end: int = None,
     ) -> Result:
+        """
+        Parse the outputs and results, and return the updated results.
+
+        Apply different parsing depending with diffrent LLM outputs.
+
+        - respones: List[str] (e.g., RankGPT)
+        - swap: List[bool] (e.g., Pairwise topk) # TODO: this should be fixed. Use the doc-index pair instead.
+        - scores: 
+            * absoluate scores: List[List[float]] (e.g., Pairwise All, Pointwise)
+            * partial scores: List[List[float]] (e.g., APRIL, Setwise)
+        """
         assert len(outputs) == len(results), "outputs and results must have the same length."
+
+        # With query-batching, length of outputs == length of results
+        # With document-batching, length of outputs == length of document's scores
 
         for index, (output, result) in enumerate(zip(outputs, results)):
             if isinstance(output, str): # e.g., RankGPT
                 parsed_result = self._parse_responses(output, result, rank_start, rank_end)
+
             elif isinstance(output, bool): # e.g., Pairwise topk
                 parsed_result = self._parse_swap(output, result, rank_end)
-            # elif all(isinstance(x, list) for x in outputs): 
+
             elif isinstance(output, list):
                 # e.g., Pairwise All, Pointwise: [ [scores of q1], [scores of q2], ... ]
                 if len(output) == len(result.hits):
@@ -37,12 +52,10 @@ class ResultParser(ABC):
         return results
 
     def _parse_scores(self, scores: List[float], result: Result, rank_start: int, rank_end: int) -> Result:
-        """ Assign the scores from top to bottom, and fill the rest with decreasing scores. """
         cut_range = copy.deepcopy(result.hits[rank_start:rank_end])
 
         permutation = [(idx, s) for idx, s in zip(range(len(scores)), scores)]
         permutation.sort(key=lambda x: x[1], reverse=True)
-        print(permutation)
         for j, (p, s) in enumerate(permutation):
             result.hits[j + rank_start] = copy.deepcopy(cut_range[p])
         return result

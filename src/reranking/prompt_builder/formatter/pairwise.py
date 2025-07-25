@@ -1,9 +1,9 @@
 from typing import List, Optional, Union, Callable, Dict, Tuple
 from .base import BaseFormatter
 
-class PairwiseAllFormatter(BaseFormatter):
+class PairwiseFormatter(BaseFormatter):
 
-    def prefix(self, query, *kwargs) -> str:
+    def prefix(self, query, **kwargs) -> str:
         return (
             f"I will provide you with two passages. Read and memorize both carefully. "
             f"Your task is to determine which passage is more relevant to the query: {query}\n\n"
@@ -28,9 +28,3 @@ class PairwiseAllFormatter(BaseFormatter):
             prompts.append(prompt)
 
         return prompts[0] if len(idx_pairs) == 1 else prompts
-
-
-""" 
-- AllPair: return the list of pairwise comparisons of all passages.
-- TopK: return the list of pairwise comparison of each query. (query-batched)
-"""

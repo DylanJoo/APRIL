@@ -4,19 +4,22 @@ from .listwise import ListwiseFormatter
 from .pairwise_all import PairwiseAllFormatter
 from .pairwise_topk import PairwiseTopKFormatter
 from .pairwise_ref import PairwiseRefFormatter
-from .pairwise_genref import PairwiseGenRefFormatter
+# from .pairwise_genref import PairwiseGenRefFormatter
+from .setwise_topk import SetwiseTopKFormatter
 from ._april import AprilFormatter
 from ._dev import DevFormatter
+
+from .pairwise import PairwiseFormatter
 
 class AutoPromptFormatter:
     _builder_map = {
         RerankMode.RANK_GPT: ListwiseFormatter,
-        RerankMode.PAIRWISE_ALL: PairwiseAllFormatter,
-        RerankMode.PAIRWISE_TOPK: PairwiseTopKFormatter,
-        RerankMode.PAIRWISE_REF: PairwiseRefFormatter,
-        RerankMode.PAIRWISE_GENREF: PairwiseGenRefFormatter,
-        RerankMode.APRIL: AprilFormatter,
+        RerankMode.PAIRWISE_ALL: PairwiseFormatter,
+        RerankMode.PAIRWISE_TOPK: PairwiseFormatter,
+        RerankMode.SETWISE_TOPK: SetwiseTopKFormatter,
         RerankMode.DEV: DevFormatter,
+        RerankMode.PAIRWISE_REF: PairwiseRefFormatter,
+        RerankMode.APRIL: AprilFormatter,
     }
     @classmethod
     def from_config(cls, config=None, rerank_mode=None, **kwargs):

@@ -1,3 +1,5 @@
+# TODO: Revise argument with config
+# NOTE: consider replace the rerank mode with only the config
 from typing import Optional, Tuple, List, Dict, Union, Any
 from pprint import pprint
 from tqdm import tqdm
@@ -28,6 +30,7 @@ class ModularReranker:
         """)
 
         # initlaize instances 
+        # NOTE: initialize the prompt builder with rerank method.
         prompt_builder = PromptBuilder(
             config=config,
             rerank_mode=rerank_mode,
@@ -47,6 +50,7 @@ class ModularReranker:
             dtype='half' if config.llm.dtype == 'float16' else 'float32',
         )
 
+        # TODO: Make this more flexible in the future
         if rerank_mode.use_logits:
             agent.set_classification()
         result_parser = ResultParser()
@@ -116,6 +120,7 @@ class ModularReranker:
                 batch_size=query_batch_size,
                 num_runs=self.config.num_runs,
                 references=self.references if hasattr(self, 'references') else None,
+                anchor_index=self.config.anchor_index if hasattr(self.config, 'anchor_index') else None,
             )
             reranked_results.extend(batch_reranked_results)
 

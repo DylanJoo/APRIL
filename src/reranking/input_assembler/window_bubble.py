@@ -1,5 +1,6 @@
 import copy
 from typing import Optional, Tuple, List, Dict, Union, Any
+from tqdm import tqdm
 
 from ..utils import Result
 from .base import RerankStrategy
@@ -11,26 +12,28 @@ class WindowBubble(RerankStrategy):
         init_results: List[Result],
         rank_start: int,
         rank_end: int,
+        num_runs: int = 1,
         **kwargs
     ) -> List[Result]:
-        """ [TODO] replace with for loop """
 
         rerank_results = [copy.deepcopy(result) for result in init_results]
 
-        # Bubble sort (from bottom-window to top-window)
-        end_pos = rank_end
-        start_pos = rank_end - self._window_size
+        # Listwise Window Bubble
+        for i_run in range(num_runs):
 
-        while end_pos > rank_start and start_pos + self._step_size != rank_start:
-            start_pos = max(start_pos, rank_start)
-            rerank_results = self.run_pass(rerank_results, start_pos, end_pos)
-            end_pos = end_pos - self._step_size
-            start_pos = start_pos - self._step_size
+            for curr_end in tqdm(
+                range(rank_end, rank_start, -self._step_size),
+                desc=f"Listwise Window Bubble (the {i_run + 1} run)",
+            ):
+                curr_start = max(curr_end - self._window_size, rank_start)
+                rerank_results = self.run_pass(rerank_results, curr_start, curr_end)
 
-        for result in rerank_results: # reciprocal rank
+        # Assign reciprocal rank
+        for result in rerank_results:
             for rank, hit in enumerate(result.hits, start=1):
-                hit['score'] = float(1/rank)
+                hit['score'] = float(1 / rank)
                 hit['rank'] = rank
+
         return rerank_results
 
     ## [TODO] maybe we need to set the batch size if one query requires huge amount of prompts/inference. 
@@ -52,4 +55,3 @@ class WindowBubble(RerankStrategy):
             rank_end=rank_end,
         )
         return reranked_results
-

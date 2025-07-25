@@ -9,11 +9,10 @@ home_dir=str(Path.home())
 # Initialize the reranker with the configuration
 from reranking.config_manager import ConfigManager
 config = ConfigManager(
-    rerank_mode='Dev',
+    rerank_mode='RefRerank',
     top_k=100,
-    rank_start=0,
     rank_end=100,
-    num_runs=5,
+    score_aggregation="symsum",
     llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
 ).get_config()
 
@@ -24,8 +23,10 @@ rankllm = ModularReranker(
 )
 
 results = {}
-for dataset in ['trec-dl-2019', 'trec-dl-2020']:
+for dataset in ['trec-dl-2019']:
     results[dataset] = {}
+
+    config.anchor_index = 1
 
     if ('2019' in dataset) or ('2020' in dataset):
         config.data.ir_datasets_name = f'msmarco-passage/{dataset}/judged'
@@ -69,5 +70,5 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
         'original': r1, 
         'reranked': r2
     }
-    results[dataset] = eval_log
+    results[config.anchor_index] = eval_log
     pprint(results)
