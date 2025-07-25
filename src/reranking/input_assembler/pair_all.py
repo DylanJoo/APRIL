@@ -27,7 +27,7 @@ class PairAll(RerankStrategy):
             result.hits = [hit for hit in result.hits[:rank_end]]
             all_scores[result.qid] = [0 for _ in result.hits]
 
-            ## Create prompts for enumerating pairs
+            ## Create prompts for all pairs
             idx_pairs = [(i, j) for i in range(len(result.hits)) for j in range(len(result.hits)) if i != j]
             prompts = self._prompt_builder.create_prompt(
                     result, 
@@ -44,13 +44,13 @@ class PairAll(RerankStrategy):
                 batch_scores = self._llm.generate(prompts=batch_prompts, prob=self._rerank_mode.use_logits)
                 scores.extend(batch_scores)
 
-            ## Pairwise score aggregation
+            ## Score aggregation
             for (i, j), score in zip(idx_pairs, scores):
                 score = math.log(score) if self.config.score_aggregation == 'symsumlog' else score
                 all_scores[result.qid][i] += score
-                all_scores[result.qid][j] += (1 - score)
+                all_scores[result.qid][j] -= score
 
-        # Update and return reranked results
+        ## Update results with scores
         reranked_results = self._result_parser.parse(
             [all_scores[result.qid] for result in results], 
             init_results

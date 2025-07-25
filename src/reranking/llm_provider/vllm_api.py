@@ -1,3 +1,4 @@
+# NOTE: Revise the yse no string based on the reranking strategy
 import math
 import argparse
 import asyncio
@@ -60,15 +61,17 @@ class LLM:
     def set_classification(
         self, 
         yes_strings=[' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES'],
-        no_strings=[' No', 'No', ' no', 'no', 'NO', ' NO']
+        no_strings=[' No', 'No', ' no', 'no', 'NO', ' NO'],
+        id_strings=['1', '2', '3', '4', '5', '6', '7', '8', '9']
     ):
         self.yes_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in yes_strings]
         self.no_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in no_strings]
+        self.id_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in id_strings]
 
-    async def _iterate_over_output(self, output_iterator: AsyncStream, use_logprobs=False) -> str:
-        output = None
+    async def _iterate_over_output(self, output_iterator: AsyncStream, use_binary_probs=False, use_dist_probs=False) -> str:
+
         async for output in output_iterator:
-            if use_logprobs:
+            if use_binary_probs:
                 tok_logps = output.outputs[0].logprobs[0]
                 yes_ = math.exp(max(
                     [-1e2] + [
@@ -83,49 +86,42 @@ class LLM:
                     ]
                 ))
                 output = score = yes_ / (no_ + yes_)
+
+            # NOTE: the transformation is a bit hacky.
+            elif use_dist_probs:
+                tok_logps = output.outputs[0].logprobs[0]
+                min_logprob = min([item.logprob for item in tok_logps.values()])
+                output = [tok_logps.get(tok, min_logprob) for tok in self.id_tokens]
+                output = [v if isinstance(v, float) else v.logprob for v in output]
             else:
                 output = last_text = output.outputs[0].text
         return output
 
-    async def _agenerate_text(self, prompts, sampling_params):
-        request_ids = [str(uuid.uuid4()) for _ in range(len(prompts))]
-
-        # Add requests to the engine
-        output_iterators = [
-            await self.model.add_request(request_id, prompt, sampling_params)
-            for request_id, prompt in zip(request_ids, prompts)
-        ]
-
-        # Gather all the outputs
-        outputs = await asyncio.gather(*[
-            self._iterate_over_output(output_iterator)
-            for output_iterator in output_iterators
-        ])
-        return list(outputs)
-
-    async def _agenerate_prob(self, prompts, sampling_params) -> List[float]:
-        request_ids = [str(uuid.uuid4()) for _ in range(len(prompts))]
-
-        # Add requests to the engine
-        output_iterators = [
-            await self.model.add_request(request_id, prompt, sampling_params)
-            for request_id, prompt in zip(request_ids, prompts)
-        ]
-
-        # Gather all the outputs
-        outputs = await asyncio.gather(*[
-            self._iterate_over_output(output_iterator, use_logprobs=True)
-            for output_iterator in output_iterators
-        ])
-        return list(outputs)
-
-    def generate(self, prompts, prob=False, **kwargs):
+    def generate(self, prompts, binary_probs=False, dist_logp=False):
         if isinstance(prompts, str):
             prompts = [prompts]
-        
-        sampling_params = self.sampling_params
 
-        if prob:
-            return self.loop.run_until_complete(self._agenerate_prob(prompts, sampling_params))
-        else:
-            return self.loop.run_until_complete(self._agenerate_text(prompts, sampling_params))
+        if dist_logp:
+            prompts = [prompt+"[" for prompt in prompts] 
+
+        return self.loop.run_until_complete(
+                self._agenerate(prompts, 
+                                use_binary_probs=binary_probs,
+                                use_dist_probs=dist_logp)
+                )
+
+    async def _agenerate(self, prompts, **kwargs):
+        request_ids = [str(uuid.uuid4()) for _ in range(len(prompts))]
+
+        # Add requests to the engine
+        output_iterators = [
+            await self.model.add_request(request_id, prompt, self.sampling_params)
+            for request_id, prompt in zip(request_ids, prompts)
+        ]
+
+        # Gather all the outputs
+        outputs = await asyncio.gather(*[
+            self._iterate_over_output(output_iterator, **kwargs)
+            for output_iterator in output_iterators
+        ])
+        return list(outputs)
