@@ -41,7 +41,7 @@ class PairAll(RerankStrategy):
                 batch_iterator(prompts, batch_size),
                 desc=f"Batch processing with {batch_size} pairs",
             ):
-                batch_scores = self._llm.generate(prompts=batch_prompts, prob=self._rerank_mode.use_logits)
+                batch_scores = self._llm.generate(batch_prompts, binary_probs=True)
                 scores.extend(batch_scores)
 
             ## Score aggregation

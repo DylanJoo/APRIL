@@ -27,4 +27,8 @@ class PairwiseFormatter(BaseFormatter):
             prompt = template.format(query=query, doc1=doc_list[i], doc2=doc_list[j])
             prompts.append(prompt)
 
-        return prompts[0] if len(idx_pairs) == 1 else prompts
+        return prompts[0] if len(idx_pairs) == 1 else prompts 
+
+    """
+    For PairAll, create the prompt for each pair of document in query-batch
+    """

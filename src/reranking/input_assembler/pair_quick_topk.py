@@ -22,6 +22,8 @@ class PairQuickTopK(RerankStrategy):
         results = [copy.deepcopy(result) for result in init_results]
         all_scores = {}
 
+        # for i_run in range(num_runs):
+
         for index, result in tqdm(
             enumerate(results), total=len(results),
             desc="PairQuickTopK Reranking"

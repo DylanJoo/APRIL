@@ -54,7 +54,7 @@ class PairBubbleTopK(RerankStrategy):
             rank_end=rank_end, 
             idx_pairs=[(curr_end-2, curr_end-1)]
         )
-        outputs_ij = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
+        outputs_ij = self._llm.generate(prompts, binary_probs=True)
 
         # J > I
         prompts = self._prompt_builder.create_prompt_batched(
@@ -63,12 +63,11 @@ class PairBubbleTopK(RerankStrategy):
             rank_end=rank_end, 
             idx_pairs=[(curr_end-1, curr_end-2)]
         )
-        outputs_ji = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
+        outputs_ji = self._llm.generate(prompts, binary_probs=True)
 
         for index, (output_ij, output_ji) in enumerate(zip(outputs_ij, outputs_ji)):
             swaps[index] = (output_ij > output_ji)
 
-        print(f"Swaps: {swaps}")
         reranked_results = self._result_parser.parse(
             outputs=swaps,
             results=results,
