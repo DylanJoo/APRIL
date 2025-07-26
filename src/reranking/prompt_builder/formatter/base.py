@@ -5,14 +5,9 @@ from abc import ABC, abstractmethod
 class BaseFormatter(ABC):
     """Base class for all formatters."""
 
-    def __init__(self, 
-        config=None,
-        use_alpha=False, 
-        variable_passages=True,
-        max_doc_length=None
-    ):
+    def __init__(self, config=None):
         self._use_alpha = config.use_alphabetical
-        self._variable_passages = config.variable_passages 
+        self._variable_passages = config.variable_passages
         self.max_doc_length = config.max_doc_length
 
         if self._use_alpha: 

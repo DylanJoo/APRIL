@@ -11,7 +11,6 @@ class RerankStrategy(ABC):
     def __init__(
         self,
         config,
-        rerank_mode: RerankMode,
         prompt_builder: PromptBuilder,
         llm_provider: Any,
         result_parser: ResultParser,
@@ -21,7 +20,6 @@ class RerankStrategy(ABC):
         self._llm = llm_provider
         self._result_parser = result_parser
 
-        self._rerank_mode = rerank_mode
         self._window_size = self.config.window_size
         self._step_size = self.config.step_size
 

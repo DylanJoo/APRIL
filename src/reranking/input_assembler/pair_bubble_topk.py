@@ -6,7 +6,6 @@ from typing import Optional, Tuple, List, Dict, Union, Any
 
 from ..utils import Result
 from .base import RerankStrategy
-import pdb
 
 class PairBubbleTopK(RerankStrategy):
 

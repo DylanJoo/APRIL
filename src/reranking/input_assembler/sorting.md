@@ -6,7 +6,7 @@
 | [x] RankGPT   | Bubble Sort     | listwise   |                |                   |                |
 | [x] PairALL   |                 | pairwise   | Pairwise       | Sym-Sum           | Binary-prob    |
 | [x] PairTopK  | Bubble TopK     | pairwise   | Pairwise       | bool(Sym-Sum > 0) | Binary-prob    |
-| [ ] SetTopK   | Bubble TopK     | setwise    | Setwise        |                   | Dist-LogP      |
+| [x] SetTopK   | Bubble TopK     | setwise    | Setwise        |                   | Dist-LogP      |
 | [ ] PairTopK  | Quick TopK      | pairwise   |                |                   |                |
 | [ ] SetTour   | Tournment Sort  | setwise    |                |                   |                |
 | [ ] RefRank   | Reference       | Pointwise  |                |                   |                |

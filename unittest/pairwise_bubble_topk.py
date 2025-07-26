@@ -15,7 +15,7 @@ config = ConfigManager(
     window_size=2,
     step_size=1,
     num_runs=10,
-    llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct', 'dtype': 'float16'}
+    llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct', 'dtype': 'float16', 'use_logits': True}
 ).get_config()
 
 from reranking.wrapper import ModularReranker
@@ -48,7 +48,7 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
         run=run,
         queries=queries,
         corpus=corpus,
-        query_batch_size=128
+        query_batch_size=64
     )
 
     # prepare output run

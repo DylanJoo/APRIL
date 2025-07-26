@@ -9,10 +9,6 @@ from .setwise import SetwiseFormatter
 # from .pairwise_genref import PairwiseGenRefFormatter
 from ._april import AprilFormatter
 from ._dev import DevFormatter
-        # RerankMode.RANK_GPT: ListwiseFormatter,
-        # RerankMode.PAIRWISE_ALL: PairwiseFormatter,
-        # RerankMode.PAIRWISE_TOPK: PairwiseFormatter,
-        # RerankMode.SETWISE_TOPK: SetwiseFormatter,
 
 class AutoPromptFormatter:
     _builder_map = {

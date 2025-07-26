@@ -5,7 +5,7 @@ from tqdm import tqdm
 from ..utils import Result
 from .base import RerankStrategy
 
-class WindowBubble(RerankStrategy):
+class SlidingWindow(RerankStrategy):
 
     def run(
         self,
@@ -36,7 +36,8 @@ class WindowBubble(RerankStrategy):
 
         return rerank_results
 
-    # NOTE: window size for using logits might have limited to 9, this is not used for now
+    ## [TODO] maybe we need to set the batch size if one query requires huge amount of prompts/inference. 
+    # [NOTE] window size for using logits might have limited to 9, this is not used for now
     def run_pass(
         self,
         results: List[Result],
@@ -45,7 +46,7 @@ class WindowBubble(RerankStrategy):
     ) -> List[Result]:
 
         prompts = self._prompt_builder.create_prompt_batched(results, rank_start, rank_end)
-        outputs = self._llm.generate(prompts=prompts, prob=self._rerank_mode.use_logits)
+        outputs = self._llm.generate(prompts)
 
         reranked_results = self._result_parser.parse(
             outputs=outputs,
@@ -54,36 +55,3 @@ class WindowBubble(RerankStrategy):
             rank_end=rank_end,
         )
         return reranked_results
-
-    # def run_pass(
-    #     self,
-    #     results: List[Result],
-    #     rank_start: int,
-    #     rank_end: int,
-    #     curr_end: int,
-    # ) -> List[Result]:
-    #
-    #     permutations = [None for _ in range(len(results))]
-    #
-    #     # I > (J, K, L, ...)
-    #     curr_start = max(0, curr_end - self._window_size)
-    #     prompts = self._prompt_builder.create_prompt_batched(
-    #         results=results, 
-    #         rank_start=0,
-    #         rank_end=rank_end, 
-    #         idx_pairs=[tuple(range(curr_end - self._window_size, curr_end))],
-    #     )
-    #     outputs = self._llm.generate(prompts, dist_logp=True)
-    #
-    #     # NOTE: make separate setsize and window size
-    #     for index, output in enumerate(outputs):
-    #         permutation = np.array(output).argsort()[::-1].tolist()
-    #         permutations[index] = permutation[:self._window_size]  # this is FIRST
-    #
-    #     reranked_results = self._result_parser.parse(
-    #         outputs=winner,
-    #         results=results,
-    #         rank_start=rank_start,
-    #         rank_end=rank_end,
-    #     )
-    #     return reranked_results
