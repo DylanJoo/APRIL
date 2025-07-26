@@ -11,8 +11,6 @@ from typing import List
 import logging
 logger = logging.getLogger("vllm.engine.async_llm_engine").setLevel(logging.WARNING)
 
-import pdb
-
 class LLM:
 
     def __init__(
@@ -60,22 +58,18 @@ class LLM:
         self.yes_tokens = None
         self.no_tokens = None
 
-    # TODO: Set the id_tokens as dynamic based on window size
     def set_classification(
         self, 
         yes_strings=[' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES'],
         no_strings=[' No', 'No', ' no', 'no', 'NO', ' NO'],
-        id_strings=[chr(i) for i in range(65, 91)]
+        id_strings=['1', '2', '3', '4', '5', '6', '7', '8', '9']
     ):
         self.yes_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in yes_strings]
         self.no_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in no_strings]
         self.id_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in id_strings]
-        print(f"YES TOKENS: {self.yes_tokens}")
-        print(f"NO TOKENS: {self.no_tokens}")
-        print(f"ID TOKENS: {self.id_tokens}")
 
     async def _iterate_over_output(self, output_iterator: AsyncStream, use_binary_probs=False, use_dist_probs=False) -> str:
-
+        output = None
         async for output in output_iterator:
             if use_binary_probs:
                 tok_logps = output.outputs[0].logprobs[0]
@@ -93,7 +87,6 @@ class LLM:
                 ))
                 output = score = yes_ / (no_ + yes_)
 
-            # NOTE: the transformation is a bit hacky.
             elif use_dist_probs:
                 tok_logps = output.outputs[0].logprobs[0]
                 min_logprob = min([item.logprob for item in tok_logps.values()])
@@ -103,28 +96,66 @@ class LLM:
                 output = last_text = output.outputs[0].text
         return output
 
-    def generate(self, prompts, binary_probs=False, dist_logp=False):
+    def generate(self, prompts, prob=False, dist=False, **kwargs):
         if isinstance(prompts, str):
             prompts = [prompts]
+        
+        sampling_params = self.sampling_params
+        if prob:
+            return self.loop.run_until_complete(self._agenerate_prob(prompts, sampling_params))
 
-        return self.loop.run_until_complete(
-                self._agenerate(prompts, 
-                                use_binary_probs=binary_probs,
-                                use_dist_probs=dist_logp)
-                )
+        if dist:
+            prompts = [prompt+"[" for prompt in prompts] 
+            return self.loop.run_until_complete(self._agenerate_dist(prompts, sampling_params))
 
-    async def _agenerate(self, prompts, **kwargs):
+        return self.loop.run_until_complete(self._agenerate_text(prompts, sampling_params))
+
+    async def _agenerate_text(self, prompts, sampling_params):
         request_ids = [str(uuid.uuid4()) for _ in range(len(prompts))]
 
         # Add requests to the engine
         output_iterators = [
-            await self.model.add_request(request_id, prompt, self.sampling_params)
+            await self.model.add_request(request_id, prompt, sampling_params)
             for request_id, prompt in zip(request_ids, prompts)
         ]
 
         # Gather all the outputs
         outputs = await asyncio.gather(*[
-            self._iterate_over_output(output_iterator, **kwargs)
+            self._iterate_over_output(output_iterator)
             for output_iterator in output_iterators
         ])
         return list(outputs)
+
+    async def _agenerate_prob(self, prompts, sampling_params) -> List[float]:
+        request_ids = [str(uuid.uuid4()) for _ in range(len(prompts))]
+
+        # Add requests to the engine
+        output_iterators = [
+            await self.model.add_request(request_id, prompt, sampling_params)
+            for request_id, prompt in zip(request_ids, prompts)
+        ]
+
+        # Gather all the outputs
+        outputs = await asyncio.gather(*[
+            self._iterate_over_output(output_iterator, use_binary_probs=True)
+            for output_iterator in output_iterators
+        ])
+        return list(outputs)
+
+    # NOTE: First-like distribution
+    async def _agenerate_dist(self, prompts, sampling_params) -> List[float]:
+        request_ids = [str(uuid.uuid4()) for _ in range(len(prompts))]
+
+        # Add requests to the engine
+        output_iterators = [
+            await self.model.add_request(request_id, prompt, sampling_params)
+            for request_id, prompt in zip(request_ids, prompts)
+        ]
+
+        # Gather all the outputs
+        outputs = await asyncio.gather(*[
+            self._iterate_over_output(output_iterator, use_dist_probs=True)
+            for output_iterator in output_iterators
+        ])
+        return list(outputs)
+

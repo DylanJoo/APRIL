@@ -72,8 +72,6 @@ class PromptBuilder:
         # user message
         query = result.query
         doc_list = [hit['content_dict'] for hit in result.hits[rank_start:rank_end]]
-
-        # NOTE: Maybe make every inputs as consistent for prefix, body, postfix
         inputs = {
             "query": query,
             "doc_list": doc_list,
@@ -85,6 +83,7 @@ class PromptBuilder:
         postfix = self.formatter.postfix(**inputs)
         body = self.formatter.body(**inputs)
 
+        # organize the prompts with reranking methods 
         if isinstance(postfix, str) and isinstance(body, str): # [NOTE] Sacrifice consistency for simplicity
             prompt, token_count = self._convert_message_to_prompt(messages, prefix, body, postfix)
             return prompt
@@ -124,7 +123,7 @@ class PromptBuilder:
         else:
             prompt = prefix + body + postfix
 
-        prompt = fix_text(prompt) # [NOTE] this is odd but it helps...
+        prompt = fix_text(prompt)
         num_tokens = self.get_num_tokens(prompt) 
         return prompt, num_tokens
 
@@ -136,4 +135,3 @@ class PromptBuilder:
 # # For the scenario that the output is a list of tuples
 # if isinstance(completed_prompts[0], list):
 # completed_prompts = [item for sublist in completed_prompts for item in sublist]
-
