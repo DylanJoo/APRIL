@@ -1,0 +1,30 @@
+data:
+  ir_datasets_name: msmarco-passage/trec-dl-2019/judged
+  input_run: ../../runs/run.msmarco-v1-passage.bm25-trec-dl-2019.txt
+  reference: null
+
+llm:
+  model_name_or_path: Qwen/Qwen2.5-7B-Instruct
+  temperature: 0.0
+  top_p: 1.0
+  backend: vllm
+  max_model_len: 20480
+  dtype: float16
+
+rerank_mode: RankGPT # Options: RankGPT, LRL, APRIL
+top_k: 100 
+rank_start: 0
+rank_end: 100 
+max_model_length: 10240
+max_doc_length: null
+context_size: 2048
+window_size: 20
+step_size: 10
+exp: testing
+num_runs: 1
+dtype: float16
+ 
+
+output_run: ../../runs/temp.txt
+save_path: ./checkpoints/model.pt
+log_dir: ./logs

@@ -1,0 +1,65 @@
+from abc import ABC, abstractmethod
+from typing import Optional, List, Any
+import time
+from functools import wraps
+
+from ..utils import RerankMode, Result
+from ..prompt_builder import PromptBuilder
+from ..result_parser import ResultParser
+
+class RerankStrategy(ABC):
+    def __init__(
+        self,
+        config,
+        rerank_mode: RerankMode,
+        prompt_builder: PromptBuilder,
+        llm_provider: Any,
+        result_parser: ResultParser,
+    ):
+        self.config = config
+        self._prompt_builder = prompt_builder
+        self._llm = llm_provider
+        self._result_parser = result_parser
+
+        self._rerank_mode = rerank_mode
+        self._window_size = self.config.window_size
+        self._step_size = self.config.step_size
+
+    @staticmethod
+    def timer(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            start = time.time()
+            result = func(*args, **kwargs)
+            end = time.time()
+            print(f"\n\n{func.__qualname__} took {end - start:.6f} seconds")
+            return result
+        return wrapper
+
+    @abstractmethod
+    def run(
+        self,
+        init_results: List[Result],
+        rank_start: int,
+        rank_end: int,
+        batch_size: Optional[int] = 8,
+    ) -> List[Result]:
+        """
+        Run the full reranking process.
+        Strategy-specific and may depend on use_logits or other config flags.
+        """
+        pass
+
+    @abstractmethod
+    def run_pass(
+        self,
+        results: List[Result],
+        rank_start: int,
+        rank_end: int,
+        batch_size: Optional[int] = 8,
+    ) -> List[Result]:
+        """
+        Run a single pass of reranking.
+        This method is generally shared across strategies, but can be overridden.
+        """
+        pass
