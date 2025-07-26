@@ -10,7 +10,7 @@ from .base import RerankStrategy
 
 import pdb
 
-class SetBubbleTopK(RerankStrategy):
+class SetMaxHeapTopK(RerankStrategy):
 
     def run(
         self,
@@ -24,13 +24,22 @@ class SetBubbleTopK(RerankStrategy):
 
         results = [copy.deepcopy(result) for result in init_results]
 
-        for i_run in range(num_runs):
+        for index, result in tqdm(
+            enumerate(results), 
+            desc="Setwise HeapSort", ntotal=len(results)
+        ):
 
-            for curr_end in tqdm(   
-                range(rank_end, rank_start, -self._step_size), 
-                desc=f"Setwise Bubble (the {i_run+1} run)"
-            ):
-                results = self.run_pass(results, rank_start, rank_end, curr_end)
+            i_first_roots = len(result.hits) // self._window_size - 1
+            # 1. buildi maxheap
+            for i_root in range(i_ - , -1, -1):
+                i_root = n_total_roots - i_root - 1
+            )
+                self._max_heapify(result.hits, i_root, len(result.hits))
+            # for curr_end in tqdm(   
+            #     range(rank_end, rank_start, -self._step_size), 
+            #     desc=f"Setwise Bubble (the {i_run+1} run)"
+            # ):
+            #     results = self.run_pass(results, rank_start, rank_end, curr_end)
 
         # Assign reciprocal rank
         for result in results:
@@ -39,6 +48,9 @@ class SetBubbleTopK(RerankStrategy):
                 hit['rank'] = rank
 
         return results
+
+    def build(self, results): # NOTE: this builds tree structure
+        pass
 
     def run_pass(
         self,
@@ -73,49 +85,3 @@ class SetBubbleTopK(RerankStrategy):
             rank_end=rank_end,
         )
         return reranked_results
-
-    # def _parse_responses(self, permutation: str, result, rank_start: int, rank_end: int):
-    #     response = self._clean_response(permutation)
-    #     response = [int(x) - 1 for x in response.split()]
-    #     response = self._remove_duplicate(response)
-    #     cut_range = copy.deepcopy(result.hits[rank_start:rank_end])
-    #     original_rank = [tt for tt in range(len(cut_range))]
-    #     response = [ss for ss in response if ss in original_rank]
-    #     response = response + [tt for tt in original_rank if tt not in response] 
-    #     for j, x in enumerate(response):
-    #         result.hits[j + rank_start] = copy.deepcopy(cut_range[x])
-    #     return result
-
-    # Reference for FIRST
-    # def run_pass(
-    #     self,
-    #     results: List[Result],
-    #     rank_start: int,
-    #     rank_end: int,
-    #     curr_end: int,
-    # ) -> List[Result]:
-    #
-    #     permutations = [None for _ in range(len(results))]
-    #
-    #     # I > (J, K, L, ...)
-    #     curr_start = max(0, curr_end - self._window_size)
-    #     prompts = self._prompt_builder.create_prompt_batched(
-    #         results=results, 
-    #         rank_start=0,
-    #         rank_end=rank_end, 
-    #         idx_pairs=[tuple(range(curr_end - self._window_size, curr_end))],
-    #     )
-    #     outputs = self._llm.generate(prompts, dist_logp=True)
-    #
-    #     # NOTE: make separate setsize and window size
-    #     for index, output in enumerate(outputs):
-    #         permutation = np.array(output).argsort()[::-1].tolist()
-    #         permutations[index] = permutation[:self._window_size]  # this is FIRST
-    #
-    #     reranked_results = self._result_parser.parse(
-    #         outputs=winner,
-    #         results=results,
-    #         rank_start=rank_start,
-    #         rank_end=rank_end,
-    #     )
-    #     return reranked_results

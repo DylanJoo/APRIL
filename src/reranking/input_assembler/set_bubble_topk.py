@@ -8,8 +8,6 @@ from typing import Optional, Tuple, List, Dict, Union, Any
 from ..utils import Result
 from .base import RerankStrategy
 
-import pdb
-
 class SetBubbleTopK(RerankStrategy):
 
     def run(
@@ -17,7 +15,6 @@ class SetBubbleTopK(RerankStrategy):
         init_results: List[Result],
         rank_start: int = 0,
         rank_end: int = None,
-        batch_size: Optional[int] = 32,
         num_runs: int = 10,
         **kwargs
     ) -> List[Result]:
@@ -50,8 +47,6 @@ class SetBubbleTopK(RerankStrategy):
         curr_end: int,
     ) -> List[Result]:
 
-        permutations = [None for _ in range(len(results))]
-
         curr_start = max(0, curr_end - self._window_size)
         prompts = self._prompt_builder.create_prompt_batched(
             results=results, 
@@ -70,37 +65,3 @@ class SetBubbleTopK(RerankStrategy):
             rank_end=curr_end,
         )
         return reranked_results
-
-    # Reference for FIRST
-    # def run_pass(
-    #     self,
-    #     results: List[Result],
-    #     rank_start: int,
-    #     rank_end: int,
-    #     curr_end: int,
-    # ) -> List[Result]:
-    #
-    #     permutations = [None for _ in range(len(results))]
-    #
-    #     # I > (J, K, L, ...)
-    #     curr_start = max(0, curr_end - self._window_size)
-    #     prompts = self._prompt_builder.create_prompt_batched(
-    #         results=results, 
-    #         rank_start=0,
-    #         rank_end=rank_end, 
-    #         idx_pairs=[tuple(range(curr_end - self._window_size, curr_end))],
-    #     )
-    #     outputs = self._llm.generate(prompts, dist_logp=True)
-    #
-    #     # NOTE: make separate setsize and window size
-    #     for index, output in enumerate(outputs):
-    #         permutation = np.array(output).argsort()[::-1].tolist()
-    #         permutations[index] = permutation[:self._window_size]  # this is FIRST
-    #
-    #     reranked_results = self._result_parser.parse(
-    #         outputs=winner,
-    #         results=results,
-    #         rank_start=rank_start,
-    #         rank_end=rank_end,
-    #     )
-    #     return reranked_results

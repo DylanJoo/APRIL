@@ -1,6 +1,4 @@
-# TODO Adapt to utils rerank mode directly.
-from ..utils import RerankMode
-from .list_bubble import SlidingWindow
+from .list_bubble import SlidingWindow, SlidingWindowFIRST
 from .pair_all import PairAll
 from .pair_bubble_topk import PairBubbleTopK
 from .set_bubble_topk import SetBubbleTopK
@@ -14,6 +12,7 @@ from ._dev import Dev
 class AutoAssembler:
     _builder_map = {
         'RankGPT': SlidingWindow,
+        'RankFirst': SlidingWindowFIRST,
         'PariAll': PairAll,
         'PairTopK': PairBubbleTopK,
         'SetTopK': SetBubbleTopK,

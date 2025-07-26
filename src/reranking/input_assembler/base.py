@@ -3,7 +3,7 @@ from typing import Optional, List, Any
 import time
 from functools import wraps
 
-from ..utils import RerankMode, Result
+from ..utils import Result
 from ..prompt_builder import PromptBuilder
 from ..result_parser import ResultParser
 
