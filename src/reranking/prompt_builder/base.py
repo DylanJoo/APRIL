@@ -9,17 +9,11 @@ from ..utils import Result, batch_iterator
 from .formatter.auto import AutoPromptFormatter
 
 class PromptBuilder:
-    def __init__(
-        self, 
-        config,
-        include_system_message: Optional[bool] = None,
-        system_message: Optional[str] = None,
-        **kwargs
-    ):
-        self.formatter = AutoPromptFormatter.from_config(config, **kwargs)
+    def __init__(self, config):
+        self.formatter = AutoPromptFormatter.from_config(config)
         self._tokenizer = AutoTokenizer.from_pretrained(config.llm.model_name_or_path)
         self.system_message_supported = "system" in self._tokenizer.chat_template
-        self.system_message = system_message
+        self.system_message = config.system_message
 
     def get_num_tokens(self, prompt: Union[List[str], str]) -> int:
         if isinstance(prompt, list):

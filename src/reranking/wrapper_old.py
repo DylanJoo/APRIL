@@ -4,7 +4,7 @@ from typing import Optional, Tuple, List, Dict, Union, Any
 from pprint import pprint
 from tqdm import tqdm
 
-from .utils import Result, batch_iterator
+from .utils import RerankMode, Result, batch_iterator
 from .config_manager import ConfigManager
 from .input_assembler import AutoAssembler
 from .prompt_builder import PromptBuilder
@@ -15,28 +15,44 @@ from .llm_provider.vllm_api import LLM  # for v100
 
 class ModularReranker:
 
-    def __init__(self, config, **kwargs) -> None:
+    def __init__(self, 
+        config, 
+        include_system_message: Optional[bool] = True,
+        system_message: Optional[str] = None,
+    ) -> None:
+        self.config = config
 
+        # initialize method
+        rerank_mode = RerankMode(config.rerank_mode)
         print(f"""
-        [Model] {config.llm.model_name_or_path}
-        [RerankMode] {config.rerank_mode}
+        [Model] {config.llm.model_name_or_path} # [TODO] make this as __str__ also.
+        {rerank_mode}
         """)
 
-        self.config = config
-        # initialize method
-
-        prompt_builder = PromptBuilder(config=config)
+        # initlaize instances 
+        # NOTE: initialize the prompt builder with rerank method.
+        prompt_builder = PromptBuilder(
+            config=config,
+            rerank_mode=rerank_mode,
+            include_system_message=include_system_message,
+            system_message=system_message,
+            max_doc_length=config.max_doc_length,
+            use_alpha=config.use_alphabetical, 
+            variable_passages=True,
+        )
         agent = LLM( 
             model_name_or_path=config.llm.model_name_or_path,
             temperature=config.llm.temperature,
             top_p=config.llm.top_p,
-            logprobs=20 if config.llm.use_logits else None,
-            max_tokens=3 if config.llm.use_logits else 128,
+            logprobs=20 if rerank_mode.use_logits else None,
+            max_tokens=128 if 'list' in rerank_mode.result_parser_name else 3,
             max_model_len=config.llm.max_model_len,
             dtype='half' if config.llm.dtype == 'float16' else 'float32',
         )
-        # TODO: Make this more flexible in the future
-        if config.llm.use_logits:
+
+        if rerank_mode.use_logits:
+            # TODO: Make this more flexible in the future
+            # NOTE: This will truncated by the window size
             agent.set_classification(id_strings=[chr(i) for i in range(65, 91)])
 
         result_parser = ResultParser()
@@ -44,6 +60,7 @@ class ModularReranker:
         # initialize the algorithm module
         self.assembler = AutoAssembler.from_config(
             config, 
+            rerank_mode=rerank_mode,
             prompt_builder=prompt_builder,
             llm_provider=agent,
             result_parser=result_parser,
@@ -79,7 +96,7 @@ class ModularReranker:
         run: Dict[str, Dict[str, float]],
         queries: Dict[str, str],
         corpus: Dict[str, Dict[str, str]],
-        query_batch_size: int = 32,
+        query_batch_size: int = 16,
     ) -> Dict[str, Dict[str, float]]:
         """
         Args

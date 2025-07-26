@@ -5,14 +5,15 @@ from abc import ABC, abstractmethod
 class BaseFormatter(ABC):
     """Base class for all formatters."""
 
-    def __init__(
-        self, 
+    def __init__(self, 
+        config=None,
         use_alpha=False, 
         variable_passages=False,
         max_doc_length=None
     ):
-        self._use_alpha = use_alpha
-        self._variable_passages = variable_passages 
+        self._use_alpha = config.use_alphabetical
+        self._variable_passages = config.variable_passages 
+        self.max_doc_length = config.max_doc_length
 
         if use_alpha: 
             self.id_type = "alphabetical"
@@ -20,8 +21,6 @@ class BaseFormatter(ABC):
         else:
             self.id_type = "numerical"
             self.example_ordering = "[2] > [1]" if variable_passages else "[4] > [2]"
-
-        self.max_doc_length = max_doc_length
 
     @abstractmethod
     def prefix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:

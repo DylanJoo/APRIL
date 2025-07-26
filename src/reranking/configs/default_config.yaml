@@ -10,6 +10,7 @@ llm:
   backend: vllm
   max_model_len: 20480
   dtype: float16
+  use_logits: false
 
 rerank_mode: RankGPT 
 use_alphabetical: false
@@ -24,8 +25,7 @@ step_size: 10
 exp: testing
 num_runs: 1
 dtype: float16
- 
-
-output_run: ../../runs/temp.txt
-save_path: ./checkpoints/model.pt
-log_dir: ./logs
+variable_passages: true
+include_system_message: true
+system_message: "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
+result_parser_name: listwise
