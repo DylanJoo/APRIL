@@ -50,9 +50,10 @@ class ModularReranker:
             dtype='half' if config.llm.dtype == 'float16' else 'float32',
         )
 
-        # TODO: Make this more flexible in the future
         if rerank_mode.use_logits:
-            agent.set_classification() # NOTE: RankFIRST distribution 
+            # TODO: Make this more flexible in the future
+            # NOTE: This will truncated by the window size
+            agent.set_classification(id_strings=[chr(i) for i in range(65, 91)])
 
         result_parser = ResultParser()
 

@@ -60,15 +60,19 @@ class LLM:
         self.yes_tokens = None
         self.no_tokens = None
 
+    # TODO: Set the id_tokens as dynamic based on window size
     def set_classification(
         self, 
         yes_strings=[' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES'],
         no_strings=[' No', 'No', ' no', 'no', 'NO', ' NO'],
-        id_strings=['1', '2', '3', '4', '5', '6', '7', '8', '9']
+        id_strings=[chr(i) for i in range(65, 91)]
     ):
         self.yes_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in yes_strings]
         self.no_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in no_strings]
         self.id_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in id_strings]
+        print(f"YES TOKENS: {self.yes_tokens}")
+        print(f"NO TOKENS: {self.no_tokens}")
+        print(f"ID TOKENS: {self.id_tokens}")
 
     async def _iterate_over_output(self, output_iterator: AsyncStream, use_binary_probs=False, use_dist_probs=False) -> str:
 
@@ -102,9 +106,6 @@ class LLM:
     def generate(self, prompts, binary_probs=False, dist_logp=False):
         if isinstance(prompts, str):
             prompts = [prompts]
-
-        if dist_logp:
-            prompts = [prompt+"[" for prompt in prompts] 
 
         return self.loop.run_until_complete(
                 self._agenerate(prompts, 

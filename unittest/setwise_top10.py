@@ -15,7 +15,7 @@ config = ConfigManager(
     rank_end=100,
     window_size=5,
     step_size=1,
-    num_runs=1,
+    num_runs=10,
     use_alphabetical=True,
     llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
 ).get_config()
