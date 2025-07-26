@@ -79,7 +79,7 @@ class ModularReranker:
         run: Dict[str, Dict[str, float]],
         queries: Dict[str, str],
         corpus: Dict[str, Dict[str, str]],
-        query_batch_size: int = 32,
+        query_batch_size: int = 64,
     ) -> Dict[str, Dict[str, float]]:
         """
         Args

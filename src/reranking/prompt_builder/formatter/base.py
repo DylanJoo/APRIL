@@ -8,19 +8,19 @@ class BaseFormatter(ABC):
     def __init__(self, 
         config=None,
         use_alpha=False, 
-        variable_passages=False,
+        variable_passages=True,
         max_doc_length=None
     ):
         self._use_alpha = config.use_alphabetical
         self._variable_passages = config.variable_passages 
         self.max_doc_length = config.max_doc_length
 
-        if use_alpha: 
+        if self._use_alpha: 
             self.id_type = "alphabetical"
-            self.example_ordering = "[B] > [A]" if variable_passages else "[D] > [B]"
+            self.example_ordering = "[B] > [A]" if self._variable_passages else "[D] > [B]"
         else:
             self.id_type = "numerical"
-            self.example_ordering = "[2] > [1]" if variable_passages else "[4] > [2]"
+            self.example_ordering = "[2] > [1]" if self._variable_passages else "[4] > [2]"
 
     @abstractmethod
     def prefix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:

@@ -47,7 +47,6 @@ class WindowBubble(RerankStrategy):
     ) -> List[Result]:
 
         prompts = self._prompt_builder.create_prompt_batched(results, rank_start, rank_end)
-        breakpoint()
         outputs = self._llm.generate(prompts) 
 
         reranked_results = self._result_parser.parse(

@@ -9,20 +9,23 @@ from .setwise import SetwiseFormatter
 # from .pairwise_genref import PairwiseGenRefFormatter
 from ._april import AprilFormatter
 from ._dev import DevFormatter
+        # RerankMode.RANK_GPT: ListwiseFormatter,
+        # RerankMode.PAIRWISE_ALL: PairwiseFormatter,
+        # RerankMode.PAIRWISE_TOPK: PairwiseFormatter,
+        # RerankMode.SETWISE_TOPK: SetwiseFormatter,
 
 class AutoPromptFormatter:
     _builder_map = {
-        RerankMode.RANK_GPT: ListwiseFormatter,
         'RankGPT': ListwiseFormatter,
-        RerankMode.PAIRWISE_ALL: PairwiseFormatter,
-        RerankMode.PAIRWISE_TOPK: PairwiseFormatter,
-        RerankMode.SETWISE_TOPK: SetwiseFormatter,
+        'PairAll': PairwiseFormatter,
+        'PairTopK': PairwiseFormatter,
+        'SetTopK': SetwiseFormatter,
     }
         # RerankMode.DEV: DevFormatter,
         # RerankMode.APRIL: AprilFormatter,
         # RerankMode.PAIRWISE_REF: PairwiseRefFormatter,
     @classmethod
-    def from_config(cls, config, **kwargs):
+    def from_config(cls, config):
         rerank_mode = config.rerank_mode
         builder_cls = cls._builder_map.get(rerank_mode)
         if builder_cls is None:
@@ -30,4 +33,4 @@ class AutoPromptFormatter:
                 f"No prompt builder found for mode: {rerank_mode}\n" 
                 f"available modes: {list(cls._builder_map.keys())}"
             )
-        return builder_cls(config, **kwargs)
+        return builder_cls(config)

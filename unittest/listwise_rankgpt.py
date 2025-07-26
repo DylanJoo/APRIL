@@ -49,7 +49,7 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
         run=run,
         queries=queries,
         corpus=corpus,
-        query_batch_size=32
+        query_batch_size=64
     )
 
     # prepare output run

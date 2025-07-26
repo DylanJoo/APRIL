@@ -26,7 +26,7 @@ class PromptBuilder:
         results: List[Result],
         rank_start: int = 0,
         rank_end: int = None,
-        batch_size: int = 32,
+        batch_size: int = 64,
         **kwargs
     ) -> List[Tuple[str, int]]:
 
