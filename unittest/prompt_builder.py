@@ -2,7 +2,7 @@ from reranking.prompt_builder import PromptBuilder
 from reranking.config_manager import ConfigManager
 
 config = ConfigManager(
-    rerank_mode='PairTopK',
+    rerank_mode='SetTopK',
     top_k=100,
     rank_start=0,
     rank_end=100,
@@ -16,9 +16,9 @@ rank_end = config.rank_end
 inputs = {
     'query': 'XXX',
     'doc_list': [f'document {i}' for i in range(5)][rank_start:rank_end],
-    'idx_pairs': [(0, 1), (2, 3)]
+    'idx_pairs': [(0, 1, 2), (3, 4, 5)]
 }
-    # 'idx_pairs': [(0, 1, 2), (3, 4, 5)]
+    # 'idx_pairs': [(0, 1), (2, 3)]
 
 
 prefix = p.formatter.prefix(**inputs)

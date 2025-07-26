@@ -37,7 +37,7 @@ class ModularReranker:
             include_system_message=include_system_message,
             system_message=system_message,
             max_doc_length=config.max_doc_length,
-            use_alpha=False, 
+            use_alpha=config.use_alphabetical, 
             variable_passages=True,
         )
         agent = LLM( 
@@ -50,9 +50,11 @@ class ModularReranker:
             dtype='half' if config.llm.dtype == 'float16' else 'float32',
         )
 
-        # TODO: Make this more flexible in the future
         if rerank_mode.use_logits:
-            agent.set_classification()
+            # TODO: Make this more flexible in the future
+            # NOTE: This will truncated by the window size
+            agent.set_classification(id_strings=[chr(i) for i in range(65, 91)])
+
         result_parser = ResultParser()
 
         # initialize the algorithm module

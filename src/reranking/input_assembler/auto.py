@@ -1,23 +1,25 @@
 # TODO Adapt to utils rerank mode directly.
 from ..utils import RerankMode
-from .window_bubble import WindowBubble
+from .window_bubble import WindowBubble # NOTE: rename it 
 from .pair_all import PairAll
 from .pair_bubble_topk import PairBubbleTopK
-from .ref_rerank import RefRerank
-from .genref_rerank import GenRefRerank
-from .pair_quick_topk import PairQuickTopK
-from .set_tournament import SetTouranment
+from .set_bubble_topk import SetBubbleTopK
 from ._april import April
 from ._dev import Dev
+
+# from .pair_quick_topk import PairQuickTopK
+# from .set_tournament import SetTouranment
+# from .ref_rerank import RefRerank
+# from .genref_rerank import GenRefRerank
 
 class AutoAssembler:
     _builder_map = {
         RerankMode.RANK_GPT: WindowBubble,
         RerankMode.PAIRWISE_ALL: PairAll,
         RerankMode.PAIRWISE_TOPK: PairBubbleTopK,
-        RerankMode.PAIRWISE_REF: RefRerank,
-        RerankMode.SETWISE_TOPK: SetTouranment,
+        RerankMode.SETWISE_TOPK: SetBubbleTopK,
     }
+        # RerankMode.PAIRWISE_REF: RefRerank,
         # RerankMode.DEV: Dev,
         # RerankMode.PAIRWISE_GENREF: GenRefRerank,
         # RerankMode.APRIL: April,
