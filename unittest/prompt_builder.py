@@ -18,8 +18,8 @@ inputs = {
     'doc_list': [f'document {i}' for i in range(5)][rank_start:rank_end],
     'idx_pairs': [(0, 1), (2, 3)]
 }
-    # 'idx_pairs': [(0, 1, 2), (3, 4, 5)]
 
+    # 'idx_pairs': [(0, 1, 2), (3, 4, 5)]
 
 prefix = p.formatter.prefix(**inputs)
 body = p.formatter.body(**inputs)

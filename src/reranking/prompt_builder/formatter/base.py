@@ -38,6 +38,10 @@ class BaseFormatter(ABC):
         """Returns the body of the prompt."""
         pass
 
+    # @abstractmethod
+    # def demo(self) -> str:
+    #     """Returns a demonstration of the formatter."""
+    #     pass
     # [TODO] Equalize the max length
     def _document_format(self, doc: Union[str, Dict]) -> str:
         if isinstance(doc, dict):

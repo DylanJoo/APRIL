@@ -11,7 +11,8 @@ llm:
   max_model_len: 20480
   dtype: float16
 
-rerank_mode: RankGPT # Options: RankGPT, LRL, APRIL
+rerank_mode: RankGPT 
+use_alphabetical: false
 top_k: 100 
 rank_start: 0
 rank_end: 100 

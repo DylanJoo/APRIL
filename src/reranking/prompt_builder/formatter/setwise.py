@@ -1,0 +1,28 @@
+from typing import List, Optional, Union, Callable, Dict, Tuple
+from .base import BaseFormatter
+
+class SetwiseFormatter(BaseFormatter):
+
+    def prefix(self, query, idx_pairs, **kwargs) -> str:
+        n_pairs = len(idx_pairs[0])
+        return (
+            f"I will provide you with {n_pairs} passages. Read and memorize all carefully. "
+            f"Your task is to determine which passage is the MOST relevant to the query: {query}\n\n"
+        )
+
+    def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, idx_pairs = None, **kwargs) -> str:
+        return (
+            "Based on the query, which passage is the most relevant one.\n"
+            f"Only respond with the passage number with the bracket enclosed (e.g., [number]). Do not explain."
+        )
+
+    def body(self, query: str, doc_list: List[Union[Dict, str]], idx_pairs = None, **kwargs) -> str:
+        doc_list = [self._document_format(doc) for doc in doc_list]
+
+        prompt_body = ""
+        for order, idx in enumerate(idx_pairs[0]):
+            identifier = f"[{chr(64 + order)}]" if self._use_alpha else f"[{order + 1}]"
+            doc_text = self.replace_number(doc_list[idx])
+            prompt_body += f"{identifier} {doc_text}\n"
+
+        return prompt_body

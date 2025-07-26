@@ -6,6 +6,7 @@ from typing import Optional, Tuple, List, Dict, Union, Any
 
 from ..utils import Result
 from .base import RerankStrategy
+import pdb
 
 class PairBubbleTopK(RerankStrategy):
 
@@ -22,12 +23,13 @@ class PairBubbleTopK(RerankStrategy):
         results = [copy.deepcopy(result) for result in init_results]
 
         for i_run in range(num_runs):
-
             for curr_end in tqdm(   
                 range(rank_end, rank_start, -self._step_size), 
                 desc=f"Pairwise Bubble (the {i_run+1} run)",
             ):
-                results = self.run_pass(results, rank_start, rank_end, curr_end)
+                if curr_end - 2 < rank_start: ## NOTE: the last item will be move to the top
+                    break
+                results = self.run_pass(results, rank_start=rank_start, rank_end=rank_end, target=curr_end)
 
         # Assign reciprocal rank
         for result in results:
@@ -42,29 +44,30 @@ class PairBubbleTopK(RerankStrategy):
         results: List[Result],
         rank_start: int,
         rank_end: int,
-        curr_end: int,
+        target: int,
     ) -> List[Result]:
 
         swaps = [None for _ in range(len(results))]
 
-        # I > J
+        # bottom > top
         prompts = self._prompt_builder.create_prompt_batched(
             results=results, 
             rank_start=0,
             rank_end=rank_end, 
-            idx_pairs=[(curr_end-2, curr_end-1)]
+            idx_pairs=[(target-1, target-2)] 
         )
         outputs_ij = self._llm.generate(prompts, binary_probs=True)
 
-        # J > I
+        # top > bottom
         prompts = self._prompt_builder.create_prompt_batched(
             results=results, 
             rank_start=0,
             rank_end=rank_end, 
-            idx_pairs=[(curr_end-1, curr_end-2)]
+            idx_pairs=[(target-2, target-1)]
         )
         outputs_ji = self._llm.generate(prompts, binary_probs=True)
 
+        # aggregation
         for index, (output_ij, output_ji) in enumerate(zip(outputs_ij, outputs_ji)):
             swaps[index] = (output_ij > output_ji)
 
@@ -72,6 +75,6 @@ class PairBubbleTopK(RerankStrategy):
             outputs=swaps,
             results=results,
             rank_start=rank_start,
-            rank_end=rank_end,
+            rank_end=target,
         )
         return reranked_results

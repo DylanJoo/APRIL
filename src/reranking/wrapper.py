@@ -37,7 +37,7 @@ class ModularReranker:
             include_system_message=include_system_message,
             system_message=system_message,
             max_doc_length=config.max_doc_length,
-            use_alpha=False, 
+            use_alpha=config.use_alphabetical, 
             variable_passages=True,
         )
         agent = LLM( 
@@ -52,7 +52,8 @@ class ModularReranker:
 
         # TODO: Make this more flexible in the future
         if rerank_mode.use_logits:
-            agent.set_classification()
+            agent.set_classification() # NOTE: RankFIRST distribution 
+
         result_parser = ResultParser()
 
         # initialize the algorithm module
