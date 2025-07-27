@@ -2,10 +2,11 @@ from reranking.prompt_builder import PromptBuilder
 from reranking.config_manager import ConfigManager
 
 config = ConfigManager(
-    rerank_mode='RankGPT',
+    rerank_mode='RankFirst',
     top_k=100,
     rank_start=0,
     rank_end=100,
+    use_alphabetical=True,
     llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
 ).get_config()
 

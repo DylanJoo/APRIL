@@ -28,18 +28,12 @@ class SetMaxHeapTopK(RerankStrategy):
             enumerate(results), 
             desc="Setwise HeapSort", ntotal=len(results)
         ):
+            # 0. Get the last parent
+            i_parent = len(result.hits) // self._window_size - 1
 
-            i_first_roots = len(result.hits) // self._window_size - 1
-            # 1. buildi maxheap
-            for i_root in range(i_ - , -1, -1):
-                i_root = n_total_roots - i_root - 1
-            )
-                self._max_heapify(result.hits, i_root, len(result.hits))
-            # for curr_end in tqdm(   
-            #     range(rank_end, rank_start, -self._step_size), 
-            #     desc=f"Setwise Bubble (the {i_run+1} run)"
-            # ):
-            #     results = self.run_pass(results, rank_start, rank_end, curr_end)
+            # 1. build maxheap (traverse each paraents)
+            for i_visit in range(i_parent, -1, -1):
+                result = self.run_pass(result, target=i_visit)
 
         # Assign reciprocal rank
         for result in results:
@@ -49,39 +43,39 @@ class SetMaxHeapTopK(RerankStrategy):
 
         return results
 
-    def build(self, results): # NOTE: this builds tree structure
-        pass
+    def run_pass(self, results: List[Result], target: int) -> List[Result]:
 
-    def run_pass(
-        self,
-        results: List[Result],
-        rank_start: int,
-        rank_end: int,
-        curr_end: int,
-    ) -> List[Result]:
+        # Get the comparing set-subtree 
+        # target and its child nodes: i * n_childs + {1/2/.../n_childs}
+        idx_pair = tuple(target, target * self._set_size + i for i in range(1, self._set_size + 1))
+        curr_start, curr_end = min(idx_pair), max(idx_pairs) + 1
+        breakpoint()
 
-        permutations = [None for _ in range(len(results))]
-
-        # I > (J, K, L, ...)
-        curr_start = max(0, curr_end - self._window_size)
         prompts = self._prompt_builder.create_prompt_batched(
             results=results, 
             rank_start=0,
             rank_end=rank_end, 
-            idx_pairs=[tuple(range(curr_end - self._window_size, curr_end))],
+            idx_pairs=[idx_pair]
         )
+        # NOTE: Do we need try all the combintations of the set? now i did it
         outputs = self._llm.generate(prompts, dist_logp=True)
+        breakpoint()
 
-        # NOTE: make separate setsize and window size
-        for index, output in enumerate(outputs):
-            permutation = np.array(output).argsort()[::-1]
-            permutation = [str(p+1) for p in permutation] # index starts from 1
-            permutations[index] = " > ".join(permutation)
+        # TODO: looking for better implementation
+        # NOTE: the first item is target, the last n_child items are the child nodes. 
+        # NOTE: the items in the middile are remaining the same
+        # NOTE: Do we need to also swap the order of the entire set-subtree? I did it now
+        max_1 = max(outputs)
+        max_2 = max([i for i in outputs if i != max_output])
+        dummy = (max_1 + max_2) / 2
+        final_outputs = [dummy for _ iln range(curr_start, curr_end)] 
+        final_outputs[0] = outputs[0]
+        final_outputs[-len(idx_pair):] = outputs[1:len(idx_pair)]
 
         reranked_results = self._result_parser.parse(
             outputs=permutations,
             results=results,
-            rank_start=rank_start,
-            rank_end=rank_end,
+            rank_start=min(idx_pair),
+            rank_end=max(idx_pair) + 1
         )
         return reranked_results

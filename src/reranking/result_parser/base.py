@@ -20,6 +20,7 @@ class ResultParser(ABC):
         self._use_alpha = use_alpha
 
     # TODO: parse all, or maybe multithreading
+    # TODO: make the meaning of `rank_start` and `rank_end` similar across methods?
     def parse(
         self, 
         outputs: Union[List[List[Union[float, int]]], List[str]],
@@ -38,8 +39,8 @@ class ResultParser(ABC):
             elif isinstance(output, list): # e.g., Pairwise or Pointwise
                 if len(output) == len(result.hits):
                     parsed_result = self._parse_absolute_scores(output, result)
-                else: # e.g. APRIL: [ [scores of d1, d2, ...] of the window1 ]
-                    parsed_result = self._parse_scores(output, result, rank_start, rank_end)
+                else: # e.g. APRIL: [ ...., [rank_start(s1), s2, ...] rank_end, ... ]
+                    parsed_result = self._parse_scores(output, result, rank_start, rank_end) 
             else:
                 raise TypeError(f"Unsupported outputs type: {type(output)}, {output}")
             results[index] = parsed_result

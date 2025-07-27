@@ -97,8 +97,12 @@ class LLM:
             elif use_dist_probs:
                 tok_logps = output.outputs[0].logprobs[0]
                 min_logprob = min([item.logprob for item in tok_logps.values()])
-                output = [tok_logps.get(tok, min_logprob) for tok in self.id_tokens]
-                output = [v if isinstance(v, float) else v.logprob for v in output]
+                output = [min_logprob] * len(self.id_tokens)
+                for topk, item in tok_logps.items():
+                    if len(item.decoded_token)==1 and (65 <= ord(item.decoded_token) <= 90):
+                        output[ord(item.decoded_token)-65] = item.logprob
+                # output = [tok_logps.get(tok, min_logprob) for tok in self.id_tokens]
+                # output = [v if isinstance(v, float) else v.logprob for v in output]
             else:
                 output = last_text = output.outputs[0].text
         return output

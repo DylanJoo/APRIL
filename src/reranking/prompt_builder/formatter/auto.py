@@ -1,5 +1,4 @@
 ## [NOTE] dynamically shrink the body size via length of documents?
-from ...utils import RerankMode
 from .listwise import ListwiseFormatter
 from .pairwise import PairwiseFormatter
 from .setwise import SetwiseFormatter
@@ -13,13 +12,11 @@ from ._dev import DevFormatter
 class AutoPromptFormatter:
     _builder_map = {
         'RankGPT': ListwiseFormatter,
+        'RankFirst': ListwiseFormatter,
         'PairAll': PairwiseFormatter,
         'PairTopK': PairwiseFormatter,
         'SetTopK': SetwiseFormatter,
     }
-        # RerankMode.DEV: DevFormatter,
-        # RerankMode.APRIL: AprilFormatter,
-        # RerankMode.PAIRWISE_REF: PairwiseRefFormatter,
     @classmethod
     def from_config(cls, config):
         rerank_mode = config.rerank_mode
