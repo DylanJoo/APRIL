@@ -94,15 +94,15 @@ class LLM:
                 output = score = yes_ / (no_ + yes_)
 
             # NOTE: the transformation is a bit hacky.
+            # NOTE: make sure the numeric identifiers can also work
             elif use_dist_probs:
                 tok_logps = output.outputs[0].logprobs[0]
                 min_logprob = min([item.logprob for item in tok_logps.values()])
-                output = [min_logprob] * len(self.id_tokens)
+                output = [min_logprob for _ in self.id_tokens]
                 for topk, item in tok_logps.items():
-                    if len(item.decoded_token)==1 and (65 <= ord(item.decoded_token) <= 90):
-                        output[ord(item.decoded_token)-65] = item.logprob
-                # output = [tok_logps.get(tok, min_logprob) for tok in self.id_tokens]
-                # output = [v if isinstance(v, float) else v.logprob for v in output]
+                    decoded_token = item.decoded_token.replace('[', '').replace(']', '')
+                    if len(decoded_token)==1 and (65 <= ord(decoded_token) <= 90):
+                        output[ord(decoded_token)-65] = max(item.logprob, output[ord(decoded_token)-65])
             else:
                 output = last_text = output.outputs[0].text
         return output

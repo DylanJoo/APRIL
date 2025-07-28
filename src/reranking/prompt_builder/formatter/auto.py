@@ -1,11 +1,7 @@
-## [NOTE] dynamically shrink the body size via length of documents?
+## TODO: dynamically shrink the body size via length of documents?
 from .listwise import ListwiseFormatter
 from .pairwise import PairwiseFormatter
 from .setwise import SetwiseFormatter
-# from .pairwise_all import PairwiseAllFormatter
-# from .pairwise_topk import PairwiseTopKFormatter
-# from .pairwise_ref import PairwiseRefFormatter
-# from .pairwise_genref import PairwiseGenRefFormatter
 from ._april import AprilFormatter
 from ._dev import DevFormatter
 
@@ -15,7 +11,9 @@ class AutoPromptFormatter:
         'RankFirst': ListwiseFormatter,
         'PairAll': PairwiseFormatter,
         'PairTopK': PairwiseFormatter,
+        'PairMaxHeapTopK': PairwiseFormatter,
         'SetTopK': SetwiseFormatter,
+        'SetMaxHeapTopK': SetwiseFormatter,
     }
     @classmethod
     def from_config(cls, config):

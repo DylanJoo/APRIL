@@ -8,13 +8,13 @@ class SetwiseFormatter(BaseFormatter):
         n_pairs = len(idx_pairs[0])
         return (
             f"I will provide you with {n_pairs} passages. Read and memorize all carefully. "
-            f"Your task is to determine which passage is the MOST relevant to the query: {query}\n\n"
+            f"Your task is to determine which passage is the most relevant to the query: {query}\n\n"
         )
 
     def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, idx_pairs = None, **kwargs) -> str:
         return (
-            "Based on the query, which passage is the most relevant one.\n"
-            f"Only respond with the {self.id_type} passage identifier with the bracket enclosed. Do not explain."
+            f"Search Query: {query}\nWhich passage is the most relevant one to the query? "
+            f"Only respond with the {self.id_type} identifier with bracket (e.g., [A]). Do not say any word or explain."
         )
 
     def body(self, query: str, doc_list: List[Union[Dict, str]], idx_pairs = None, **kwargs) -> str:

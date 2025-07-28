@@ -7,6 +7,7 @@ from ftfy import fix_text
 
 from ..utils import Result, batch_iterator
 from .formatter.auto import AutoPromptFormatter
+import pdb
 
 class PromptBuilder:
     def __init__(self, config):
@@ -100,17 +101,17 @@ class PromptBuilder:
 
     def _convert_message_to_prompt(
         self, 
-        messages: List[Dict[str, str]], 
+        message: List[Dict[str, str]], 
         prefix: str, 
         body: str,
         postfix: str
     ) -> Union[Tuple[str, str], Tuple[List, List]]:
 
         if self.system_message_supported:
-            messages_ = messages.copy()
-            messages_[1]['content'] = prefix + body + postfix
+            message_ = message.copy()
+            message_[1]['content'] = prefix + body + postfix
             prompt = self._tokenizer.apply_chat_template(
-                messages_,
+                message_,
                 tokenize=False, 
                 add_generation_prompt=True
             )

@@ -1,13 +1,12 @@
 from .list_bubble import SlidingWindow, SlidingWindowFIRST
 from .pair_all import PairAll
 from .pair_bubble_topk import PairBubbleTopK
+from .pair_maxheap_topk import PairMaxHeapTopK
 from .set_bubble_topk import SetBubbleTopK
-# from .pair_quick_topk import PairQuickTopK
-# from .set_tournament import SetTouranment
-# from .ref_rerank import RefRerank
-# from .genref_rerank import GenRefRerank
+from .set_maxheap_topk import SetMaxHeapTopK
 from ._april import April
 from ._dev import Dev
+# from .set_tournament import SetTouranment
 
 class AutoAssembler:
     _builder_map = {
@@ -15,7 +14,9 @@ class AutoAssembler:
         'RankFirst': SlidingWindowFIRST,
         'PariAll': PairAll,
         'PairTopK': PairBubbleTopK,
+        'PairMaxHeapTopK': PairMaxHeapTopK,
         'SetTopK': SetBubbleTopK,
+        'SetMaxHeapTopK': SetMaxHeapTopK,
     }
 
     @classmethod

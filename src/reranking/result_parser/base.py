@@ -39,13 +39,15 @@ class ResultParser(ABC):
             elif isinstance(output, list): # e.g., Pairwise or Pointwise
                 if len(output) == len(result.hits):
                     parsed_result = self._parse_absolute_scores(output, result)
-                else: # e.g. APRIL: [ ...., [rank_start(s1), s2, ...] rank_end, ... ]
+                else: # e.g. APRIL: [ ...., [rank_start(s1), s2, ...] rank_end, ... ], setwise heapsort (NOTE: this is not a good design though)
                     parsed_result = self._parse_scores(output, result, rank_start, rank_end) 
             else:
                 raise TypeError(f"Unsupported outputs type: {type(output)}, {output}")
             results[index] = parsed_result
         return results
 
+    # NOTE: this is suitable for continuous items sorting. But not for setwise items initially
+    # NOTE: consider to add a design of APRIL
     def _parse_scores(self, scores: List[float], result: Result, rank_start: int, rank_end: int) -> Result:
         cut_range = copy.deepcopy(result.hits[rank_start:rank_end])
         permutation = [(idx, s) for idx, s in zip(range(len(scores)), scores)]
