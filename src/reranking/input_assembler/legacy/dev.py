@@ -25,38 +25,38 @@ class Dev(RerankStrategy):
             enumerate(results), total=len(results), 
             desc="Dev Reranking"
         ):
-            ## initialize buckets (0, 20), (20, 40), ... (80, 100)
-            bucket_idx = [(i, i + self._window_size) for i in range(rank_start, rank_end, self._window_size)]
-            result_buckets = [Result(qid=result.qid, query=result.query, hits=result.hits[i:j]) for i, j in bucket_idx]
+            ## initialize buckets (0, 20), (20, 40), ...
+            bucket_idx = [(i, i + self._window_size) for i in \
+                    range(rank_start, rank_end, self._window_size)]
+            n_buckets = len(result.hits) // self._window_size # TODO: ceiling?
+            advanced_size = self._window_size // n_buckets
+            result_buckets = [
+                Result(qid=result.qid, query=result.query, hits=result.hits[i:j]) for i, j in bucket_idx
+            ]
 
-            ## re-order the hits in each bucket
-            prompts_r = self._prompt_builder.create_prompt_batched(
-                results=result_buckets,
-                rank_start=0,
-                rank_end=self._window_size
-            )
-            prompts_r = [p+'[' for p in prompts_r]
-            outputs_r = self._llm.generate(prompts_r, dist_logp=True)
-            outputs = [output[:self._window_size] for output in outputs_r]
-            for i, output in enumerate(outputs):
-                for j in range(len(output)):
-                    result_buckets[i].hits[j]['score'] = output[j]
-                result_buckets[i].sort_by('score')
-
-            ## filter out the negative hits
-            prompts_f = self._prompt_builder.create_prompt_batched(
-                results=result_buckets,
-                rank_start=0,
+            ## rerank each buckets first
+            result_buckets = self.run_pass(
+                [result_buckets[i_bucket] for i_bucket in range(0, n_buckets)],
+                rank_start=0, 
                 rank_end=self._window_size,
-                filtering_postfix=True
             )
-            prompts_f = [p+'[' for p in prompts_f]
-            outputs_f = self._llm.generate(prompts_f, dist_logp=True, irrelevant_filtering=True)
-            outputs = [output[:self._window_size] for output in outputs_f]
-            for i, output in enumerate(outputs):
-                for j in range(len(output)):
-                    result_buckets[i].hits[j]['score'] = -math.inf
-                result_buckets[i].sort_by('score')
+
+            result_sorted = []
+            while len(result_sorted) < len(result.hits):
+
+                result_tournament = []
+                for r in result_buckets:
+                    result_tournament.extend(r.hits[:advanced_size])
+                    r = r[advanced_size:] # pop the first `advanced_size` hits
+
+                result_tournament = self.run_pass(
+                    result_tournament,
+                    rank_start=0, 
+                    rank_end=len(result_tournament)
+                )
+
+                result_sorted.extend(result_tournament.hits.pop(0))
+                result_buckets.extend(result_tournament)
 
             ## collect back
             results[index] = Result(

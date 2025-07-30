@@ -2,7 +2,7 @@ from reranking.prompt_builder import PromptBuilder
 from reranking.config_manager import ConfigManager
 
 config = ConfigManager(
-    rerank_mode='RankFirst',
+    rerank_mode='Dev',
     top_k=100,
     rank_start=0,
     rank_end=100,
@@ -17,7 +17,8 @@ rank_end = config.rank_end
 inputs = {
     'query': 'XXX',
     'doc_list': [f'document {i}' for i in range(5)][rank_start:rank_end],
-    'idx_pairs': [(0, 1, 2), (3, 4, 5)]
+    'idx_pairs': [(0, 1, 2), (3, 4, 5)],
+    'filtering_postfix': True
 }
     # 'idx_pairs': [(0, 1), (2, 3)]
 
@@ -26,18 +27,18 @@ prefix = p.formatter.prefix(**inputs)
 body = p.formatter.body(**inputs)
 postfix = p.formatter.postfix(**inputs)
 
-print(f"Prefix: {prefix}")
+print(f"Prefix:\n{prefix}")
 if isinstance(body, list):
     body = "\n".join(body)
-    print(f"Body (list): {body}")
+    print(f"Body (list):\n{body}")
 else:
-    print(f"Body: {body}")
+    print(f"Body:\n{body}")
 
 if isinstance(postfix, list):
     postfix = "\n".join(postfix)
-    print(f"Postfix (list): {postfix}")
+    print(f"Postfix (list):\n{postfix}")
 else:
-    print(f"Postfix: {postfix}")
+    print(f"Postfix:\n{postfix}")
 
 # print(prefix)
 # print(body[0] if isinstance(body, list) else body)

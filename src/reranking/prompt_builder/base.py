@@ -74,9 +74,9 @@ class PromptBuilder:
             "rank_end": rank_end,
             "idx_pairs": idx_pairs,
         }
-        prefix = self.formatter.prefix(**inputs)
-        postfix = self.formatter.postfix(**inputs)
-        body = self.formatter.body(**inputs)
+        prefix = self.formatter.prefix(**inputs, **kwargs)
+        postfix = self.formatter.postfix(**inputs, **kwargs)
+        body = self.formatter.body(**inputs, **kwargs)
 
         # organize the prompts with reranking methods 
         if isinstance(postfix, str) and isinstance(body, str): # [NOTE] Sacrifice consistency for simplicity

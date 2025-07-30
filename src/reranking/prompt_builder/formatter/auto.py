@@ -2,8 +2,9 @@
 from .listwise import ListwiseFormatter
 from .pairwise import PairwiseFormatter
 from .setwise import SetwiseFormatter
-from ._april import AprilFormatter
 from ._dev import DevFormatter
+
+from ._april import AprilFormatter
 
 class AutoPromptFormatter:
     _builder_map = {
@@ -14,6 +15,8 @@ class AutoPromptFormatter:
         'PairMaxHeapTopK': PairwiseFormatter,
         'SetTopK': SetwiseFormatter,
         'SetMaxHeapTopK': SetwiseFormatter,
+        'April': AprilFormatter,
+        'Dev': DevFormatter,
     }
     @classmethod
     def from_config(cls, config):

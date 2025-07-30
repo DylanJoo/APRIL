@@ -74,7 +74,7 @@ class LLM:
         print(f"NO TOKENS: {self.no_tokens}")
         print(f"ID TOKENS: {self.id_tokens}")
 
-    async def _iterate_over_output(self, output_iterator: AsyncStream, use_binary_probs=False, use_dist_probs=False) -> str:
+    async def _iterate_over_output(self, output_iterator: AsyncStream, use_binary_probs=False, use_dist_probs=False, use_filtering=False) -> str:
 
         async for output in output_iterator:
             if use_binary_probs:
@@ -95,7 +95,7 @@ class LLM:
 
             # NOTE: the transformation is a bit hacky.
             # NOTE: make sure the numeric identifiers can also work
-            elif use_dist_probs:
+            elif (use_dist_probs and not use_filtering):
                 tok_logps = output.outputs[0].logprobs[0]
                 min_logprob = min([item.logprob for item in tok_logps.values()])
                 output = [min_logprob for _ in self.id_tokens]
@@ -103,18 +103,30 @@ class LLM:
                     decoded_token = item.decoded_token.replace('[', '').replace(']', '')
                     if len(decoded_token)==1 and (65 <= ord(decoded_token) <= 90):
                         output[ord(decoded_token)-65] = max(item.logprob, output[ord(decoded_token)-65])
+
+            # TODO: change this to a more generic way of handling the output
+            elif (use_dist_probs and use_filtering):
+                tok_logps = output.outputs[0].logprobs[0]
+                # output = [-math.inf for _ in self.id_tokens]
+                output = [None for _ in self.id_tokens]
+                for topk, item in tok_logps.items():
+                    decoded_token = item.decoded_token.replace('[', '').replace(']', '')
+                    if len(decoded_token)==1 and (65 <= ord(decoded_token) <= 90):
+                        output[ord(decoded_token)-65] = max(item.logprob, output[ord(decoded_token)-65]) \
+                                if output[ord(decoded_token)-65] is not None else item.logprob
             else:
                 output = last_text = output.outputs[0].text
         return output
 
-    def generate(self, prompts, binary_probs=False, dist_logp=False):
+    def generate(self, prompts, binary_probs=False, dist_logp=False, irrelevant_filtering=False):
         if isinstance(prompts, str):
             prompts = [prompts]
 
         return self.loop.run_until_complete(
                 self._agenerate(prompts, 
                                 use_binary_probs=binary_probs,
-                                use_dist_probs=dist_logp)
+                                use_dist_probs=dist_logp,
+                                use_filtering=irrelevant_filtering)
                 )
 
     async def _agenerate(self, prompts, **kwargs):
