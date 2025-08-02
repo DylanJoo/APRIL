@@ -31,7 +31,7 @@ class ModularReranker:
             temperature=config.llm.temperature,
             top_p=config.llm.top_p,
             logprobs=20 if config.llm.use_logits else None,
-            max_tokens=3 if config.llm.use_logits else 128,
+            max_tokens=128, # TODO: make this more flexible in the future. sometims we do both
             max_model_len=config.llm.max_model_len,
             dtype='half' if config.llm.dtype == 'float16' else 'float32',
         )
@@ -39,7 +39,7 @@ class ModularReranker:
         if config.llm.use_logits:
             agent.set_classification(id_strings=[chr(i) for i in range(65, 91)])
 
-        result_parser = ResultParser()
+        result_parser = ResultParser(use_alpha=config.use_alphabetical)
 
         # initialize the algorithm module
         self.assembler = AutoAssembler.from_config(

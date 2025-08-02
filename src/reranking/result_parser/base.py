@@ -91,7 +91,9 @@ class ResultParser(ABC):
 
         return result
 
+    # TODO: use regular expression? 
     def _clean_response(self, response: str) -> str:
+        ALPH_START_IDX = 64  # ASCII 'A' starts at 65, so we use 64 to map 'A' to 1
         new_response = ""
         if self._use_alpha:
             for c in response:

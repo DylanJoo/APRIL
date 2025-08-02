@@ -108,7 +108,7 @@ class LLM:
             elif (use_dist_probs and use_filtering):
                 tok_logps = output.outputs[0].logprobs[0]
                 # output = [-math.inf for _ in self.id_tokens]
-                output = [None for _ in self.id_tokens]
+                output = [-math.inf for _ in self.id_tokens]
                 for topk, item in tok_logps.items():
                     decoded_token = item.decoded_token.replace('[', '').replace(']', '')
                     if len(decoded_token)==1 and (65 <= ord(decoded_token) <= 90):

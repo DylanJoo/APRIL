@@ -3,7 +3,7 @@ from .base import BaseFormatter
 
 class DevFormatter(BaseFormatter):
 
-    def prefix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:
+    def prefix(self, query: str, doc_list: Optional[List[Dict]] = None, filtering_postfix=False, **kwargs) -> str:
         return (
             f"I will provide you with {len(doc_list)} passages, "
             f"each indicated by a {self.id_type} identifier []. "
@@ -14,19 +14,20 @@ class DevFormatter(BaseFormatter):
         if filtering_postfix:
             return (
                 f"Search Query: {query}.\n"
-                f"Select the most irrelevant one in the {len(doc_list)} passages above based on their relevance to the search query. "
-                f"The most irrelevant passage should be excluded in the ranking list. "
-                f"Only respond with the selected irrelevant passage identifier, do not say any word or explain."
-            )
-        else:
-            return (
-                f"Search Query: {query}.\n"
                 f"Rank the {len(doc_list)} passages above based on their relevance to the search query. "
                 f"All the passages should be included and listed using identifiers, "
-                f"in descending order of relevance. The output format should be [] > [], "
-                f"e.g., {self.example_ordering}, "
+                f"in descending order of relevance. The output format should be [] > [] ||| [] > [], "
+                "The first part (before |||) is for relevant passages; the second part (after |||) is for irrelevant ones. "
                 f"Only respond with the ranking results, do not say any word or explain."
             )
+        return (
+            f"Search Query: {query}.\n"
+            f"Rank the {len(doc_list)} passages above based on their relevance to the search query. "
+            f"All the passages should be included and listed using identifiers, "
+            f"in descending order of relevance. The output format should be [] > [], "
+            f"e.g., {self.example_ordering}, "
+            f"Only respond with the ranking results, do not say any word or explain."
+        )
 
     def body(self, query: str, doc_list: Optional[List[Dict]], **kwargs) -> str:
         prompt_body = ""
