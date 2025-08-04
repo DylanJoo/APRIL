@@ -5,6 +5,7 @@ from .setwise import SetwiseFormatter
 from ._dev import DevFormatter
 
 from ._april import AprilFormatter
+from ._dnc import DnCFormatter
 
 class AutoPromptFormatter:
     _builder_map = {
@@ -17,6 +18,7 @@ class AutoPromptFormatter:
         'SetMaxHeapTopK': SetwiseFormatter,
         'April': AprilFormatter,
         'Dev': DevFormatter,
+        'DnC': DnCFormatter,
     }
     @classmethod
     def from_config(cls, config):

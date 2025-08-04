@@ -31,7 +31,7 @@ class ModularReranker:
             temperature=config.llm.temperature,
             top_p=config.llm.top_p,
             logprobs=20 if config.llm.use_logits else None,
-            max_tokens=128, # TODO: make this more flexible in the future. sometims we do both
+            max_tokens=5 if config.llm.use_logits else 128,
             max_model_len=config.llm.max_model_len,
             dtype='half' if config.llm.dtype == 'float16' else 'float32',
         )

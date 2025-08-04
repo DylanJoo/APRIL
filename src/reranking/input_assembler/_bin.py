@@ -2,14 +2,13 @@ import math
 import copy
 from tqdm import tqdm
 from typing import Optional, Tuple, List, Dict, Union, Any
-from operator import itemgetter
 
 from ..utils import Result, batch_iterator
 from .base import RerankStrategy
 
 import pdb
 
-class Dev(RerankStrategy):
+class Search(RerankStrategy):
 
     def run(
         self,
@@ -46,33 +45,31 @@ class Dev(RerankStrategy):
     ) -> List[Result]:
 
         curr_start = max(0, curr_end - self._window_size)
-
         prompts = self._prompt_builder.create_prompt_batched(
             results=results, 
             rank_start=curr_start, 
-            rank_end=curr_end,
-        )
-        outputs_1 = self._llm.generate(prompts)
-        # reranked_results = self._result_parser.parse(
-        #     outputs=outputs,
-        #     results=results,
-        #     rank_start=curr_start,
-        #     rank_end=curr_end,
-        # )
-
-        prompts = self._prompt_builder.create_prompt_batched(
-            results=results, 
-            rank_start=curr_start, 
-            rank_end=curr_end,
-            filtering_postfix=True
+            rank_end=curr_end
         )
         outputs = self._llm.generate(prompts)
-        outputs = [o.split('[x]')[0] + o1 for o, o1 in zip(outputs, outputs_1)]
-        results = self._result_parser.parse(
+        reranked_results = self._result_parser.parse(
+            outputs=outputs,
+            results=results,
+            rank_start=curr_start,
+            rank_end=curr_end,
+        )
+
+        prompts = self._prompt_builder.create_prompt_batched(
+            results=reranked_results, 
+            rank_start=curr_start, 
+            rank_end=curr_end,
+        )
+        outputs = self._llm.generate(prompts)
+
+        reranked_results = self._result_parser.parse(
             outputs=outputs,
             results=reranked_results,
             rank_start=curr_start,
             rank_end=curr_end,
         )
 
-        return results
+        return reranked_results

@@ -1,4 +1,3 @@
-# NOTE: Revise the yse no string based on the reranking strategy
 import math
 import argparse
 import asyncio
@@ -7,6 +6,7 @@ from vllm.engine.async_llm_engine import AsyncLLMEngine, AsyncStream
 from vllm.sampling_params import SamplingParams
 from transformers import AutoTokenizer
 import uuid
+import re
 from typing import List
 import logging
 logger = logging.getLogger("vllm.engine.async_llm_engine").setLevel(logging.WARNING)
@@ -46,7 +46,7 @@ class LLM:
             top_p=top_p,
             logprobs=logprobs,
             skip_special_tokens=False,
-            min_tokens=1,
+            min_tokens=3,
             max_tokens=max_tokens,
         )
         try:
@@ -106,16 +106,26 @@ class LLM:
 
             # TODO: change this to a more generic way of handling the output
             elif (use_dist_probs and use_filtering):
-                tok_logps = output.outputs[0].logprobs[0]
-                # output = [-math.inf for _ in self.id_tokens]
-                output = [-math.inf for _ in self.id_tokens]
-                for topk, item in tok_logps.items():
-                    decoded_token = item.decoded_token.replace('[', '').replace(']', '')
-                    if len(decoded_token)==1 and (65 <= ord(decoded_token) <= 90):
-                        output[ord(decoded_token)-65] = max(item.logprob, output[ord(decoded_token)-65]) \
-                                if output[ord(decoded_token)-65] is not None else item.logprob
+                ret = []
+                for i in range(len(output.outputs[0].logprobs)):
+                    item = next(iter(output.outputs[0].logprobs[i].items()))
+                    if re.findall(r'\]+', item[-1].decoded_token) != 0:
+                        ret.append(self.process_dist_logp(output, idx=i))
+                if len(ret) == 1:
+                    ret.append([0] * len(self.id_tokens))
+                output = ret
             else:
                 output = last_text = output.outputs[0].text
+        return output
+
+    def process_dist_logp(self, output, idx=[0]):
+        tok_logps = output.outputs[0].logprobs[idx]
+        output = [None for _ in self.id_tokens]
+        for topk, item in tok_logps.items():
+            decoded_token = item.decoded_token.replace('[', '').replace(']', '').strip()
+            if len(decoded_token)==1 and (65 <= ord(decoded_token) <= 90):
+                output[ord(decoded_token)-65] = max(item.logprob, output[ord(decoded_token)-65]) \
+                        if output[ord(decoded_token)-65] is not None else item.logprob
         return output
 
     def generate(self, prompts, binary_probs=False, dist_logp=False, irrelevant_filtering=False):

@@ -16,10 +16,12 @@ class DevFormatter(BaseFormatter):
                 f"Search Query: {query}.\n"
                 f"Rank the {len(doc_list)} passages above based on their relevance to the search query. "
                 f"All the passages should be included and listed using identifiers, "
-                f"in descending order of relevance. The output format should be [] > [] ||| [] > [], "
-                "The first part (before |||) is for relevant passages; the second part (after |||) is for irrelevant ones. "
+                f"in descending order of relevance. In addition, add the separation mark to incidicate the boundary of relevance, " 
+                "The output format should be [] > [] > [] > [x] > [] > [], "
+                "the first part before [x] is for relevant passages; the second part is for irrelevant ones. "
                 f"Only respond with the ranking results, do not say any word or explain."
             )
+
         return (
             f"Search Query: {query}.\n"
             f"Rank the {len(doc_list)} passages above based on their relevance to the search query. "
@@ -37,3 +39,13 @@ class DevFormatter(BaseFormatter):
             doc_text = self.replace_number(doc)
             prompt_body += f"{identifier} {doc_text}\n"
         return prompt_body
+
+# f"Search Query: {query}.\n"
+# f"Rank the {len(doc_list)} passages above based on their relevance to the search query. "
+# f"All the passages should be included and listed using identifiers, "
+# f"in descending order of relevance. In addition, add the separation mark to incidicate the boundary of relevance, " 
+# "The output format should be [] > [] > [] > [x] > [] > [], "
+# "the first part before [x] is for relevant passages; the second part is for irrelevant ones. "
+# f"Only respond with the ranking results, do not say any word or explain."
+# 0.710 0.641
+# split with [x]

@@ -15,7 +15,7 @@ config = ConfigManager(
     rank_end=100,
     step_size=10,
     window_size=20,
-    num_runs=1,
+    num_runs=4,
     llm={'max_model_len': 8196, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
 ).get_config()
 
@@ -73,4 +73,6 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     }
     results[dataset] = eval_log
     pprint(eval_log)
+
+print(f"Config: {config}")
 

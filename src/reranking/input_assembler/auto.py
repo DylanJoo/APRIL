@@ -8,6 +8,7 @@ from .set_maxheap_topk import SetMaxHeapTopK
 # Developement
 from ._april import April
 from ._dev import Dev
+from ._dnc import DnC
 # from .set_tournament import SetTouranment
 
 class AutoAssembler:
@@ -20,6 +21,7 @@ class AutoAssembler:
         'SetTopK': SetBubbleTopK,
         'SetMaxHeapTopK': SetMaxHeapTopK,
         'Dev': Dev,
+        'DnC': DnC,
         'April': April,
     }
 
