@@ -13,10 +13,9 @@ config = ConfigManager(
     top_k=100,
     rank_start=0,
     rank_end=100,
-    step_size=10,
     window_size=20,
-    num_runs=1,
-    llm={'max_model_len': 8196, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
+    num_runs=3,
+    llm={'max_model_len': 20480, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
 ).get_config()
 
 from reranking.wrapper import ModularReranker

@@ -1,16 +1,11 @@
-# TODO: Revise argument with config
-# NOTE: consider replace the rerank mode with only the config
 from typing import Optional, Tuple, List, Dict, Union, Any
 from pprint import pprint
 from tqdm import tqdm
 
 from .utils import Result, batch_iterator
-from .config_manager import ConfigManager
 from .input_assembler import AutoAssembler
 from .prompt_builder import PromptBuilder
 from .result_parser import ResultParser
-from .llm_provider.utils import is_ampere_gpu
-# from .llm_provider.vllm_back import LLM  # for l40s
 from .llm_provider.vllm_api import LLM  # for v100
 
 class ModularReranker:
@@ -23,8 +18,8 @@ class ModularReranker:
         """)
 
         self.config = config
-        # initialize method
 
+        # initialize method
         prompt_builder = PromptBuilder(config=config)
         agent = LLM( 
             model_name_or_path=config.llm.model_name_or_path,
@@ -89,8 +84,8 @@ class ModularReranker:
             batch_size (int): The number of query (with their results) to process in each batch.
         """
         init_results = self.convert_run_to_result(run, queries, corpus)
-        if self.config.data.reference:
-            self._load_references(self.config.data.reference)
+        # if self.config.data.reference:
+        #     self._load_references(self.config.data.reference)
 
         reranked_results = []
         for batch_results in tqdm(
@@ -125,3 +120,50 @@ class ModularReranker:
                     reranked_run[result.qid].update({ hit['docid']: 1/rank })
 
         return reranked_run
+
+if __name__ == "__main__":
+    import os
+    from pathlib import Path
+    import ir_measures
+    from ir_measures import *
+
+    from reranking.config_manager import ConfigManager
+    from reranking import loader
+    config = ConfigManager().get_config()
+    print(config)
+
+    results = {}
+
+    # init reranking pipleine
+    rankllm = ModularReranker(config, system_message=config.system_message)
+
+    # load data
+    run = loader.load_run(config.data.input_run)
+    corpus, queries, qrels = loader.load(config.data.ir_datasets_name, query_fields=None, doc_fields=None)
+    run = {qid: hit for qid, hit in run.items() if qid in qrels} # filter
+
+    # rerank start
+    reranked_run = rankllm.rerank(run=run, queries=queries, corpus=corpus, query_batch_size=64)
+
+    # output reranked result
+    output_path = os.path.join(config.data.input_run.replace('runs', f'runs/{config.rerank_mode}'))
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, 'w') as f:
+        for qid in reranked_run:
+            for i, (docid, score) in enumerate(reranked_run[qid].items()):
+                f.write(f"{qid} Q0 {docid} {i+1} {score} li_rerank\n")
+
+    # evaluation
+    r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)
+    r2 = ir_measures.calc_aggregate([nDCG@10], qrels, reranked_run)
+
+    # print logs
+    eval_log = {
+        'model_name_or_path': config.llm.model_name_or_path, 
+        'ir_datasets_name': config.data.ir_datasets_name,
+        'run_path': config.data.input_run,
+        'original': r1, 
+        'reranked': r2
+    }
+    pprint(eval_log)

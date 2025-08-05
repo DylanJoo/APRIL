@@ -11,13 +11,23 @@ class DnCFormatter(BaseFormatter):
         )
 
     def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, filtering_postfix=False, **kwargs) -> str:
+        if filtering_postfix:
+            return (
+                f"Search Query: {query}.\n"
+                f"Rank the {len(doc_list)} passages above based on their relevance to the search query. "
+                f"All the passages should be included and listed using identifiers, "
+                f"in descending order of relevance. "
+                "In addition, add a vertical bar in the ranking to indicate the boundary of relevance. " 
+                "The output format should be [] > [] > | > [] > []. "
+                "The first part (before |) is the ranking for relevant passages; the second part is for irrelevant ones. "
+                f"Only respond with the ranking results, do not say any word or explain."
+            )
         return (
             f"Search Query: {query}.\n"
             f"Rank the {len(doc_list)} passages above based on their relevance to the search query. "
             f"All the passages should be included and listed using identifiers, "
-            f"in descending order of relevance. In addition, insert a separation mark [x] to incidicate the boundary of relevance. " 
-            "The output format should be [] > [] > [x] > [] > [], "
-            "the first part (before [x]) is the ranking for relevant passages; the second part is for irrelevant passages. "
+            f"in descending order of relevance. The output format should be [] > [], "
+            f"e.g., {self.example_ordering}, "
             f"Only respond with the ranking results, do not say any word or explain."
         )
 

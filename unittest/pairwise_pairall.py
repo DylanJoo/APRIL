@@ -13,7 +13,7 @@ config = ConfigManager(
     top_k=100,
     rank_end=100,
     score_aggregation="symsum",
-    llm={'max_model_len': 10240, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
+    llm={'max_model_len': 8196, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
 ).get_config()
 
 from reranking.wrapper import ModularReranker
@@ -46,7 +46,7 @@ for dataset in ['trec-dl-2021', 'trec-dl-2022']:
         run=run,
         queries=queries,
         corpus=corpus,
-        query_batch_size=128
+        query_batch_size=64
     )
 
     # prepare output run
