@@ -24,6 +24,8 @@ class SlidingWindow(RerankStrategy):
                 range(rank_end, rank_start, -self._step_size),
                 desc=f"Listwise Window Bubble (the {i_run + 1} run)",
             ):
+                if curr_end - self._window_size < rank_start: 
+                    break
                 rerank_results = self.run_pass(rerank_results, rank_start, rank_end, curr_end)
 
         # Assign reciprocal rank

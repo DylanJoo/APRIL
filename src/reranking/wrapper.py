@@ -12,11 +12,10 @@ class ModularReranker:
 
     def __init__(self, config, **kwargs) -> None:
 
-        print(f"""
-        [Model] {config.llm.model_name_or_path}
-        [RerankMode] {config.rerank_mode}
-        """)
-
+        # print(f"""
+        # [Model] {config.llm.model_name_or_path}
+        # [RerankMode] {config.rerank_mode}
+        # """)
         self.config = config
 
         # initialize method
@@ -54,20 +53,6 @@ class ModularReranker:
                 hit_docs.append({'docid': docid, 'score': float(score), 'content_dict': corpus[docid]})
             results.append(Result(qid=qid, query=query, hits=hit_docs))
         return results
-
-    def _load_references(self, hf_dataset_name: str = 'intfloat/query2doc_msmarco'):
-        from datasets import load_dataset
-        self.references = {}
-
-        if '2019' in self.config.data.input_run:
-            df = load_dataset(hf_dataset_name)
-            for example in df['trec_dl2019']:
-                self.references[example['query_id']] = example['pseudo_doc']
-
-        if '2020' in self.config.data.input_run:
-            df = load_dataset(hf_dataset_name)
-            for example in df['trec_dl2020']:
-                self.references[example['query_id']] = example['pseudo_doc']
 
     def rerank(
         self,
@@ -130,7 +115,8 @@ if __name__ == "__main__":
     from reranking.config_manager import ConfigManager
     from reranking import loader
     config = ConfigManager().get_config()
-    print(config)
+    config_dict = ConfigManager().get_config(return_dict=True)
+    pprint(config_dict)
 
     results = {}
 
@@ -152,7 +138,7 @@ if __name__ == "__main__":
     with open(output_path, 'w') as f:
         for qid in reranked_run:
             for i, (docid, score) in enumerate(reranked_run[qid].items()):
-                f.write(f"{qid} Q0 {docid} {i+1} {score} li_rerank\n")
+                f.write(f"{qid} Q0 {docid} {i+1} {score} {config.rerank_mode}\n")
 
     # evaluation
     r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)
@@ -160,6 +146,7 @@ if __name__ == "__main__":
 
     # print logs
     eval_log = {
+        'rerank_mode': config.rerank_mode,
         'model_name_or_path': config.llm.model_name_or_path, 
         'ir_datasets_name': config.data.ir_datasets_name,
         'run_path': config.data.input_run,
