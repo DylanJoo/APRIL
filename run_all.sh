@@ -12,19 +12,19 @@ for code in unittest/listwise*.py;do
     run=${code##*/}
     output=${run/\.py/.log}
     echo "Running $run"
-    python3 $code > $output 2>&1
+    python3 $code > logs/$output 2>&1
 done
 
 for code in unittest/pairwise*.py;do 
     run=${code##*/}
     output=${run/\.py/.log}
     echo "Running $run"
-    python3 $code > $output 2>&1
+    python3 $code > logs/$output 2>&1
 done
 
 for code in unittest/setwise*.py;do 
     run=${code##*/}
     output=${run/\.py/.log}
     echo "Running $run"
-    python3 $code > $output 2>&1
+    python3 $code > logs/$output 2>&1
 done

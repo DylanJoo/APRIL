@@ -13,6 +13,7 @@ from ._dnc import DnC
 
 class AutoAssembler:
     _builder_map = {
+        'RankZephyr': SlidingWindow,
         'RankGPT': SlidingWindow,
         'RankFirst': SlidingWindowFIRST,
         'PariAll': PairAll,

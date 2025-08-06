@@ -25,7 +25,7 @@ rankllm = ModularReranker(config,
 
 # start reranking
 results = {}
-for dataset in ['trec-dl-2021', 'trec-dl-2022']:
+for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     results[dataset] = {}
 
     if ('2019' in dataset) or ('2020' in dataset):

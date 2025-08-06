@@ -9,6 +9,7 @@ from ._dnc import DnCFormatter
 
 class AutoPromptFormatter:
     _builder_map = {
+        'RankZephyr': ListwiseFormatter,
         'RankGPT': ListwiseFormatter,
         'RankFirst': ListwiseFormatter,
         'PairAll': PairwiseFormatter,
