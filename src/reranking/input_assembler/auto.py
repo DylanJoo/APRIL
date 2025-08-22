@@ -1,4 +1,5 @@
 from .list_bubble import SlidingWindow, SlidingWindowFIRST
+from .list_bubble import SlidingWindowPlus
 from .pair_all import PairAll
 from .pair_bubble_topk import PairBubbleTopK
 from .pair_maxheap_topk import PairMaxHeapTopK
@@ -7,14 +8,15 @@ from .set_maxheap_topk import SetMaxHeapTopK
 
 # Developement
 from ._april import April
-from ._dev import Dev
 from ._dnc import DnC
+from ._dev import Dev
 # from .set_tournament import SetTouranment
 
 class AutoAssembler:
     _builder_map = {
         'RankZephyr': SlidingWindow,
         'RankGPT': SlidingWindow,
+        'RankGPT+': SlidingWindowPlus,
         'RankFirst': SlidingWindowFIRST,
         'PariAll': PairAll,
         'PairTopK': PairBubbleTopK,

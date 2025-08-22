@@ -10,7 +10,18 @@ class ListwiseFormatter(BaseFormatter):
             f"Rank the passages based on their relevance to the search query: {query}.\n\n"
         )
 
-    def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:
+    def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, filtering=False, **kwargs) -> str:
+        if filtering:
+            return (
+                f"Search Query: {query}.\n"
+                f"Rank the {len(doc_list)} passages above based on their relevance to the search query. "
+                f"All the passages should be included and listed using identifiers, "
+                f"in descending order of relevance. In addition, add the separation mark to indicate the boundary of relevance, " 
+                "The output format should be [] > [] > [] > [x] > [] > [], "
+                "the first part before [x] is for relevant passages; the second part is for irrelevant ones. "
+                f"Only respond with the ranking results, do not say any word or explain."
+            )
+
         return (
             f"Search Query: {query}.\n"
             f"Rank the {len(doc_list)} passages above based on their relevance to the search query. "

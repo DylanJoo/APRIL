@@ -58,7 +58,7 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     with open(output_path, 'w') as f:
         for qid in reranked_run:
             for i, (docid, score) in enumerate(reranked_run[qid].items()):
-                f.write(f"{qid} Q0 {docid} {i+1} {score} li_rerank\n")
+                f.write(f"{qid} Q0 {docid} {i+1} {score} rerank\n")
 
     # evaluation
     r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)
