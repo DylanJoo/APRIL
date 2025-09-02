@@ -46,7 +46,7 @@ class PairMaxHeapTopK(RerankStrategy):
                 result.hits[0], result.hits[-1] = result.hits[-1], result.hits[0]
                 # iter-3: pop the largest (already at the end of the list)
                 sorted_hits.append(result.hits.pop(-1))
-                print(f"Sorted hits: {len(sorted_hits)}, Remaining hits: {len(result.hits)}")
+                # print(f"Sorted hits: {len(sorted_hits)}, Remaining hits: {len(result.hits)}")
 
             # 4. Append the sorted hits to the result
             results[index].hits = sorted_hits + result.hits

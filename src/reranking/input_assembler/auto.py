@@ -18,7 +18,7 @@ class AutoAssembler:
         'RankGPT': SlidingWindow,
         'RankGPT+': SlidingWindowPlus,
         'RankFirst': SlidingWindowFIRST,
-        'PariAll': PairAll,
+        'PairAll': PairAll,
         'PairTopK': PairBubbleTopK,
         'PairMaxHeapTopK': PairMaxHeapTopK,
         'SetTopK': SetBubbleTopK,

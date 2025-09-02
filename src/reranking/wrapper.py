@@ -12,10 +12,6 @@ class ModularReranker:
 
     def __init__(self, config, **kwargs) -> None:
 
-        # print(f"""
-        # [Model] {config.llm.model_name_or_path}
-        # [RerankMode] {config.rerank_mode}
-        # """)
         self.config = config
 
         # initialize method
