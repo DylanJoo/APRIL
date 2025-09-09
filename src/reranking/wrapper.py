@@ -60,6 +60,8 @@ class ModularReranker:
             results.append(Result(qid=qid, query=query, hits=hit_docs))
         return results
 
+    # TODO: Figure out another input format called `text_pairs=[(q1, [d1, d2, ...]), (q2, ...)]`. 
+    # This is more friendly for users who only have texts.
     def rerank(
         self,
         run: Dict[str, Dict[str, float]],
