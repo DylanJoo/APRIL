@@ -17,10 +17,10 @@ top_k: 100
 rank_start: 0
 rank_end: 100 
 max_doc_length: null
-context_size: 2048
+context_size: 1024
 window_size: 2
 step_size: 1
-exp: default
+exp: implemented
 num_runs: 10
 dtype: float16
 variable_passages: false

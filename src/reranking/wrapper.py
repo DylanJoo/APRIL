@@ -7,8 +7,18 @@ from .input_assembler import AutoAssembler
 from .prompt_builder import PromptBuilder
 from .result_parser import ResultParser
 from .llm_provider.vllm_api import LLM  # for v100
+from .config_manager import ConfigManager
 
 class ModularReranker:
+
+    @classmethod
+    def from_prebuilt(cls, method_name, model_name, **kwargs) -> "ModularReranker":
+        import importlib.resources as pkg_resources
+        default_path = pkg_resources.files("reranking.configs").joinpath(f"{method_name}.yaml")
+        path = pkg_resources.files("reranking.configs").joinpath(f"{method_name}.yaml")
+        path = path if path.exists() else default_path
+        config = ConfigManager(path=path, llm={'model_name_or_path': model_name}).get_config()
+        return cls(config, **kwargs)
 
     def __init__(self, config, **kwargs) -> None:
 
@@ -65,8 +75,6 @@ class ModularReranker:
             batch_size (int): The number of query (with their results) to process in each batch.
         """
         init_results = self.convert_run_to_result(run, queries, corpus)
-        # if self.config.data.reference:
-        #     self._load_references(self.config.data.reference)
 
         reranked_results = []
         for batch_results in tqdm(
@@ -108,7 +116,6 @@ if __name__ == "__main__":
     import ir_measures
     from ir_measures import *
 
-    from reranking.config_manager import ConfigManager
     from reranking import loader
     config = ConfigManager().get_config()
     config_dict = ConfigManager().get_config(return_dict=True)

@@ -20,7 +20,7 @@ max_doc_length: null
 context_size: 1024
 window_size: 20
 step_size: 10
-exp: default
+exp: implemented
 num_runs: 1
 dtype: float16
 variable_passages: true
