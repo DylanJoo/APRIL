@@ -1,41 +1,41 @@
-import math
+import re
 import copy
-from tqdm import tqdm
 from typing import Optional, Tuple, List, Dict, Union, Any
-from operator import itemgetter
+from tqdm import tqdm
 
-from ..utils import Result, batch_iterator
+from ..utils import Result
 from .base import RerankStrategy
-
-import pdb
 
 class Dev(RerankStrategy):
 
     def run(
         self,
         init_results: List[Result],
-        rank_start: int = 0,
-        rank_end: int = 10,
+        rank_start: int,
+        rank_end: int,
         num_runs: int = 1,
         **kwargs
     ) -> List[Result]:
 
-        results = [copy.deepcopy(result) for result in init_results]
+        rerank_results = [copy.deepcopy(result) for result in init_results]
 
         for i_run in range(num_runs):
+
             for curr_end in tqdm(
                 range(rank_end, rank_start, -self._step_size),
                 desc=f"Listwise Window Bubble (the {i_run + 1} run)",
             ):
-                results = self.run_pass(results, rank_start, rank_end, curr_end)
+                if curr_end - self._window_size < rank_start: 
+                    break
+                rerank_results = self.run_pass(rerank_results, rank_start, rank_end, curr_end)
 
         # Assign reciprocal rank
-        for result in results:
+        for result in rerank_results:
             for rank, hit in enumerate(result.hits, start=1):
                 hit['score'] = float(1 / rank)
                 hit['rank'] = rank
 
-        return results
+        return rerank_results
 
     def run_pass(
         self,
@@ -46,14 +46,13 @@ class Dev(RerankStrategy):
     ) -> List[Result]:
 
         curr_start = max(0, curr_end - self._window_size)
-
         prompts = self._prompt_builder.create_prompt_batched(
             results=results, 
             rank_start=curr_start, 
-            rank_end=curr_end,
+            rank_end=curr_end
         )
-        outputs_1 = self._llm.generate(prompts)
-        # reranked_results = self._result_parser.parse(
+        outputs = self._llm.generate(prompts)
+        # results = self._result_parser.parse(
         #     outputs=outputs,
         #     results=results,
         #     rank_start=curr_start,
@@ -64,15 +63,22 @@ class Dev(RerankStrategy):
             results=results, 
             rank_start=curr_start, 
             rank_end=curr_end,
-            filtering_postfix=True
+            filtering=True
         )
-        outputs = self._llm.generate(prompts)
-        outputs = [o.split('[x]')[0] + o1 for o, o1 in zip(outputs, outputs_1)]
-        results = self._result_parser.parse(
-            outputs=outputs,
-            results=reranked_results,
+        outputs_f = self._llm.generate(prompts)
+        
+        # filter the outputs1 
+        for i in range(len(outputs)):
+            filtered = set(re.findall(r"\d+", outputs_f[i]))
+            for idx in filtered:
+                outputs[i].replace(f"[{idx}]", "")
+
+        # print(f"Filter: {outputs_f}")
+        # print(f"Outputs: {outputs}")
+        reranked_results = self._result_parser.parse(
+            outputs,
+            results=results,
             rank_start=curr_start,
             rank_end=curr_end,
         )
-
-        return results
+        return reranked_results

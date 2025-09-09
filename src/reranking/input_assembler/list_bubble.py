@@ -87,3 +87,46 @@ class SlidingWindowFIRST(SlidingWindow):
             rank_end=curr_end,
         )
         return reranked_results
+
+class SlidingWindowPlus(SlidingWindow):
+
+    def run_pass(
+        self,
+        results: List[Result],
+        rank_start: int,
+        rank_end: int,
+        curr_end: int,
+    ) -> List[Result]:
+
+        curr_start = max(0, curr_end - self._window_size)
+
+        prompts = self._prompt_builder.create_prompt_batched(
+            results=results, 
+            rank_start=curr_start, 
+            rank_end=curr_end,
+        )
+        outputs = self._llm.generate(prompts)
+        reranked_results = self._result_parser.parse(
+            outputs=outputs,
+            results=results,
+            rank_start=curr_start,
+            rank_end=curr_end,
+        )
+
+        prompts = self._prompt_builder.create_prompt_batched(
+            results=reranked_results, 
+            rank_start=curr_start, 
+            rank_end=curr_end,
+            filtering=True
+        )
+        outputs = self._llm.generate(prompts)
+        outputs = [o.split('[x]')[0] for o in outputs]
+
+        reranked_results = self._result_parser.parse(
+            outputs=outputs,
+            results=reranked_results,
+            rank_start=curr_start,
+            rank_end=curr_end,
+        )
+
+        return results

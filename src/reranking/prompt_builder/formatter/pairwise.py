@@ -1,3 +1,4 @@
+""" Make it more flexible to support alpabetical choices """
 from typing import List, Optional, Union, Callable, Dict, Tuple
 from .base import BaseFormatter
 
@@ -28,7 +29,3 @@ class PairwiseFormatter(BaseFormatter):
             prompts.append(prompt)
 
         return prompts[0] if len(idx_pairs) == 1 else prompts 
-
-    """
-    For PairAll, create the prompt for each pair of document in query-batch
-    """

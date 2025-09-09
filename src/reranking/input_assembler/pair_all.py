@@ -48,7 +48,7 @@ class PairAll(RerankStrategy):
             for (i, j), score in zip(idx_pairs, scores):
                 score = math.log(score) if self.config.score_aggregation == 'symsumlog' else score
                 all_scores[result.qid][i] += score
-                all_scores[result.qid][j] -= score
+                all_scores[result.qid][j] += (1-score)
 
         ## Update results with scores
         reranked_results = self._result_parser.parse(

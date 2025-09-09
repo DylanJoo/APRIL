@@ -13,7 +13,7 @@ config = ConfigManager(
     top_k=100,
     rank_end=100,
     score_aggregation="symsum",
-    llm={'max_model_len': 8196, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
+    llm={'max_model_len': 8196, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct', 'use_logits': True}
 ).get_config()
 
 from reranking.wrapper import ModularReranker

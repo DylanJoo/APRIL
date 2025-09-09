@@ -11,6 +11,7 @@ class AutoPromptFormatter:
     _builder_map = {
         'RankZephyr': ListwiseFormatter,
         'RankGPT': ListwiseFormatter,
+        'RankGPT+': ListwiseFormatter,
         'RankFirst': ListwiseFormatter,
         'PairAll': PairwiseFormatter,
         'PairTopK': PairwiseFormatter,
