@@ -1,7 +1,6 @@
-<h3>Example Usage for Python AutoReranker</h3>
----
+# A Python toy example for using AutoReranker
 
-# Example data
+### Relevance-based IR Data
 To accomondate to the standard input format of AutoReranker, the example data is organized as three dictionaries: `run`, `queries`, and `corpus`.
 Below is an example of how to structure these dictionaries.
 ```python
@@ -28,11 +27,20 @@ corpus = {
     "d8": "The cube root of 27 is 3.",
     "d9*": "12 is the positive solution to √144."
 }
+
+qrel = {
+    "q1": {"d1*": 1},
+    "q2": {"d4*": 1},
+    "q3": {"d5*": 1, "d9*": 1}
+}
 ```
 
-# Initialize a reranker and rerank
+### Initialize a reranker and rerank
 Once the data is structured, you can initialize the `ModularReranker` with the prebuilt method and use it to rerank the documents based on the queries.
+
+We use `ir_measures` library to evaluate the reranked results
 ```python
 reranker = ModularReranker.from_prebuilt('rankgpt', 'Qwen/Qwen2.5-7B-Instruct')
-result = reranker.rerank(run=run, queries=queries, corpus=corpus)
+reranked_result = reranker.rerank(run=run, queries=queries, corpus=corpus)
+print(ir_measures.calc_aggregate([RR@5], qrel, reranked_result))
 ```

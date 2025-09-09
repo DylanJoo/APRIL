@@ -1,4 +1,6 @@
 from reranking.wrapper import ModularReranker
+import ir_measures
+from ir_measures import RR
 
 # Example data
 run = {
@@ -80,8 +82,32 @@ corpus = {
     "d36":  "Java was created by James Gosling."
 }
 
+qrel = {
+    "q1":  {"d1*": 1},
+    "q2":  {"d3*": 1},
+    "q3":  {"d5*": 1},
+    "q4":  {"d7*": 1},
+    "q5":  {"d9*": 1},
+    "q6":  {"d11*": 1},
+    "q7":  {"d13*": 1},
+    "q8":  {"d15*": 1},
+    "q9":  {"d17*": 1},
+    "q10": {"d19*": 1},
+    "q11": {"d23*": 1},
+    "q12": {"d25*": 1},
+    "q13": {"d27*": 1},
+    "q14": {"d29*": 1},
+    "q15": {"d31*": 1},
+    "q16": {"d33*": 1},
+    "q17": {"d35*": 1}
+}
+
 # Initialize the reranker
 reranker = ModularReranker.from_prebuilt('rankgpt', 'Qwen/Qwen2.5-7B-Instruct')
-result = reranker.rerank(run=run, queries=queries, corpus=corpus)
+reranked_run = reranker.rerank(run=run, queries=queries, corpus=corpus)
 
-print(result)
+# Evaluation
+print(ir_measures.calc_aggregate([RR@5], qrel, run))
+print(ir_measures.calc_aggregate([RR@5], qrel, reranked_run))
+# {RR@5: 0.5}
+# {RR@5: 1.0}
