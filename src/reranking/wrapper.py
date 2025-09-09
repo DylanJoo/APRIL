@@ -1,3 +1,4 @@
+import os
 from typing import Optional, Tuple, List, Dict, Union, Any
 from pprint import pprint
 from tqdm import tqdm
@@ -9,7 +10,16 @@ from .result_parser import ResultParser
 from .llm_provider.vllm_api import LLM  # for v100
 from .config_manager import ConfigManager
 
-class ModularReranker:
+class AutoLLMReranker:
+
+    @classmethod
+    def from_prebuilt(cls, method_name, model_name, **kwargs) -> "AutoLLMReranker":
+        import importlib.resources as pkg_resources
+        default_path = pkg_resources.files("reranking.configs").joinpath(f"{method_name}.yaml")
+        path = pkg_resources.files("reranking.configs").joinpath(f"{method_name}.yaml")
+        path = path if path.exists() else default_path
+        config = ConfigManager(path=path, llm={'model_name_or_path': model_name}).get_config()
+        return cls(config, **kwargs)
 
     @classmethod
     def from_prebuilt(cls, method_name, model_name, **kwargs) -> "ModularReranker":
@@ -60,6 +70,8 @@ class ModularReranker:
             results.append(Result(qid=qid, query=query, hits=hit_docs))
         return results
 
+    # TODO: Figure out another input format called `text_pairs=[(q1, [d1, d2, ...]), (q2, ...)]`. 
+    # This is more friendly for users who only have texts.
     def rerank(
         self,
         run: Dict[str, Dict[str, float]],
@@ -111,32 +123,30 @@ class ModularReranker:
         return reranked_run
 
 if __name__ == "__main__":
-    import os
-    from pathlib import Path
     import ir_measures
     from ir_measures import *
-
     from reranking import loader
+
+    # init config with CLI commands
     config = ConfigManager().get_config()
     config_dict = ConfigManager().get_config(return_dict=True)
     pprint(config_dict)
 
     results = {}
 
-    # init reranking pipleine
-    rankllm = ModularReranker(config, system_message=config.system_message)
+    # init reranker
+    rankllm = AutoLLMReranker(config, system_message=config.system_message)
 
     # load data
     run = loader.load_run(config.data.input_run)
     corpus, queries, qrels = loader.load(config.data.ir_datasets_name, query_fields=None, doc_fields=None)
     run = {qid: hit for qid, hit in run.items() if qid in qrels} # filter
 
-    # rerank start
+    # reranking
     reranked_run = rankllm.rerank(run=run, queries=queries, corpus=corpus, query_batch_size=64)
 
     # output reranked result
     output_path = os.path.join(config.data.input_run.replace('runs', f'runs/{config.rerank_mode}'))
-
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as f:
         for qid in reranked_run:
