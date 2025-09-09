@@ -24,6 +24,8 @@ class ConfigManager:
 
     def parse_and_override(self):
         parser = argparse.ArgumentParser()
+        # NOTE: this is not necessary as `rerank_mode` has already used
+        # Checj the existed config
         parser.add_argument("--config", type=str, default=None, help="Path to YAML config file")
 
         # Capture all --key=value args

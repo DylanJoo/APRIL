@@ -7,23 +7,23 @@ llm:
   temperature: 0.0
   top_p: 1.0
   backend: vllm
-  max_model_len: 20480
+  max_model_len: 8196
   dtype: float16
-  use_logits: false
+  use_logits: true
 
-rerank_mode: RankGPT 
+rerank_mode: PairTopK 
 use_alphabetical: false
 top_k: 100 
 rank_start: 0
 rank_end: 100 
 max_doc_length: null
 context_size: 2048
-window_size: 20
-step_size: 10
+window_size: 2
+step_size: 1
 exp: default
-num_runs: 1
+num_runs: 10
 dtype: float16
-variable_passages: true
+variable_passages: false
 include_system_message: true
 system_message: "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
-result_parser_name: listwise
+result_parser_name: binary_probability

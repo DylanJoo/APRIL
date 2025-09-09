@@ -75,8 +75,8 @@
 #     --dtype=float16 \
 #     --use_alphabetical=true \
 #     --result_parser_name=distribution_logp > logs/setmaxheaptop10_trec-dl-2019.log
-
-# PairAll:binary_prob:Qwen/Qwen2.5-7B-Instruct
+#
+# # PairAll:binary_prob:Qwen/Qwen2.5-7B-Instruct
 python -m reranking.wrapper \
     --data.ir_datasets_name=msmarco-passage/trec-dl-2019/judged \
     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2019.txt \
@@ -89,14 +89,14 @@ python -m reranking.wrapper \
     --result_parser_name=binary_probability > logs/pairall_trec-dl-2019.log
 
 # PairTopK:binary_prob:Qwen/Qwen2.5-7B-Instruct
-python -m reranking.wrapper \
-    --data.ir_datasets_name=msmarco-passage/trec-dl-2019/judged \
-    --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2019.txt \
-    --llm.model_name_or_path=Qwen/Qwen2.5-7B-Instruct \
-    --llm.max_model_len=8196 \
-    --llm.use_logits=true \
-    --rerank_mode=PairTopK \
-    --num_runs=10 \
-    --window_size=2 --step_size=1 \
-    --dtype=float16 \
-    --result_parser_name=binary_probability > logs/pairtop10_trec-dl-2019.log
+# python -m reranking.wrapper \
+#     --data.ir_datasets_name=msmarco-passage/trec-dl-2019/judged \
+#     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2019.txt \
+#     --llm.model_name_or_path=Qwen/Qwen2.5-7B-Instruct \
+#     --llm.max_model_len=8196 \
+#     --llm.use_logits=true \
+#     --rerank_mode=PairTopK \
+#     --num_runs=10 \
+#     --window_size=2 --step_size=1 \
+#     --dtype=float16 \
+#     --result_parser_name=binary_probability > logs/pairtop10_trec-dl-2019.log
