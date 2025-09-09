@@ -1,4 +1,4 @@
-from reranking.wrapper import ModularReranker
+from reranking.wrapper import AutoLLMReranker
 import ir_measures
 from ir_measures import RR
 
@@ -103,7 +103,7 @@ qrel = {
 }
 
 # Initialize the reranker
-reranker = ModularReranker.from_prebuilt('rankgpt', 'Qwen/Qwen2.5-7B-Instruct')
+reranker = AutoLLMReranker.from_prebuilt('rankgpt', 'Qwen/Qwen2.5-7B-Instruct')
 reranked_run = reranker.rerank(run=run, queries=queries, corpus=corpus)
 
 # Evaluation
