@@ -2,6 +2,7 @@ import os
 from typing import Optional, Tuple, List, Dict, Union, Any
 from pprint import pprint
 from tqdm import tqdm
+import torch
 
 from .utils import Result, batch_iterator
 from .input_assembler import AutoAssembler
@@ -13,21 +14,16 @@ from .config_manager import ConfigManager
 class AutoLLMReranker:
 
     @classmethod
-    def from_prebuilt(cls, method_name, model_name, **kwargs) -> "AutoLLMReranker":
+    def from_prebuilt(cls, method_name, model_name_or_path, **kwargs) -> "AutoLLMReranker":
         import importlib.resources as pkg_resources
         default_path = pkg_resources.files("reranking.configs").joinpath(f"{method_name}.yaml")
         path = pkg_resources.files("reranking.configs").joinpath(f"{method_name}.yaml")
         path = path if path.exists() else default_path
-        config = ConfigManager(path=path, llm={'model_name_or_path': model_name}).get_config()
-        return cls(config, **kwargs)
 
-    @classmethod
-    def from_prebuilt(cls, method_name, model_name, **kwargs) -> "ModularReranker":
-        import importlib.resources as pkg_resources
-        default_path = pkg_resources.files("reranking.configs").joinpath(f"{method_name}.yaml")
-        path = pkg_resources.files("reranking.configs").joinpath(f"{method_name}.yaml")
-        path = path if path.exists() else default_path
-        config = ConfigManager(path=path, llm={'model_name_or_path': model_name}).get_config()
+        # TODO: figure out what else
+        llmconfig = {'model_name_or_path': model_name_or_path}
+        llmconfig.update(kwargs.pop('llm'))
+        config = ConfigManager(path=path, llm=llmconfig, **kwargs).get_config()
         return cls(config, **kwargs)
 
     def __init__(self, config, **kwargs) -> None:
@@ -41,10 +37,12 @@ class AutoLLMReranker:
             temperature=config.llm.temperature,
             top_p=config.llm.top_p,
             logprobs=20 if config.llm.use_logits else None,
-            max_tokens=5 if config.llm.use_logits else 128,
             max_model_len=config.llm.max_model_len,
+            max_tokens=5 if config.llm.use_logits else 128,
             dtype='half' if config.llm.dtype == 'float16' else 'float32',
+            num_gpus=min(1, int(torch.cuda.device_count()))
         )
+            # max_model_len=20000,
         # TODO: Make this more flexible in the future
         if config.llm.use_logits:
             agent.set_classification(id_strings=[chr(i) for i in range(65, 91)])
