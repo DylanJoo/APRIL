@@ -1,3 +1,5 @@
+# TODO: setup different style of token `id` categories
+# TODO: in addition to that, also allow use to save token's `term` or `id`.
 import math
 import argparse
 import asyncio
@@ -10,8 +12,6 @@ import re
 from typing import List
 import logging
 logger = logging.getLogger("vllm.engine.async_llm_engine").setLevel(logging.WARNING)
-
-import pdb
 
 class LLM:
 
@@ -61,8 +61,7 @@ class LLM:
         self.no_tokens = None
 
     # TODO: Set the id_tokens as dynamic based on window size
-    def set_classification(
-        self, 
+    def set_classification(self, 
         yes_strings=[' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES'],
         no_strings=[' No', 'No', ' no', 'no', 'NO', ' NO'],
         id_strings=[chr(i) for i in range(65, 91)]
@@ -74,40 +73,7 @@ class LLM:
         print(f"NO TOKENS: {self.no_tokens}")
         print(f"ID TOKENS: {self.id_tokens}")
 
-    async def _iterate_over_output(self, output_iterator: AsyncStream, use_binary_probs=False, use_dist_probs=False) -> str:
-
-        async for output in output_iterator:
-            if use_binary_probs:
-                tok_logps = output.outputs[0].logprobs[0]
-                yes_ = math.exp(max(
-                    [-1e2] + [
-                        item.logprob for tok, item in tok_logps.items() 
-                        if tok in self.yes_tokens
-                    ]
-                ))
-                no_ = math.exp(max(
-                    [-1e2] + [
-                        item.logprob for tok, item in tok_logps.items() 
-                        if tok in self.no_tokens 
-                    ]
-                ))
-                output = score = yes_ / (no_ + yes_)
-
-            # NOTE: the transformation is a bit hacky.
-            # NOTE: make sure the numeric identifiers can also work
-            elif use_dist_probs:
-                tok_logps = output.outputs[0].logprobs[0]
-                min_logprob = min([item.logprob for item in tok_logps.values()])
-                output = [min_logprob for _ in self.id_tokens]
-                for topk, item in tok_logps.items():
-                    decoded_token = item.decoded_token.replace('[', '').replace(']', '')
-                    if len(decoded_token)==1 and (65 <= ord(decoded_token) <= 90):
-                        output[ord(decoded_token)-65] = max(item.logprob, output[ord(decoded_token)-65])
-            else:
-                output = last_text = output.outputs[0].text
-        return output
-
-    def generate(self, prompts, binary_probs=False, dist_logp=False):
+    def generate(self, prompts, binary_probs=False, dist_logp=False) -> List:
         if isinstance(prompts, str):
             prompts = [prompts]
 
@@ -117,8 +83,41 @@ class LLM:
                                 use_dist_probs=dist_logp)
                 )
 
+    async def _iterate_over_output(self, output_iterator: AsyncStream, use_binary_probs=False, use_dist_probs=False) -> str:
+
+        async for output in output_iterator:
+            if use_binary_probs:
+                tok_item = output.outputs[0].logprobs[0]
+                yes_ = math.exp(max(
+                    [-1e2] + [
+                        item.logprob for tok, item in tok_item.items() 
+                        if tok in self.yes_tokens
+                    ]
+                ))
+                no_ = math.exp(max(
+                    [-1e2] + [
+                        item.logprob for tok, item in tok_item.items() 
+                        if tok in self.no_tokens 
+                    ]
+                ))
+                output = score = yes_ / (no_ + yes_)
+
+            # NOTE: the transformation is a bit hacky.
+            # NOTE: make sure the numeric identifiers can also work
+            elif use_dist_probs:
+                tok_item = output.outputs[0].logprobs[0]
+                min_logprob = min([item.logprob for item in tok_item.values()])
+                output = [min_logprob for _ in self.id_tokens]
+                for topk, item in tok_item.items():
+                    decoded_token = item.decoded_token.replace('[', '').replace(']', '')
+                    if len(decoded_token)==1 and (65 <= ord(decoded_token) <= 90):
+                        output[ord(decoded_token)-65] = max(item.logprob, output[ord(decoded_token)-65])
+            else:
+                output = last_text = output.outputs[0].text
+        return output
+
     async def _agenerate(self, prompts, **kwargs):
-        request_ids = [str(uuid.uuid4()) for _ in range(len(prompts))]
+        request_ids = [str(uuid.uuid4()) for _ in prompts]
 
         # Add requests to the engine
         output_iterators = [

@@ -8,7 +8,6 @@ from .utils import Result, batch_iterator
 from .input_assembler import AutoAssembler
 from .prompt_builder import PromptBuilder
 from .result_parser import ResultParser
-from .llm_provider.vllm_api import LLM  # for v100
 from .config_manager import ConfigManager
 
 class AutoLLMReranker:
@@ -29,9 +28,14 @@ class AutoLLMReranker:
     def __init__(self, config, **kwargs) -> None:
 
         self.config = config
-
-        # initialize method
         prompt_builder = PromptBuilder(config=config)
+
+        # NOTE: do we want to make it clearer in the wrapper?
+        if config.llm.backend == 'vllm':
+            from .llm_provider.vllm_api import LLM  # for v100
+        if (config.llm.backend == 'openai') or (config.llm.backend == 'request'):
+            from .llm_provider.request import LLM
+
         agent = LLM( 
             model_name_or_path=config.llm.model_name_or_path,
             temperature=config.llm.temperature,
@@ -42,7 +46,6 @@ class AutoLLMReranker:
             dtype='half' if config.llm.dtype == 'float16' else 'float32',
             num_gpus=min(1, int(torch.cuda.device_count()))
         )
-            # max_model_len=20000,
         # TODO: Make this more flexible in the future
         if config.llm.use_logits:
             agent.set_classification(id_strings=[chr(i) for i in range(65, 91)])
