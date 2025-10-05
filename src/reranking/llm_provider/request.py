@@ -88,7 +88,7 @@ class LLM:
             )
 
             if use_binary_probs:
-                tok_logps = response.choices[0].logprobs.top_logprobs[0] 
+                tok_logps = response.choices[0].logprobs.top_logprobs[0]  # this is strings
                 yes_ = math.exp(max(
                     [-1e2] + [
                         logp for tok, logp in tok_logps.items() 
@@ -104,7 +104,13 @@ class LLM:
                 output = yes_ / (no_ + yes_)
 
             elif use_dist_probs:
-                pass
+                tok_logps = response.choices[0].logprobs.top_logprobs[0] # this is strings
+                min_logprob = min([logp for logp in tok_logps.values()])
+                output = [min_logprob for _ in self.id_tokens]
+                for topk, logp in tok_logps.items():
+                    decoded_token = topk.replace('[', '').replace(']', '')
+                    if len(decoded_token)==1 and (65 <= ord(decoded_token) <= 90):
+                        output[ord(decoded_token)-65] = max(logp, output[ord(decoded_token)-65])
             else:
                 output = response.choices[0].text
 
@@ -117,57 +123,3 @@ class LLM:
                 use_dist_probs) for prompt in prompts
         ])
         return list(outputs)
-
-    # async def _generate_async_prob(self, prompts: List[str]) -> List[float]:
-    #
-    #     # singlge function call of selected token prob
-    #     def _generate_prob(prompt: str) -> float:
-    #         response = self.client.completions.create(
-    #             model=self.model_name_or_path,
-    #             prompt=prompt,
-    #             logprobs=self.logprobs,
-    #             temperature=self.temperature,
-    #             top_p=self.top_p,
-    #             max_tokens=self.max_tokens,
-    #         )
-    #
-    #         # dict of scores: {first token: first token logprob}
-    #         tok_logps = response.choices[0].logprobs.top_logprobs[0] 
-    #         yes_ = math.exp(max(
-    #             [-1e2] + [
-    #                 logp for tok, logp in tok_logps.items() 
-    #                 if tok in self.yes_tokens
-    #             ]
-    #         ))
-    #         no_ = math.exp(max(
-    #             [-1e2] + [
-    #                 logp for tok, logp in tok_logps.items() 
-    #                 if tok in self.no_tokens 
-    #             ]
-    #         ))
-    #         score = yes_ / (no_ + yes_)
-    #         return score
-    #
-    #     # Gather all the outputs
-    #     outputs = await asyncio.gather(*[
-    #         asyncio.to_thread(_generate_prob, prompt) for prompt in prompts
-    #     ])
-    #     return list(outputs)
-
-    # async def _generate_async_text(self, prompts: List[str]) -> List[float]:
-    #
-    #     def _generate_text(prompt: str) -> float:
-    #         response = self.client.completions.create(
-    #             model=self.model,
-    #             prompt=prompt,
-    #             logprobs=None,
-    #             temperature=self.temperature,
-    #             top_p=self.top_p,
-    #             max_tokens=self.max_tokens,
-    #         )
-    #         return response.choices[0].text
-    #
-    #     outputs = await asyncio.gather(*[
-    #         asyncio.to_thread(_generate_text, prompt) for prompt in prompts
-    #     ])
-    #     return list(outputs)

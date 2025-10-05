@@ -1,0 +1,29 @@
+data:
+  ir_datasets_name: msmarco-passage/trec-dl-2019/judged
+  input_run: runs/run.msmarco-passage.bm25-trec-dl-2019.txt
+
+llm:
+  model_name_or_path: Qwen/Qwen2.5-7B-Instruct
+  temperature: 0.0
+  top_p: 1.0
+  backend: vllm
+  max_model_len: 8196
+  dtype: float16
+  use_logits: true
+
+rerank_mode: Point 
+use_alphabetical: false
+top_k: 100 
+rank_start: 0
+rank_end: 100 
+max_doc_length: null
+context_size: 1024
+window_size: 2
+step_size: 1
+exp: implemented
+num_runs: 10
+dtype: float16
+variable_passages: false
+include_system_message: true
+system_message: "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
+result_parser_name: binary_probability

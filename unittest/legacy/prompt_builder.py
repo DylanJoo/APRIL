@@ -2,7 +2,7 @@ from reranking.prompt_builder import PromptBuilder
 from reranking.config_manager import ConfigManager
 
 config = ConfigManager(
-    rerank_mode='Dev',
+    rerank_mode='Point',
     top_k=100,
     rank_start=0,
     rank_end=100,

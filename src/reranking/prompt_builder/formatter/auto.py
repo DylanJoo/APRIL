@@ -2,6 +2,7 @@
 from .listwise import ListwiseFormatter
 from .pairwise import PairwiseFormatter
 from .setwise import SetwiseFormatter
+from .pointwise import PointwiseFormatter
 from ._dev import DevFormatter
 
 from ._april import AprilFormatter
@@ -18,6 +19,7 @@ class AutoPromptFormatter:
         'PairMaxHeapTopK': PairwiseFormatter,
         'SetTopK': SetwiseFormatter,
         'SetMaxHeapTopK': SetwiseFormatter,
+        'Point': PointwiseFormatter,
         'April': AprilFormatter,
         'Dev': DevFormatter,
         'DnC': DnCFormatter,

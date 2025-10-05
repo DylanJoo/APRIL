@@ -5,6 +5,7 @@ from .pair_bubble_topk import PairBubbleTopK
 from .pair_maxheap_topk import PairMaxHeapTopK
 from .set_bubble_topk import SetBubbleTopK
 from .set_maxheap_topk import SetMaxHeapTopK
+from .point import Point
 
 # Developement
 from ._april import April
@@ -23,6 +24,7 @@ class AutoAssembler:
         'PairMaxHeapTopK': PairMaxHeapTopK,
         'SetTopK': SetBubbleTopK,
         'SetMaxHeapTopK': SetMaxHeapTopK,
+        'Point': Point,
         'Dev': Dev,
         'DnC': DnC,
         'April': April,

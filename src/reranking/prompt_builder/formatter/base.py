@@ -36,16 +36,18 @@ class BaseFormatter(ABC):
     # def demo(self) -> str:
     #     """Returns a demonstration of the formatter."""
     #     pass
+    # TODO: See if we need to have separate formuation of title
     # TODO: Equalize the max length
     def _document_format(self, doc: Union[str, Dict]) -> str:
         if isinstance(doc, dict):
-            title = doc.get('title', False)
             if 'contents' in doc:
                 text = doc['contents'].strip()
             elif 'text' in doc:
                 text = doc['text'].strip()
             else:
                 raise ValueError(f"Incorrect document dictionary format. Expected keys: 'contents' or 'text', got {doc.keys()}")
+            title = doc.get('title', "")
+            text = (title + ' ' + text).strip()
         elif isinstance(doc, str):
             text = doc.strip()
         else:

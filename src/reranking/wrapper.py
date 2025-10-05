@@ -144,7 +144,7 @@ if __name__ == "__main__":
     run = {qid: hit for qid, hit in run.items() if qid in qrels} # filter
 
     # reranking
-    reranked_run = rankllm.rerank(run=run, queries=queries, corpus=corpus, query_batch_size=64)
+    reranked_run = rankllm.rerank(run=run, queries=queries, corpus=corpus, query_batch_size=32)
 
     # output reranked result
     output_path = os.path.join(config.data.input_run.replace('runs', f'runs/{config.rerank_mode}'))

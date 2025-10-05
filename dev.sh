@@ -29,14 +29,16 @@ done
 echo "vLLM server is up and running."
 
 python -m reranking.wrapper \
-    --config=src/reranking/configs/rankgpt.yaml \
+    --config=src/reranking/configs/point.yaml \
     --llm.backend=request \
     --llm.model_name_or_path=$MODEL \
-    --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2019.txt
+    --data.ir_datasets_name=msmarco-passage/trec-dl-2020/judged
+    --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2020.txt
 
 kill $PID
 
 # 2025-09-11: testing the reranking pipeline [OK]
 # 2025-09-12: testing the request setting [OK] 
 # NOTE: but the backend=request is slightly different from backend=vllm
+# 2025-09-13: testing the pointwise
 
