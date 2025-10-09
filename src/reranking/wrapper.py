@@ -4,6 +4,7 @@ from pprint import pprint
 from tqdm import tqdm
 import torch
 from functools import wraps
+import time
 
 from .utils import Result, batch_iterator
 from .input_assembler import AutoAssembler
@@ -22,7 +23,7 @@ class AutoLLMReranker:
 
         # TODO: figure out what else
         llmconfig = {'model_name_or_path': model_name_or_path}
-        llmconfig.update(kwargs.pop('llm'))
+        llmconfig.update(kwargs.pop('llm', {}))
         config = ConfigManager(path=path, llm=llmconfig, **kwargs).get_config()
         return cls(config, **kwargs)
 
@@ -157,7 +158,7 @@ if __name__ == "__main__":
     run = {qid: hit for qid, hit in run.items() if qid in qrels} # filter
 
     # reranking
-    reranked_run = rankllm.rerank(run=run, queries=queries, corpus=corpus, query_batch_size=32)
+    reranked_run = rankllm.rerank(run=run, queries=queries, corpus=corpus, query_batch_size=config.data.batch_size)
 
     # output reranked result
     output_path = os.path.join(config.data.input_run.replace('runs', f'runs/{config.rerank_mode}'))

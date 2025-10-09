@@ -5,6 +5,9 @@ __pycache__/
 src/pairwise/rank_llm_*/
 *py~
 
+# Legacy or backup
+runs/backup
+
 # Python packaging
 *.egg-info/
 *.egg

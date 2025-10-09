@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List, Any
-import time
 
 from ..utils import Result
 from ..prompt_builder import PromptBuilder
