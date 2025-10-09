@@ -9,7 +9,6 @@ from ..utils import Result
 class April(RerankStrategy):
     """ To make sure the prompts with same body can be done in the same batch. iterate over the query """
 
-    @RerankStrategy.timer
     def run(
         self,
         init_results: List[Result],

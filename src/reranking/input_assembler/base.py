@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional, List, Any
 import time
-from functools import wraps
 
 from ..utils import Result
 from ..prompt_builder import PromptBuilder
@@ -22,17 +21,6 @@ class RerankStrategy(ABC):
 
         self._window_size = self.config.window_size
         self._step_size = self.config.step_size
-
-    @staticmethod
-    def timer(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            start = time.time()
-            result = func(*args, **kwargs)
-            end = time.time()
-            print(f"\n\n{func.__qualname__} took {end - start:.6f} seconds")
-            return result
-        return wrapper
 
     @abstractmethod
     def run(
