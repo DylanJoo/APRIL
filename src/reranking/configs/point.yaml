@@ -11,6 +11,8 @@ llm:
   max_model_len: 8196
   dtype: float16
   use_logits: true
+  base_url: null
+  api_key: null
 
 rerank_mode: Point 
 use_alphabetical: false
@@ -26,5 +28,5 @@ num_runs: 10
 dtype: float16
 variable_passages: false
 include_system_message: true
-system_message: "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
+system_message: "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query"
 result_parser_name: binary_probability

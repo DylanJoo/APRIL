@@ -57,7 +57,9 @@ class AutoLLMReranker:
             max_model_len=config.llm.max_model_len,
             max_tokens=5 if config.llm.use_logits else 128,
             dtype='half' if config.llm.dtype == 'float16' else 'float32',
-            num_gpus=min(1, int(torch.cuda.device_count()))
+            num_gpus=max(1, int(torch.cuda.device_count())), # NOTE: do we want it to be specified?
+            base_url='http://localhost:8000/v1',
+            api_key='EMPTY'
         )
         # TODO: Make this more flexible in the future
         if config.llm.use_logits:

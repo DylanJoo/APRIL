@@ -26,7 +26,9 @@ class LLM:
         gpu_memory_utilization=0.9,
         num_gpus=1, 
         max_model_len=10240,
+        **kwargs
     ):
+        logger.warning(f"Unused kwargs: {kwargs}")
         """
         # AMPERE GPU: dtype='float16', enable_prefix_caching=True
         # VOLTA GPU: dtype='float32', enable_prefix_caching=True

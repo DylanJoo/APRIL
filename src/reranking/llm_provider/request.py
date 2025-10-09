@@ -1,4 +1,3 @@
-# NOTE: The trikky part is that some serving parameters should be set at server side. e.g., max_model_len, dtype, gpu_memory_utilization, num_gpus
 import os
 import uuid
 import math
@@ -18,12 +17,10 @@ class LLM:
         top_p=1.0,
         logprobs=20,
         max_tokens=10,
-        dtype='half',
         gpu_memory_utilization=0.9,
-        num_gpus=1,
-        max_model_len=10240,
         **kwargs
     ):
+        logger.warning(f"Unused kwargs: {kwargs}")
         self.model_name_or_path = model_name_or_path
         self.max_tokens = max_tokens
         self.temperature = temperature
