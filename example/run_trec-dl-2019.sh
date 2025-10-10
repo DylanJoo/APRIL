@@ -75,7 +75,7 @@ python -m reranking.wrapper \
     --llm.use_logits=true \
     --rerank_mode=SetTopK \
     --num_runs=10 \
-    --window_size=2 --step_size=1 \
+    --window_size=5 --step_size=1 \
     --dtype=float16 \
     --use_alphabetical=true \
     --result_parser_name=distribution_logp > $LOGDIR/settop10_trec-dl-2019.log
