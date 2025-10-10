@@ -11,7 +11,8 @@
 module load anaconda3/2024.2
 conda activate autollmreranker
 
-LOGS_DIR=log.vllm
+LOGDIR=log.vllm
+mkdir -p $LOGDIR
 # RankZephyr:list_gen:castorini/rank_zephyr_7b_v1_full
 MODEL=castorini/rank_zephyr_7b_v1_full
 python -m reranking.wrapper \
@@ -41,15 +42,15 @@ python -m reranking.wrapper \
     --result_parser_name=distribution_logp > $LOGDIR/rankfirst_trec-dl-2020.log
 
 # Point:binary_prob:Qwen/Qwen2.5-7B-Instruct
-MODEL=Qwen/Qwen2.5-7B-Instruct
-python -m reranking.wrapper \
-    --data.ir_datasets_name=msmarco-passage/trec-dl-2020/judged \
-    --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2020.txt \
-    --llm.model_name_or_path=$MODEL \
-    --llm.max_model_len=8196 \
-    --rerank_mode=Point \
-    --dtype=float16 \
-    --result_parser_name=binary_probability > $LOGDIR/point_trec-dl-2020.log
+# MODEL=Qwen/Qwen2.5-7B-Instruct
+# python -m reranking.wrapper \
+#     --data.ir_datasets_name=msmarco-passage/trec-dl-2020/judged \
+#     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2020.txt \
+#     --llm.model_name_or_path=$MODEL \
+#     --llm.max_model_len=8196 \
+#     --rerank_mode=Point \
+#     --dtype=float16 \
+#     --result_parser_name=binary_probability > $LOGDIR/point_trec-dl-2020.log
 
 # RankGPT:list_gen:Qwen/Qwen2.5-7B-Instruct
 MODEL=Qwen/Qwen2.5-7B-Instruct
@@ -69,7 +70,7 @@ MODEL=Qwen/Qwen2.5-7B-Instruct
 python -m reranking.wrapper \
     --data.ir_datasets_name=msmarco-passage/trec-dl-2020/judged \
     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2020.txt \
-    --llm.model_name_or_path=Qwen/Qwen2.5-7B-Instruct \
+    --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
     --llm.use_logits=true \
     --rerank_mode=SetTopK \

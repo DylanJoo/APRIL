@@ -20,7 +20,7 @@ class LLM:
         gpu_memory_utilization=0.9,
         **kwargs
     ):
-        logger.warning(f"Unused kwargs: {kwargs}")
+        print(f"Unused kwargs: {kwargs}")
         self.model_name_or_path = model_name_or_path
         self.max_tokens = max_tokens
         self.temperature = temperature
