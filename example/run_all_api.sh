@@ -39,7 +39,7 @@ for year in 2019 2020;do
             --llm.backend=request \
             --llm.model_name_or_path=$MODEL \
             --data.ir_datasets_name=msmarco-passage/trec-dl-$year/judged \
-            --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-$year.txt > $LOGDIR/point_trec-dl-${year}.log
+            --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-$year.txt > $LOGDIR/point_trec-dl-${year}.log 2>&1
     done
 
     # SetTopK:dist_logp:Qwen/Qwen2.5-7B-Instruct
@@ -49,7 +49,7 @@ for year in 2019 2020;do
         --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
         --llm.backend=request \
         --llm.model_name_or_path=$MODEL \
-        --rerank_mode=SetTopK > $LOGDIR/settop10_trec-dl-$year.log
+        --rerank_mode=SetTopK > $LOGDIR/settop10_trec-dl-$year.log 2>&1
 
     # PairAll:binary_prob:Qwen/Qwen2.5-7B-Instruct
     python -m reranking.wrapper \
@@ -59,7 +59,7 @@ for year in 2019 2020;do
         --llm.backend=request \
         --llm.model_name_or_path=$MODEL \
         --rerank_mode=PairAll \
-        --score_aggregation=symsum > $LOGDIR/pairall_trec-dl-$year.log
+        --score_aggregation=symsum > $LOGDIR/pairall_trec-dl-$year.log 2>&1
 
 done
 kill $PID
@@ -117,5 +117,5 @@ python -m reranking.wrapper \
     --llm.use_logits=true \
     --rerank_mode=RankFirst \
     --use_alphabetical=true \
-    --result_parser_name=distribution_logp > $LOGDIR/rankfirst_trec-dl-${year}.log
+    --result_parser_name=distribution_logp > $LOGDIR/rankfirst_trec-dl-${year}.log 2>&1
 kill $PID
