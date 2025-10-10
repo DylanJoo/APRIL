@@ -6,7 +6,12 @@ src/pairwise/rank_llm_*/
 *py~
 
 # Legacy or backup
-runs/backup
+runs/
+!runs/run.msmarco-passage-v2.bm25.trec-dl-2021.txt
+!runs/run.msmarco-passage-v2.bm25.trec-dl-2022.txt
+!runs/run.msmarco-passage-v2.bm25.trec-dl-2023.txt
+!runs/run.msmarco-passage.bm25.trec-dl-2019.txt
+!runs/run.msmarco-passage.bm25.trec-dl-2020.txt
 
 # Python packaging
 *.egg-info/
