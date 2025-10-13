@@ -20,8 +20,8 @@ config = ConfigManager(
     llm={'max_model_len': 8196, 'model_name_or_path': 'castorini/first_mistral', 'use_logits': True}
 ).get_config()
 
-from reranking.wrapper import ModularReranker
-rankllm = ModularReranker(config, 
+from reranking.wrapper import AutoLLMReranker
+rankllm = AutoLLMReranker(config, 
     system_message= "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
 )
 

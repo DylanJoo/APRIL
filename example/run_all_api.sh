@@ -39,7 +39,7 @@ for year in 2019 2020;do
             --llm.backend=request \
             --llm.model_name_or_path=$MODEL \
             --data.ir_datasets_name=msmarco-passage/trec-dl-$year/judged \
-            --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-$year.txt > $LOGDIR/point_trec-dl-${year}.log 2>&1
+            --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-$year.txt > $LOGDIR/${method}_trec-dl-${year}.log 2>&1
     done
 
     # SetTopK:dist_logp:Qwen/Qwen2.5-7B-Instruct
@@ -87,6 +87,7 @@ for year in 2019 2020;do
         --config=src/reranking/configs/rankgpt.yaml \
         --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
         --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
+        --llm.backend=request \
         --llm.model_name_or_path=$MODEL > $LOGDIR/rankzephyr_trec-dl-${year}.log
 done
 kill $PID
@@ -108,14 +109,16 @@ until curl -s http://localhost:8000/v1/models >/dev/null; do
 done
 echo "vLLM server is up and running."
 
-python -m reranking.wrapper \
-    --config=src/reranking/configs/rankgpt.yaml \
-    --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
-    --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
-    --llm.model_name_or_path=$MODEL \
-    --llm.max_model_len=8196 \
-    --llm.use_logits=true \
-    --rerank_mode=RankFirst \
-    --use_alphabetical=true \
-    --result_parser_name=distribution_logp > $LOGDIR/rankfirst_trec-dl-${year}.log 2>&1
+for year in 2019 2020;do
+    python -m reranking.wrapper \
+        --config=src/reranking/configs/rankgpt.yaml \
+        --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
+        --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
+        --llm.backend=request \
+        --llm.model_name_or_path=$MODEL \
+        --llm.use_logits=true \
+        --rerank_mode=RankFirst \
+        --use_alphabetical=true \
+        --result_parser_name=distribution_logp > $LOGDIR/rankfirst_trec-dl-${year}.log 2>&1
+done
 kill $PID
