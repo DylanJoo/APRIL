@@ -19,7 +19,7 @@ MODEL=Qwen/Qwen2.5-7B-Instruct
 NCCL_P2P_DISABLE=1 VLLM_SKIP_P2P_CHECK=1 vllm serve $MODEL \
     --max-model-len 8196  \
     --port 8000  \
-    --dtype float16 \
+    --dtype bfloat16 \
     --disable-custom-all-reduce \
     --tensor-parallel-size 1 > vllm_server.log 2>&1 &
 PID=$!
@@ -69,7 +69,7 @@ MODEL=castorini/rank_zephyr_7b_v1_full
 NCCL_P2P_DISABLE=1 VLLM_SKIP_P2P_CHECK=1 vllm serve $MODEL \
     --max-model-len 8196  \
     --port 8000  \
-    --dtype float16 \
+    --dtype bfloat16 \
     --disable-custom-all-reduce \
     --tensor-parallel-size 1 > vllm_server.log 2>&1 &
 PID=$!
@@ -97,7 +97,7 @@ MODEL=castorini/first_mistral
 NCCL_P2P_DISABLE=1 VLLM_SKIP_P2P_CHECK=1 vllm serve $MODEL \
     --max-model-len 8196  \
     --port 8000  \
-    --dtype float16 \
+    --dtype bfloat16 \
     --disable-custom-all-reduce \
     --tensor-parallel-size 1 > vllm_server.log 2>&1 &
 PID=$!

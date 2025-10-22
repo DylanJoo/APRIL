@@ -40,7 +40,7 @@ echo "vLLM server is up and running."
 for year in 2019 2020;do
     # common method
     for method in point pairtopk rankgpt setmaxheaptopk;do
-        singularity exec $SIF \
+        srun singularity exec $SIF \
             python -m reranking.wrapper \
             --config=src/reranking/configs/$method.yaml \
             --llm.backend=request \
@@ -50,7 +50,7 @@ for year in 2019 2020;do
     done
 
     # SetTopK:dist_logp:Qwen/Qwen2.5-7B-Instruct
-    singularity exec $SIF \
+    srun singularity exec $SIF \
         python -m reranking.wrapper \
         --config=src/reranking/configs/setmaxheaptopk.yaml \
         --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
@@ -60,7 +60,7 @@ for year in 2019 2020;do
         --rerank_mode=SetTopK > $LOGDIR/settop10_trec-dl-$year.log 2>&1
 
     # PairAll:binary_prob:Qwen/Qwen2.5-7B-Instruct
-    singularity exec $SIF \
+    srun singularity exec $SIF \
         python -m reranking.wrapper \
         --config=src/reranking/configs/pairtopk.yaml \
         --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
@@ -78,7 +78,7 @@ MODEL=castorini/rank_zephyr_7b_v1_full
 NCCL_P2P_DISABLE=1 VLLM_SKIP_P2P_CHECK=1 vllm serve $MODEL \
     --max-model-len 8196  \
     --port 8000  \
-    --dtype float16 \
+    --dtype bfloat16 \
     --disable-custom-all-reduce \
     --tensor-parallel-size 1 > vllm_server.log 2>&1 &
 PID=$!
@@ -92,6 +92,7 @@ echo "vLLM server is up and running."
 
 # RankZephyr:list_gen:castorini/rank_zephyr_7b_v1_full
 for year in 2019 2020;do
+    srun singularity exec $SIF \
     python -m reranking.wrapper \
         --config=src/reranking/configs/rankgpt.yaml \
         --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
@@ -106,7 +107,7 @@ MODEL=castorini/first_mistral
 NCCL_P2P_DISABLE=1 VLLM_SKIP_P2P_CHECK=1 vllm serve $MODEL \
     --max-model-len 8196  \
     --port 8000  \
-    --dtype float16 \
+    --dtype bfloat16 \
     --disable-custom-all-reduce \
     --tensor-parallel-size 1 > vllm_server.log 2>&1 &
 PID=$!
@@ -119,6 +120,7 @@ done
 echo "vLLM server is up and running."
 
 for year in 2019 2020;do
+    srun singularity exec $SIF \
     python -m reranking.wrapper \
         --config=src/reranking/configs/rankgpt.yaml \
         --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
