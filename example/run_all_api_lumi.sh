@@ -12,7 +12,7 @@
 #SBATCH --account=project_465001640 # Project for billing
 
 module use /appl/local/csc/modulefiles/
-module use /appl/local/training/modules/AI-20241126/
+module load pytorch/2.5
 
 cd ${HOME}/APRIL
 
@@ -21,7 +21,7 @@ mkdir -p $LOGDIR
 
 # Initialize vllm server on NVIDIA
 MODEL=Qwen/Qwen2.5-7B-Instruct
-NCCL_P2P_DISABLE=1 VLLM_SKIP_P2P_CHECK=1 vllm serve $MODEL \
+NCCL_P2P_DISABLE=1 VLLM_SKIP_P2P_CHECK=1 python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
     --max-model-len 8196 \
     --port 8000 \
@@ -41,7 +41,7 @@ for year in 2019 2020;do
     # common method
     for method in point pairtopk rankgpt setmaxheaptopk;do
         srun singularity exec $SIF \
-            python -m reranking.wrapper \
+            python3 -m reranking.wrapper \
             --config=src/reranking/configs/$method.yaml \
             --llm.backend=request \
             --llm.model_name_or_path=$MODEL \
@@ -73,14 +73,15 @@ for year in 2019 2020;do
 done
 kill $PID
 
-# RankZephyr:list_gen:castorini/rank_zephyr_7b_v1_full
+RankZephyr:list_gen:castorini/rank_zephyr_7b_v1_full
 MODEL=castorini/rank_zephyr_7b_v1_full
-NCCL_P2P_DISABLE=1 VLLM_SKIP_P2P_CHECK=1 vllm serve $MODEL \
-    --max-model-len 8196  \
-    --port 8000  \
+NCCL_P2P_DISABLE=1 VLLM_SKIP_P2P_CHECK=1 python -m vllm.entrypoints.openai.api_server \
+    --model $MODEL \
+    --max-model-len 8196 \
+    --port 8000 \
     --dtype bfloat16 \
     --disable-custom-all-reduce \
-    --tensor-parallel-size 1 > vllm_server.log 2>&1 &
+    --tensor-parallel-size 2 > vllm_server.log 2>&1 &
 PID=$!
 
 # Wait until server responds
@@ -104,12 +105,13 @@ kill $PID
 
 # RankFirst:dist_logp:castorini/first_mistral
 MODEL=castorini/first_mistral
-NCCL_P2P_DISABLE=1 VLLM_SKIP_P2P_CHECK=1 vllm serve $MODEL \
-    --max-model-len 8196  \
-    --port 8000  \
+NCCL_P2P_DISABLE=1 VLLM_SKIP_P2P_CHECK=1 python -m vllm.entrypoints.openai.api_server \
+    --model $MODEL \
+    --max-model-len 8196 \
+    --port 8000 \
     --dtype bfloat16 \
     --disable-custom-all-reduce \
-    --tensor-parallel-size 1 > vllm_server.log 2>&1 &
+    --tensor-parallel-size 2 > vllm_server.log 2>&1 &
 PID=$!
 
 # Wait until server responds
@@ -121,7 +123,7 @@ echo "vLLM server is up and running."
 
 for year in 2019 2020;do
     srun singularity exec $SIF \
-    python -m reranking.wrapper \
+    python3 -m reranking.wrapper \
         --config=src/reranking/configs/rankgpt.yaml \
         --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
         --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
