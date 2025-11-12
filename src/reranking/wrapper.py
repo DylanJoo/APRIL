@@ -48,6 +48,8 @@ class AutoLLMReranker:
             from .llm_provider.vllm_api import LLM  # for v100
         if (config.llm.backend == 'openai') or (config.llm.backend == 'request'):
             from .llm_provider.request import LLM
+        if config.llm.backend == 'vllm_dev':
+            from .llm_provider.vllm_api_dev import LLM
 
         agent = LLM( 
             model_name_or_path=config.llm.model_name_or_path,
@@ -56,7 +58,7 @@ class AutoLLMReranker:
             logprobs=20 if config.llm.use_logits else None,
             max_model_len=config.llm.max_model_len,
             max_tokens=5 if config.llm.use_logits else 128,
-            dtype='half' if config.llm.dtype == 'float16' else 'float32',
+            dtype=config.llm.dtype,
             num_gpus=max(1, int(torch.cuda.device_count())), # NOTE: do we want it to be specified?
             base_url='http://localhost:8000/v1',
             api_key='EMPTY'
