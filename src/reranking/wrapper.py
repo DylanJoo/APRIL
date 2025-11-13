@@ -49,7 +49,7 @@ class AutoLLMReranker:
         if (config.llm.backend == 'openai') or (config.llm.backend == 'request'):
             from .llm_provider.request import LLM
         if config.llm.backend == 'vllm_dev':
-            from .llm_provider.vllm_api_dev import LLM
+            from .llm_provider.vllm_dev import LLM
 
         agent = LLM( 
             model_name_or_path=config.llm.model_name_or_path,
