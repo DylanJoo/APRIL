@@ -8,6 +8,13 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+try:
+    from datasets import load_dataset
+    HF_DATASETS_AVAILABLE = True
+except ImportError:
+    HF_DATASETS_AVAILABLE = False
+    logger.warning("HuggingFace datasets library not available. Install with: pip install datasets")
+
 def load(
     ir_datasets_name: str,
     query_fields: Optional[list] = None,
@@ -50,6 +57,107 @@ def load(
         corpus[doc.doc_id] = {"contents": contents}
     logger.info("Doc Example: %s", list(corpus.values())[0])
 
+    return corpus, queries, qrels
+
+def load_hf(
+    dataset_name_queries: str,
+    dataset_name_corpus: str,
+    subset: str,
+    query_split: str = 'test',
+    corpus_split: str = 'corpus',
+    query_fields: Optional[list] = None,
+    doc_fields: Optional[list] = None,
+    ignore_corpus: bool = False,
+    qrels_split: Optional[str] = None,
+) -> tuple[dict[str, dict[str, str]], dict[str, str], dict[str, dict[str, int]]]:
+    """
+    Load queries and corpus from HuggingFace datasets.
+    
+    Args:
+        dataset_name_queries: HuggingFace dataset name for queries (e.g., 'DylanJHJ/nano-beir')
+        dataset_name_corpus: HuggingFace dataset name for corpus (e.g., 'DylanJHJ/nano-beir-corpus')
+        subset: Dataset subset/configuration name (e.g., 'nfcorpus')
+        query_split: Split name for queries (default: 'test')
+        corpus_split: Split name for corpus (default: 'corpus')
+        query_fields: List of query fields to concatenate (default: ['query_texts'])
+        doc_fields: List of document fields to concatenate (default: ['title', 'text'])
+        ignore_corpus: If True, skip loading corpus (default: False)
+        qrels_split: Optional split name for qrels (e.g., 'qrels'). If None, qrels are not loaded.
+    
+    Returns:
+        Tuple of (corpus, queries, qrels) where:
+        - corpus: Dict mapping doc_id to dict with 'contents' key
+        - queries: Dict mapping query_id to query text
+        - qrels: Dict mapping query_id to dict of doc_id to relevance score
+    """
+    if not HF_DATASETS_AVAILABLE:
+        raise ImportError("HuggingFace datasets library is required. Install with: pip install datasets")
+    
+    corpus, queries, qrels = {}, {}, {}
+    
+    # Set default fields
+    query_fields = ['query_texts'] if query_fields is None else query_fields
+    doc_fields = ['title', 'text'] if doc_fields is None else doc_fields
+    
+    # Load queries
+    logger.info(f"Loading Queries from {dataset_name_queries} (subset: {subset}, split: {query_split})...")
+    query_dataset = load_dataset(dataset_name_queries, subset, split=query_split)
+    
+    for item in query_dataset:
+        query_id = str(item['query_id'])
+        # Concatenate specified query fields
+        query_contents = []
+        for field in query_fields:
+            if field in item and item[field]:
+                query_contents.append(str(item[field]))
+        query_text = " ".join(query_contents)
+        queries[query_id] = query_text
+    
+    logger.info(f"Loaded {len(queries)} queries")
+    if queries:
+        logger.info("Query Example: %s", list(queries.values())[0])
+    
+    # Load qrels if available
+    if qrels_split:
+        logger.info(f"Loading Qrels from {dataset_name_queries} (subset: {subset}, split: {qrels_split})...")
+        try:
+            qrels_dataset = load_dataset(dataset_name_queries, subset, split=qrels_split)
+            for item in qrels_dataset:
+                query_id = str(item.get('query_id', item.get('qid', '')))
+                doc_id = str(item.get('doc_id', item.get('docid', '')))
+                relevance = int(item.get('relevance', item.get('score', 1)))
+                
+                if query_id not in qrels:
+                    qrels[query_id] = {}
+                qrels[query_id][doc_id] = relevance
+            
+            logger.info(f"Loaded {len(qrels)} qrels")
+            if qrels:
+                logger.info("Qrel Example: %s", list(qrels.values())[0])
+        except Exception as e:
+            logger.warning(f"Could not load qrels: {e}")
+    
+    if ignore_corpus:
+        return None, queries, qrels
+    
+    # Load corpus
+    logger.info(f"Loading Corpus from {dataset_name_corpus} (subset: {subset}, split: {corpus_split})...")
+    corpus_dataset = load_dataset(dataset_name_corpus, subset, split=corpus_split)
+    
+    for item in corpus_dataset:
+        doc_id = str(item['docid'])
+        # Concatenate specified document fields
+        doc_contents = []
+        for field in doc_fields:
+            if field in item and item[field]:
+                doc_contents.append(str(item[field]))
+        content_text = " ".join(doc_contents)
+        corpus[doc_id] = {"contents": content_text}
+    
+    logger.info(f"Loaded {len(corpus)} documents")
+    if corpus:
+        logger.info("Doc Example: %s", list(corpus.values())[0])
+    
     return corpus, queries, qrels
 
 # [deprecated] will use the function above instead
