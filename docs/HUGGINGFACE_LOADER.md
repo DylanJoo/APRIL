@@ -27,7 +27,7 @@ def load_hf(
 - `subset` (str): Dataset subset/config name (e.g., 'nq', 'msmarco', 'fiqa')
 - `query_split` (str, optional): Split name for queries dataset (default: 'test')
 - `corpus_split` (str, optional): Split name for corpus dataset (default: 'train')
-- `qrels_split` (str, optional): Split name for qrels (default: None, currently returns empty dict)
+- `qrels_split` (str, optional): Split name for loading qrels from a separate split (default: None). If not specified, qrels will be extracted from the query dataset if available.
 - `ignore_corpus` (bool, optional): If True, skip loading corpus and return None (default: False)
 
 ## Returns
@@ -35,7 +35,7 @@ def load_hf(
 A tuple of three dictionaries:
 1. `corpus`: `Dict[str, Dict[str, str]]` - Maps document ID to `{"contents": text}`
 2. `queries`: `Dict[str, str]` - Maps query ID to query text
-3. `qrels`: `Dict[str, Dict[str, int]]` - Maps query ID to `{doc_id: relevance}` (currently empty)
+3. `qrels`: `Dict[str, Dict[str, int]]` - Maps query ID to `{doc_id: relevance}`. Loaded from query dataset fields (`positive_passages` or `relevant_docs`) or from a separate qrels split if specified.
 
 ## Expected Dataset Format
 
@@ -43,12 +43,20 @@ A tuple of three dictionaries:
 Expected fields:
 - `query_id`: String or integer identifier for the query
 - `query_texts`: The text of the query
+- `positive_passages` (optional): List of relevant documents, either as dictionaries with 'docid' field or as strings
+- `relevant_docs` (optional): Alternative field name for list of relevant document IDs
 
 ### Corpus Dataset
 Expected fields:
 - `docid`: String or integer identifier for the document
 - `title`: Document title (optional, can be empty)
 - `text`: Document text content
+
+### Qrels Split (if using separate split)
+Expected fields when loading from `qrels_split`:
+- `query_id` or `qid`: Query identifier
+- `docid` or `doc_id`: Document identifier
+- `relevance` or `score`: Relevance score (default: 1)
 
 ## Usage Examples
 
@@ -154,16 +162,17 @@ corpus, queries, qrels = loader.load_hf(
 | Data source | ir_datasets | HuggingFace datasets |
 | Query fields | Configurable via `query_fields` | Fixed: `query_id`, `query_texts` |
 | Doc fields | Configurable via `doc_fields` | Fixed: `docid`, `title`, `text` |
-| Qrels loading | Automatic from ir_datasets | Not yet implemented (returns empty dict) |
+| Qrels loading | Automatic from ir_datasets | Automatic from query dataset fields or separate split |
 | Title handling | Depends on dataset | Automatically concatenated with text |
 
 ## Notes
 
-1. **Qrels**: Currently, the function returns an empty dictionary for qrels. If you need qrels, you should load them separately or extend the function to handle them.
+1. **Qrels**: The function attempts to load qrels automatically from the query dataset by looking for `positive_passages` or `relevant_docs` fields. If these fields are not present, you can specify a `qrels_split` parameter to load qrels from a separate split with fields like `query_id`, `docid`, and `relevance`.
 
 2. **Field Names**: The function expects specific field names in the HuggingFace datasets:
-   - Queries: `query_id`, `query_texts`
+   - Queries: `query_id`, `query_texts`, optionally `positive_passages` or `relevant_docs`
    - Corpus: `docid`, `title`, `text`
+   - Qrels (if separate): `query_id`/`qid`, `docid`/`doc_id`, `relevance`/`score`
 
 3. **Title and Text**: The function automatically combines the title and text fields with a space separator. If only one is present, it uses that field.
 

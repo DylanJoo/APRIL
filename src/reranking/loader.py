@@ -52,18 +52,54 @@ def load_hf(
             query_text = item['query_texts']
             queries[query_id] = query_text
             
+            # Check if qrels are included in the query dataset
+            if 'positive_passages' in item and item['positive_passages']:
+                if query_id not in qrels:
+                    qrels[query_id] = {}
+                # Handle positive passages (relevant documents)
+                for doc_info in item['positive_passages']:
+                    if isinstance(doc_info, dict) and 'docid' in doc_info:
+                        doc_id = str(doc_info['docid'])
+                        qrels[query_id][doc_id] = 1
+                    elif isinstance(doc_info, str):
+                        qrels[query_id][doc_info] = 1
+            
+            # Alternative field names for qrels
+            if 'relevant_docs' in item and item['relevant_docs']:
+                if query_id not in qrels:
+                    qrels[query_id] = {}
+                for doc_id in item['relevant_docs']:
+                    qrels[query_id][str(doc_id)] = 1
+                    
         logger.info(f"Loaded {len(queries)} queries")
         if len(queries) > 0:
             logger.info("Query Example: %s", list(queries.values())[0])
+        if qrels:
+            logger.info(f"Loaded qrels for {len(qrels)} queries")
     except Exception as e:
         logger.error(f"Error loading queries from HuggingFace: {e}")
         raise
     
-    # Load qrels if available in the dataset
-    # Note: qrels might be in the same dataset as queries or separate
-    # For now, we'll return empty qrels as they might be loaded separately
-    logger.info("Qrels support: returning empty dict (load separately if needed)")
-    qrels = {}
+    # Try to load qrels from separate split if specified and not already loaded
+    if qrels_split and not qrels:
+        logger.info(f"Loading Qrels from separate split: {qrels_split}...")
+        try:
+            qrels_dataset = load_dataset(queries_dataset_name, subset, split=qrels_split)
+            for item in qrels_dataset:
+                query_id = str(item.get('query_id', item.get('qid', '')))
+                doc_id = str(item.get('docid', item.get('doc_id', '')))
+                relevance = int(item.get('relevance', item.get('score', 1)))
+                
+                if query_id and doc_id:
+                    if query_id not in qrels:
+                        qrels[query_id] = {}
+                    qrels[query_id][doc_id] = relevance
+            logger.info(f"Loaded qrels for {len(qrels)} queries from {qrels_split} split")
+        except Exception as e:
+            logger.warning(f"Could not load qrels from separate split: {e}")
+    
+    if not qrels:
+        logger.info("No qrels found in dataset. Returning empty qrels dict.")
     
     if ignore_corpus:
         return None, queries, qrels

@@ -34,8 +34,11 @@ def example_hf_loading():
     
     print(f"Loaded {len(queries)} queries")
     print(f"Loaded {len(corpus)} documents")
+    print(f"Loaded qrels for {len(qrels)} queries")
     print(f"\nExample query: {list(queries.items())[0]}")
     print(f"Example document: {list(corpus.items())[0]}")
+    if qrels:
+        print(f"Example qrels: {list(qrels.items())[0]}")
     
     return corpus, queries, qrels
 
@@ -110,6 +113,14 @@ def example_command_line_usage():
         queries_dataset_name='DylanJHJ/nano-beir',
         corpus_dataset_name='DylanJHJ/nano-beir-corpus',
         subset='nq',
+    )
+    
+    # Option 2: Load qrels from separate split if needed
+    corpus, queries, qrels = loader.load_hf(
+        queries_dataset_name='DylanJHJ/nano-beir',
+        corpus_dataset_name='DylanJHJ/nano-beir-corpus',
+        subset='nq',
+        qrels_split='qrels',  # Load from separate qrels split
     )
     
     # Then use as normal:

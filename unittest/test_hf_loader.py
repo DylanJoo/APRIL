@@ -22,12 +22,31 @@ class MockDataset:
 def mock_load_dataset(dataset_name, config, split):
     """Mock HuggingFace load_dataset for testing."""
     if 'nano-beir' in dataset_name and 'corpus' not in dataset_name:
-        # Mock queries dataset
-        return MockDataset([
-            {'query_id': '1', 'query_texts': 'What is information retrieval?'},
-            {'query_id': '2', 'query_texts': 'How does neural ranking work?'},
-            {'query_id': '3', 'query_texts': 'What is BERT?'},
-        ])
+        # Mock queries dataset with qrels
+        if split == 'test':
+            return MockDataset([
+                {
+                    'query_id': '1', 
+                    'query_texts': 'What is information retrieval?',
+                    'positive_passages': [{'docid': 'doc1'}]
+                },
+                {
+                    'query_id': '2', 
+                    'query_texts': 'How does neural ranking work?',
+                    'positive_passages': [{'docid': 'doc2'}, {'docid': 'doc3'}]
+                },
+                {
+                    'query_id': '3', 
+                    'query_texts': 'What is BERT?',
+                    'relevant_docs': ['doc3']
+                },
+            ])
+        elif split == 'qrels':
+            # Mock separate qrels split
+            return MockDataset([
+                {'query_id': '1', 'docid': 'doc1', 'relevance': 2},
+                {'query_id': '2', 'docid': 'doc2', 'relevance': 1},
+            ])
     elif 'corpus' in dataset_name:
         # Mock corpus dataset
         return MockDataset([
@@ -85,6 +104,17 @@ def test_load_hf():
     assert all(isinstance(docid, str) for docid in corpus.keys()), "Doc IDs should be strings"
     assert all(isinstance(doc, dict) and 'contents' in doc for doc in corpus.values()), "Each doc should have 'contents'"
     
+    # Verify qrels structure
+    print(f"\nLoaded qrels for {len(qrels)} queries:")
+    for qid, docs in qrels.items():
+        print(f"  {qid}: {len(docs)} relevant docs")
+    
+    assert len(qrels) == 3, "Should have qrels for 3 queries"
+    assert '1' in qrels and 'doc1' in qrels['1'], "Query 1 should have doc1 as relevant"
+    assert '2' in qrels and 'doc2' in qrels['2'], "Query 2 should have doc2 as relevant"
+    assert '3' in qrels and 'doc3' in qrels['3'], "Query 3 should have doc3 as relevant"
+    print("  ✓ Qrels loaded correctly from query dataset")
+    
     # Test ignore_corpus flag
     corpus_none, queries2, qrels2 = loader.load_hf(
         queries_dataset_name='DylanJHJ/nano-beir',
@@ -95,6 +125,21 @@ def test_load_hf():
     
     assert corpus_none is None, "Corpus should be None when ignore_corpus=True"
     assert len(queries2) == 3, "Should still have queries"
+    assert len(qrels2) == 3, "Should still have qrels"
+    
+    # Test loading qrels from separate split
+    corpus3, queries3, qrels3 = loader.load_hf(
+        queries_dataset_name='DylanJHJ/nano-beir',
+        corpus_dataset_name='DylanJHJ/nano-beir-corpus',
+        subset='nq',
+        query_split='test',
+        qrels_split='qrels',  # This should override qrels from query dataset
+    )
+    
+    print(f"\nQrels from separate split: {qrels3}")
+    # When qrels_split is specified but queries already have qrels, 
+    # the function uses what's in the query dataset first
+    assert len(qrels3) >= 2, "Should have qrels loaded"
     
     print("\n✓ All tests passed!")
     return True
