@@ -8,6 +8,95 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+def load_hf(
+    queries_dataset_name: str,
+    corpus_dataset_name: str,
+    subset: str,
+    query_split: str = 'test',
+    corpus_split: str = 'train',
+    qrels_split: Optional[str] = None,
+    ignore_corpus: bool = False,
+) -> tuple[dict[str, dict[str, str]], dict[str, str], dict[str, dict[str, int]]]:
+    """
+    Load queries and corpus from HuggingFace datasets.
+    
+    Args:
+        queries_dataset_name: HuggingFace dataset name for queries (e.g., 'DylanJHJ/nano-beir')
+        corpus_dataset_name: HuggingFace dataset name for corpus (e.g., 'DylanJHJ/nano-beir-corpus')
+        subset: Dataset subset/config name (e.g., 'nq', 'msmarco')
+        query_split: Split name for queries dataset (default: 'test')
+        corpus_split: Split name for corpus dataset (default: 'train')
+        qrels_split: Split name for qrels in queries dataset (default: None, uses query_split)
+        ignore_corpus: If True, skip loading corpus
+        
+    Returns:
+        tuple: (corpus, queries, qrels) where:
+            - corpus: Dict[str, Dict[str, str]] mapping docid to {"contents": text}
+            - queries: Dict[str, str] mapping query_id to query text
+            - qrels: Dict[str, Dict[str, int]] mapping query_id to {docid: relevance}
+            
+    Expected query dataset fields: 'query_id', 'query_texts'
+    Expected corpus dataset fields: 'docid', 'title', 'text'
+    """
+    from datasets import load_dataset
+    
+    corpus, queries, qrels = {}, {}, {}
+    
+    # Load queries
+    logger.info(f"Loading Queries from HuggingFace: {queries_dataset_name}/{subset}...")
+    try:
+        queries_dataset = load_dataset(queries_dataset_name, subset, split=query_split)
+        
+        for item in queries_dataset:
+            query_id = str(item['query_id'])
+            query_text = item['query_texts']
+            queries[query_id] = query_text
+            
+        logger.info(f"Loaded {len(queries)} queries")
+        if len(queries) > 0:
+            logger.info("Query Example: %s", list(queries.values())[0])
+    except Exception as e:
+        logger.error(f"Error loading queries from HuggingFace: {e}")
+        raise
+    
+    # Load qrels if available in the dataset
+    # Note: qrels might be in the same dataset as queries or separate
+    # For now, we'll return empty qrels as they might be loaded separately
+    logger.info("Qrels support: returning empty dict (load separately if needed)")
+    qrels = {}
+    
+    if ignore_corpus:
+        return None, queries, qrels
+    
+    # Load corpus
+    logger.info(f"Loading Corpus from HuggingFace: {corpus_dataset_name}/{subset}...")
+    try:
+        corpus_dataset = load_dataset(corpus_dataset_name, subset, split=corpus_split)
+        
+        for item in corpus_dataset:
+            doc_id = str(item['docid'])
+            title = item.get('title', '')
+            text = item.get('text', '')
+            
+            # Combine title and text similar to how ir_datasets does it
+            if title and text:
+                contents = f"{title} {text}"
+            elif title:
+                contents = title
+            else:
+                contents = text
+                
+            corpus[doc_id] = {"contents": contents}
+            
+        logger.info(f"Loaded {len(corpus)} documents")
+        if len(corpus) > 0:
+            logger.info("Doc Example: %s", list(corpus.values())[0])
+    except Exception as e:
+        logger.error(f"Error loading corpus from HuggingFace: {e}")
+        raise
+    
+    return corpus, queries, qrels
+
 def load(
     ir_datasets_name: str,
     query_fields: Optional[list] = None,

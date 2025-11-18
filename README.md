@@ -59,4 +59,8 @@ APRIL/ # the proposed new method using `reranking`.
 #### Utililty functions/classes
 - Result: the class of retrieval/ranking results.
 - PromptMode: the class of reranking mode, including the prompt, llm calling and parsing
+- Loader: functions for loading data from different sources
+    * `load()`: Load data from ir_datasets
+    * `load_hf()`: Load data from HuggingFace datasets (see [docs/HUGGINGFACE_LOADER.md](docs/HUGGINGFACE_LOADER.md))
+    * `load_run()`: Load initial run/ranking from file
 
