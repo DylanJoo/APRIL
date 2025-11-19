@@ -43,9 +43,9 @@ class AutoLLMReranker:
         self.config = config
         prompt_builder = PromptBuilder(config=config)
 
-        # NOTE: do we want to make it clearer in the wrapper?
+        # TODO: make it clearer loaded by argument
         if config.llm.backend == 'vllm':
-            from .llm_provider.vllm_api import LLM  # for v100
+            from .llm_provider.vllm import LLM  # for v100
         if (config.llm.backend == 'openai') or (config.llm.backend == 'request'):
             from .llm_provider.request import LLM
         if config.llm.backend == 'vllm_dev':

@@ -4,12 +4,24 @@ It allows users to easily experiment and integrate different components from dif
 
 [July 4, 2025] We consider `sorting algorithm`, `prompting template` and corresponding `rankign parser` with different `LLM backend`.
 
-## Strcutre
+## Installation
+- Environment
+```
+conda create -n rerank python=3.10
+pip install uv
+```
+- Dependency Installation
+```
+git clone https://github.com/DylanJoo/APRIL.git
+cd APRIL
+uv pip install -e .
+uv pip install vllm==0.11.1 ftfy ir_datasets ir_measures 
+```
+The final `requirements.txt` will be provided in the future release.
+
+## Strcutre [TODO: update to the beta version]
 ```
 APRIL/ # the proposed new method using `reranking`.
-├── pyproject.toml
-├── README.md
-├── .gitignore
 ├── unittest/li_textlist.py
 ├── src/
 │   └── reranking/
@@ -17,26 +29,23 @@ APRIL/ # the proposed new method using `reranking`.
 │       ├── config_manager.py
 │       ├── utils.py
 │       ├── prompt_builder/
-│       │   ├── __init__.py
 │       │   ├── base.py
 │       │   └── _rank_gpt.py
 │       ├── llm_provider/
-│       │   ├── __init__.py
 │       │   ├── base.py
 │       │   └── _rank_gpt.py
 │       ├── result_parser/
-│       │   ├── __init__.py
 │       │   ├── base.py
 │       │   └── _rank_gpt.py
 │       └── tests/
-│           ├── __init__.py
 │           └── test_model.py
 └── examples/
-    └── exploration.ipynb
+    ├── run_trec-dl-2020.sh
+    └── log.vllm/
 ```
 
 #### Wrapper/main functions
-- ModularReranker (also the main function)
+- ModularReranker 
     * A wrapper class that defines the reranking types for class factory, which can integrates all the following 4 components.
 
 #### Four modules 
