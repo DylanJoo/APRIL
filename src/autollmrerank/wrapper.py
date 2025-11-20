@@ -17,8 +17,8 @@ class AutoLLMReranker:
     @classmethod
     def from_prebuilt(cls, method_name, model_name_or_path, **kwargs) -> "AutoLLMReranker":
         import importlib.resources as pkg_resources
-        default_path = pkg_resources.files("reranking.configs").joinpath(f"{method_name}.yaml")
-        path = pkg_resources.files("reranking.configs").joinpath(f"{method_name}.yaml")
+        default_path = pkg_resources.files("autollmrerank.configs").joinpath(f"{method_name}.yaml")
+        path = pkg_resources.files("autollmrerank.configs").joinpath(f"{method_name}.yaml")
         path = path if path.exists() else default_path
 
         # TODO: figure out what else
@@ -144,7 +144,7 @@ class AutoLLMReranker:
 if __name__ == "__main__":
     import ir_measures
     from ir_measures import *
-    from reranking import loader
+    from autollmrerank import loader
 
     # init config with CLI commands
     config = ConfigManager().get_config()
