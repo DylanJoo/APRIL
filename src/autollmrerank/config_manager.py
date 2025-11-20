@@ -5,7 +5,7 @@ from typing import Any, Dict
 from pprint import pprint
 
 import importlib.resources as pkg_resources
-DEFAULT_CONFIG_PATH = pkg_resources.files("reranking.configs").joinpath("default.yaml")
+DEFAULT_CONFIG_PATH = pkg_resources.files("autollmrerank.configs").joinpath("default.yaml")
 
 class ConfigManager:
     def __init__(self, path=None, **kwargs):

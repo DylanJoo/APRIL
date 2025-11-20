@@ -1,13 +1,13 @@
 import os
 from pathlib import Path
-from reranking import loader
+from autollmrerank import loader
 from pprint import pprint
 import ir_measures
 from ir_measures import *
 home_dir=str(Path.home())
 
 # Initialize the reranker with the configuration
-from reranking.config_manager import ConfigManager
+from autollmrerank.config_manager import ConfigManager
 config = ConfigManager(
     rerank_mode='PairTopK',
     top_k=100,
@@ -18,7 +18,7 @@ config = ConfigManager(
     llm={'max_model_len': 8192, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct', 'dtype': 'float16', 'use_logits': True}
 ).get_config()
 
-from reranking.wrapper import ModularReranker
+from autollmrerank.wrapper import ModularReranker
 rankllm = ModularReranker(
     config, 
     system_message= "You are RankLLM, an intelligent assistant that can compare passages based on their relevancy to the query"
