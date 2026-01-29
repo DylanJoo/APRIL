@@ -1,6 +1,6 @@
 """ Make it more flexible to support alpabetical choices """
 from typing import List, Optional, Union, Callable, Dict, Tuple
-from .base import BaseFormatter
+from .formatter_base import BaseFormatter
 
 class PointwiseFormatter(BaseFormatter):
 

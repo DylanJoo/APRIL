@@ -6,7 +6,7 @@ from tqdm import tqdm
 from ftfy import fix_text
 
 from ..utils import Result, batch_iterator
-from .formatter.auto import AutoPromptFormatter
+from .auto import AutoPromptFormatter
 import pdb
 
 class PromptBuilder:

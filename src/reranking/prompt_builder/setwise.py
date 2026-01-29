@@ -1,6 +1,6 @@
 # TODO: use either alphabetical or numerical identifiers based on a flag
 from typing import List, Optional, Union, Callable, Dict, Tuple
-from .base import BaseFormatter
+from .formatter_base import BaseFormatter
 
 class SetwiseFormatter(BaseFormatter):
 

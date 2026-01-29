@@ -1,7 +1,8 @@
+""" Make it more flexible to support alpabetical choices """
 from typing import List, Optional, Union, Callable, Dict, Tuple
-from .base import BaseFormatter
+from .formatter_base import BaseFormatter
 
-class PairwiseTopKFormatter(BaseFormatter):
+class PairwiseFormatter(BaseFormatter):
 
     def prefix(self, query, **kwargs) -> str:
         return (
@@ -27,4 +28,4 @@ class PairwiseTopKFormatter(BaseFormatter):
             prompt = template.format(query=query, doc1=doc_list[i], doc2=doc_list[j])
             prompts.append(prompt)
 
-        return prompts[0] if len(idx_pairs) == 1 else prompts
+        return prompts[0] if len(idx_pairs) == 1 else prompts 
