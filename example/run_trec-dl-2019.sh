@@ -1,6 +1,6 @@
 #!/bin/sh
 #SBATCH --job-name=dl19-all
-#SBATCH --partition v100
+#SBATCH --partition gpu
 #SBATCH --gres=gpu:v100:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
@@ -10,8 +10,9 @@
 
 module load anaconda3/2024.2
 conda activate autollmreranker
+export TORCH_CUDA_ARCH_LIST="7.5;8.0;8.9;9.0;10.0+PTX"
 
-LOGDIR=log.vllm
+LOGDIR=log.vllm.new
 mkdir -p $LOGDIR
 # RankZephyr:list_gen:castorini/rank_zephyr_7b_v1_full
 MODEL=castorini/rank_zephyr_7b_v1_full
