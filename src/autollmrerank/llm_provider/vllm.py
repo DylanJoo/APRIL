@@ -61,31 +61,41 @@ class LLM:
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
         self.yes_tokens = None
         self.no_tokens = None
+        self.rating_tokens = None
 
     # TODO: Set the id_tokens as dynamic based on window size
     def set_classification(self, 
         yes_strings=[' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES'],
         no_strings=[' No', 'No', ' no', 'no', 'NO', ' NO'],
-        id_strings=[chr(i) for i in range(65, 91)]
+        id_strings=[chr(i) for i in range(65, 91)],
+        rating_strings=[' 0', '0', ' 1', '1', ' 2', '2', ' 3', '3', ' 4', '4', ' 5', '5']
     ):
         self.yes_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in yes_strings]
         self.no_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in no_strings]
         self.id_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in id_strings]
+        # Group rating tokens by their numeric value (0-5)
+        self.rating_tokens = {
+            i: [self.tokenizer.encode(s, add_special_tokens=False)[0] 
+                for s in rating_strings if s.strip() == str(i)]
+            for i in range(6)
+        }
         print(f"YES TOKENS: {self.yes_tokens}")
         print(f"NO TOKENS: {self.no_tokens}")
         print(f"ID TOKENS: {self.id_tokens}")
+        print(f"RATING TOKENS: {self.rating_tokens}")
 
-    def generate(self, prompts, binary_probs=False, dist_logp=False) -> List:
+    def generate(self, prompts, binary_probs=False, dist_logp=False, rating_probs=False) -> List:
         if isinstance(prompts, str):
             prompts = [prompts]
 
         return self.loop.run_until_complete(
                 self._agenerate(prompts, 
                                 use_binary_probs=binary_probs,
-                                use_dist_probs=dist_logp)
+                                use_dist_probs=dist_logp,
+                                use_rating_probs=rating_probs)
                 )
 
-    async def _iterate_over_output(self, output_iterator: AsyncStream, use_binary_probs=False, use_dist_probs=False) -> str:
+    async def _iterate_over_output(self, output_iterator: AsyncStream, use_binary_probs=False, use_dist_probs=False, use_rating_probs=False) -> str:
 
         async for output in output_iterator:
             if use_binary_probs:
@@ -103,6 +113,28 @@ class LLM:
                     ]
                 ))
                 output = score = yes_ / (no_ + yes_)
+
+            # NOTE: Rating-based logit trick for 0-5 scale
+            elif use_rating_probs:
+                tok_item = output.outputs[0].logprobs[0]
+                # Compute probability for each rating (0-5)
+                rating_probs = []
+                for rating in range(6):
+                    rating_logprob = max(
+                        [-1e2] + [
+                            item.logprob for tok, item in tok_item.items()
+                            if tok in self.rating_tokens.get(rating, [])
+                        ]
+                    )
+                    rating_probs.append(math.exp(rating_logprob))
+                
+                # Normalize probabilities
+                total_prob = sum(rating_probs)
+                if total_prob > 0:
+                    rating_probs = [p / total_prob for p in rating_probs]
+                
+                # Compute expected rating (weighted average)
+                output = score = sum(i * p for i, p in enumerate(rating_probs))
 
             # NOTE: the transformation is a bit hacky.
             # NOTE: make sure the numeric identifiers can also work
