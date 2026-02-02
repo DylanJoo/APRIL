@@ -7,11 +7,7 @@ from .set_bubble_topk import SetBubbleTopK
 from .set_maxheap_topk import SetMaxHeapTopK
 from .point import Point
 
-# Developement
-from ._april import April
-from ._dnc import DnC
 from ._dev import Dev
-# from .set_tournament import SetTouranment
 
 class AutoAssembler:
     _builder_map = {
@@ -26,8 +22,6 @@ class AutoAssembler:
         'SetMaxHeapTopK': SetMaxHeapTopK,
         'Point': Point,
         'Dev': Dev,
-        'DnC': DnC,
-        'April': April,
     }
 
     @classmethod

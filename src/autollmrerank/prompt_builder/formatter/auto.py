@@ -1,4 +1,5 @@
 ## TODO: dynamically shrink the body size via length of documents?
+## NOTE: shall we move this to the upper root?
 from .listwise import ListwiseFormatter
 from .pairwise import PairwiseFormatter
 from .setwise import SetwiseFormatter

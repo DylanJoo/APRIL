@@ -17,6 +17,8 @@ cd $HOME/APRIL
 LOGDIR=log.vllm
 mkdir -p $LOGDIR
 
+# export VLLM_ATTENTION_BACKEND=FLASH_ATTN
+
 MODEL=castorini/rank_zephyr_7b_v1_full
 python -m autollmrerank.wrapper \
     --data.ir_datasets_name=msmarco-passage/trec-dl-2019/judged \
