@@ -3,119 +3,147 @@ Apply different parsing depending with diffrent LLM outputs.
 * non-parallel reranking methods, len(output) == len(results), 
 * parallel reranking methods: the output length equals to the number of queries.
 
-- respones: list of permutation (e.g., RankGPT)
-- swap: List[bool] (e.g., Pairwise topk) # TODO: this should be fixed. Use the doc-index pair instead.
-- scores: 
-* absoluate scores: List[List[float]] (e.g., Pairwise All, Pointwise)
-* partial scores: List[List[float]] (e.g., APRIL, Setwise)
+This module uses the Strategy Pattern to handle different output types:
+- ResponseParsingStrategy: list of permutation (e.g., RankGPT)
+- SwapParsingStrategy: List[bool] (e.g., Pairwise topk)
+- AbsoluteScoresParsingStrategy: List[List[float]] (e.g., Pairwise All, Pointwise)
+- PartialScoresParsingStrategy: List[List[float]] (e.g., APRIL, Setwise)
+
+Each reranking method can specify its own parsing strategy, or the ResultParser
+can auto-detect the appropriate strategy based on output type for backward compatibility.
 """
 import copy
-from typing import List, Optional, Tuple, Callable, Dict, Union
+from typing import List, Optional, Tuple, Callable, Dict, Union, Any
 from abc import ABC, abstractmethod
 from ..utils import Result
+from .strategies import (
+    ParsingStrategy,
+    ResponseParsingStrategy,
+    SwapParsingStrategy,
+    AbsoluteScoresParsingStrategy,
+    PartialScoresParsingStrategy,
+)
 
-class ResultParser(ABC):
 
-    def __init__(self, use_alpha=False):
+class ResultParser:
+    """
+    Result parser that uses strategy pattern for parsing different LLM output types.
+    
+    Can be used in two modes:
+    1. With explicit strategy: Pass a ParsingStrategy instance for consistent parsing
+    2. Auto-detection (default): Automatically selects strategy based on output type
+    
+    Example with explicit strategy:
+        parser = ResultParser(strategy=ResponseParsingStrategy(use_alpha=True))
+        results = parser.parse(outputs, results, rank_start, rank_end)
+    
+    Example with auto-detection (backward compatible):
+        parser = ResultParser(use_alpha=True)
+        results = parser.parse(outputs, results, rank_start, rank_end)
+    """
+
+    def __init__(
+        self, 
+        use_alpha: bool = False, 
+        strategy: Optional[ParsingStrategy] = None
+    ):
+        """
+        Initialize the ResultParser.
+        
+        Args:
+            use_alpha: Whether to use alphabetical indices (A, B, C...) instead of numbers.
+                      Only used for ResponseParsingStrategy in auto-detection mode.
+            strategy: Optional explicit parsing strategy. If provided, this strategy
+                     will be used for all outputs. If None, strategy is auto-detected.
+        """
         self._use_alpha = use_alpha
+        self._strategy = strategy
+        
+        # Pre-initialize strategies for auto-detection mode
+        self._response_strategy = ResponseParsingStrategy(use_alpha=use_alpha)
+        self._swap_strategy = SwapParsingStrategy()
+        self._absolute_scores_strategy = AbsoluteScoresParsingStrategy()
+        self._partial_scores_strategy = PartialScoresParsingStrategy()
 
-    # TODO: parse all, or maybe multithreading
-    # TODO: make the meaning of `rank_start` and `rank_end` similar across methods?
     def parse(
         self, 
-        outputs: Union[List[List[Union[float, int]]], List[str]],
+        outputs: Union[List[List[Union[float, int]]], List[str], List[bool]],
         results: List[Result],
         rank_start: int = 0,
         rank_end: int = None,
-    ) -> Result:
-
+    ) -> List[Result]:
+        """
+        Parse outputs and update results.
+        
+        Args:
+            outputs: List of LLM outputs to parse
+            results: List of Result objects to update
+            rank_start: Start index for ranking
+            rank_end: End index for ranking
+            
+        Returns:
+            Updated list of Result objects
+        """
         assert len(outputs) == len(results), "outputs and results must have the same length."
 
         for index, (output, result) in enumerate(zip(outputs, results)):
-            if isinstance(output, str): # e.g., RankGPT
-                parsed_result = self._parse_responses(output, result, rank_start, rank_end)
-            elif isinstance(output, bool): # e.g., Pairwise topk
-                parsed_result = self._parse_swap(output, result, rank_end)
-            elif isinstance(output, list): # e.g., Pairwise or Pointwise
-                if len(output) == len(result.hits):
-                    parsed_result = self._parse_absolute_scores(output, result)
-                else: # e.g. APRIL: [ ...., [rank_start(s1), s2, ...] rank_end, ... ], setwise heapsort (NOTE: this is not a good design though)
-                    parsed_result = self._parse_scores(output, result, rank_start, rank_end) 
+            if self._strategy is not None:
+                # Use explicit strategy
+                parsed_result = self._strategy.parse_single(
+                    output, result, rank_start, rank_end
+                )
             else:
-                raise TypeError(f"Unsupported outputs type: {type(output)}, {output}")
+                # Auto-detect strategy based on output type
+                parsed_result = self._auto_parse(output, result, rank_start, rank_end)
             results[index] = parsed_result
         return results
-
-    # NOTE: this is suitable for continuous items sorting. But not for setwise items initially
-    # NOTE: consider to add a design of APRIL
+    
+    def _auto_parse(
+        self,
+        output: Any,
+        result: Result,
+        rank_start: int,
+        rank_end: int,
+    ) -> Result:
+        """
+        Auto-detect the appropriate strategy and parse the output.
+        
+        This provides backward compatibility with the original if-else logic.
+        """
+        if isinstance(output, str):  # e.g., RankGPT
+            return self._response_strategy.parse_single(output, result, rank_start, rank_end)
+        elif isinstance(output, bool):  # e.g., Pairwise topk
+            return self._swap_strategy.parse_single(output, result, rank_start, rank_end)
+        elif isinstance(output, list):  # e.g., Pairwise or Pointwise
+            if len(output) == len(result.hits):
+                return self._absolute_scores_strategy.parse_single(output, result, rank_start, rank_end)
+            else:  # e.g. APRIL, setwise heapsort
+                return self._partial_scores_strategy.parse_single(output, result, rank_start, rank_end)
+        else:
+            raise TypeError(f"Unsupported outputs type: {type(output)}, {output}")
+    
+    # Keep legacy methods for backward compatibility (deprecated)
     def _parse_scores(self, scores: List[float], result: Result, rank_start: int, rank_end: int) -> Result:
-        cut_range = copy.deepcopy(result.hits[rank_start:rank_end])
-        permutation = [(idx, s) for idx, s in zip(range(len(scores)), scores)]
-        permutation.sort(key=lambda x: x[1], reverse=True)
-        for j, (p, s) in enumerate(permutation):
-            result.hits[j + rank_start] = copy.deepcopy(cut_range[p])
-        return result
+        """Deprecated: Use PartialScoresParsingStrategy instead."""
+        return self._partial_scores_strategy.parse_single(scores, result, rank_start, rank_end)
 
-    def _parse_responses(self, permutation: str, result, rank_start: int, rank_end: int):
-        response = self._clean_response(permutation)
-        response = [int(x) - 1 for x in response.split()]
-        response = self._remove_duplicate(response)
-        cut_range = copy.deepcopy(result.hits[rank_start:rank_end])
-        original_rank = [tt for tt in range(len(cut_range))]
-        response = [ss for ss in response if ss in original_rank]
-        response = response + [tt for tt in original_rank if tt not in response] 
-        for j, x in enumerate(response):
-            result.hits[j + rank_start] = copy.deepcopy(cut_range[x])
-        return result
+    def _parse_responses(self, permutation: str, result: Result, rank_start: int, rank_end: int) -> Result:
+        """Deprecated: Use ResponseParsingStrategy instead."""
+        return self._response_strategy.parse_single(permutation, result, rank_start, rank_end)
 
     def _parse_swap(self, swap: bool, result: Result, target: int) -> Result:
-        if swap is False: # means passage [1] > [2] (hits[rank_end-1] > hits[rank_end-2])
-            return result
+        """Deprecated: Use SwapParsingStrategy instead."""
+        return self._swap_strategy.parse_single(swap, result, 0, target)
 
-        init_hits = copy.deepcopy(result.hits)
-        result.hits[target - 1] = init_hits[target - 2]
-        result.hits[target - 2] = init_hits[target - 1]
-        return result
+    def _parse_absolute_scores(self, scores: List[Union[int, float]], result: Result) -> Result:
+        """Deprecated: Use AbsoluteScoresParsingStrategy instead."""
+        return self._absolute_scores_strategy.parse_single(scores, result, 0, None)
 
-    def _parse_absolute_scores(self, scores: List[Union[int, float]], result: Result):
-        """ Assign the scores from top to bottom, and fill the rest with decreasing scores. """
-        init_hits = copy.deepcopy(result.hits)
-        min_score = min(scores) - 1
-
-        for i in range(len(init_hits)):
-            if i <= len(scores) - 1:
-                result.hits[i]["score"] = scores[i]
-            else:
-                result.hits[i]["score"] = min_score
-                min_score -= 1
-
-        return result
-
-    # TODO: use regular expression? 
     def _clean_response(self, response: str) -> str:
-        ALPH_START_IDX = 64  # ASCII 'A' starts at 65, so we use 64 to map 'A' to 1
-        new_response = ""
-        if self._use_alpha:
-            for c in response:
-                if not c.isalpha():
-                    new_response += " "
-                else:
-                    new_response += str(ord(c) - ALPH_START_IDX)
-            new_response = new_response.strip()
-        else:
-            for c in response:
-                if not c.isdigit():
-                    new_response += " "
-                else:
-                    new_response += c
-            new_response = new_response.strip()
-
-        return new_response
+        """Deprecated: This is now handled by ResponseParsingStrategy."""
+        return self._response_strategy._clean_response(response)
 
     def _remove_duplicate(self, response: List[int]) -> List[int]:
-        new_response = []
-        for c in response:
-            if c not in new_response:
-                new_response.append(c)
-        return new_response
+        """Deprecated: This is now handled by ResponseParsingStrategy."""
+        return self._response_strategy._remove_duplicate(response)
 
