@@ -13,8 +13,7 @@ Each reranking method can specify its own parsing strategy, or the ResultParser
 can auto-detect the appropriate strategy based on output type for backward compatibility.
 """
 import copy
-from typing import List, Optional, Tuple, Callable, Dict, Union, Any
-from abc import ABC, abstractmethod
+from typing import List, Optional, Union, Any
 from ..utils import Result
 from .strategies import (
     ParsingStrategy,

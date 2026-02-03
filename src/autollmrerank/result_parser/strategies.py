@@ -152,7 +152,7 @@ class AbsoluteScoresParsingStrategy(ParsingStrategy):
         min_score = min(output) - 1
 
         for i in range(len(init_hits)):
-            if i <= len(output) - 1:
+            if i < len(output):
                 result.hits[i]["score"] = output[i]
             else:
                 result.hits[i]["score"] = min_score
