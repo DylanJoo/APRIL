@@ -65,7 +65,12 @@ class AutoLLMReranker:
         )
         # TODO: Make this more flexible in the future
         if config.llm.use_logits:
-            agent.set_classification(id_strings=[chr(i) for i in range(65, 91)])
+            # Get rating_scale from config (default 5) for Judge modes
+            rating_scale = getattr(config, 'rating_scale', 5)
+            agent.set_classification(
+                id_strings=[chr(i) for i in range(65, 91)],
+                rating_scale=rating_scale
+            )
 
         result_parser = ResultParser(use_alpha=config.use_alphabetical)
 
@@ -76,6 +81,9 @@ class AutoLLMReranker:
             llm_provider=agent,
             result_parser=result_parser,
         )
+
+        # Store references for few-shot judge modes
+        self.references = kwargs.get('references', None)
 
     @staticmethod
     def convert_run_to_result(run, queries=None, corpus=None):
