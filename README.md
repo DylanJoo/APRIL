@@ -49,9 +49,10 @@ APRIL/ # the proposed new method using `autollmrerank`.
     * A wrapper class that defines the reranking types for class factory, which can integrates all the following 4 components.
 
 #### Four modules 
-- InputAssebler (rename? scheduler? handler? ...)
+- Reranker (previously InputAssembler)
     * Input: query and results
     * Output: list of query-documents pairs
+    * Factory: `AutoReranker` creates strategy instances based on config
 
 - PromptBuilder
     * Input: query and documents 

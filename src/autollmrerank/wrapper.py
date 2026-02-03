@@ -7,7 +7,7 @@ from functools import wraps
 import time
 
 from .utils import Result, batch_iterator
-from .input_assembler import AutoAssembler
+from .reranker import AutoReranker
 from .prompt_builder import PromptBuilder
 from .result_parser import ResultParser
 from .config_manager import ConfigManager
@@ -70,7 +70,7 @@ class AutoLLMReranker:
         result_parser = ResultParser(use_alpha=config.use_alphabetical)
 
         # initialize the algorithm module
-        self.assembler = AutoAssembler.from_config(
+        self.reranker = AutoReranker.from_config(
             config, 
             prompt_builder=prompt_builder,
             llm_provider=agent,
@@ -113,7 +113,7 @@ class AutoLLMReranker:
             desc=f"Reranking with query batch size {query_batch_size}",
             total=len(init_results) // query_batch_size + 1
         ):
-            batch_reranked_results = self.assembler.run(
+            batch_reranked_results = self.reranker.run(
                 init_results=batch_results, 
                 rank_start=0,
                 rank_end=min(self.config.rank_end, self.config.top_k),

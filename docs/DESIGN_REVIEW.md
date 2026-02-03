@@ -14,7 +14,7 @@ The APRIL library follows a **Strategy Pattern** combined with a **Factory Patte
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    AutoAssembler (Factory)                          │
+│                    AutoReranker (Factory)                           │
 │  - Maps rerank_mode → Strategy implementation                       │
 │  - Creates concrete strategy with injected dependencies             │
 └─────────────────────────────────────────────────────────────────────┘
@@ -35,9 +35,9 @@ The APRIL library follows a **Strategy Pattern** combined with a **Factory Patte
 
 ### Strengths ✅
 
-1. **Good Separation of Concerns**: The four core modules (InputAssembler/Strategy, PromptBuilder, LLMProvider, ResultParser) each have clear responsibilities.
+1. **Good Separation of Concerns**: The four core modules (Reranker/Strategy, PromptBuilder, LLMProvider, ResultParser) each have clear responsibilities.
 
-2. **Factory Pattern**: `AutoAssembler` and `AutoPromptFormatter` provide clean instantiation based on configuration, making it easy to add new strategies.
+2. **Factory Pattern**: `AutoReranker` and `AutoPromptFormatter` provide clean instantiation based on configuration, making it easy to add new strategies.
 
 3. **Strategy Pattern**: `RerankStrategy` provides a good abstraction for different reranking algorithms (sliding window, pairwise, pointwise, setwise).
 
@@ -58,7 +58,7 @@ if (config.llm.backend == 'openai') or (config.llm.backend == 'request'):
     from .llm_provider.request import LLM
 ```
 
-**Suggestion**: Create an `AutoLLMProvider` factory class (similar to `AutoAssembler`) that handles this mapping:
+**Suggestion**: Create an `AutoLLMProvider` factory class (similar to `AutoReranker`) that handles this mapping:
 
 ```python
 # llm_provider/auto.py
@@ -97,12 +97,13 @@ class BaseLLMProvider(ABC):
         pass
 ```
 
-#### 3. **Inconsistent Naming Convention**
+#### 3. **~~Inconsistent Naming Convention~~ (RESOLVED)**
 
-- `InputAssembler` vs `RerankStrategy` (the folder is `input_assembler` but the base class is `RerankStrategy`)
+- ~~`InputAssembler` vs `RerankStrategy` (the folder is `input_assembler` but the base class is `RerankStrategy`)~~
+  - **Fixed**: Renamed folder to `reranker/` and factory class to `AutoReranker`
 - Some methods use `run_pass` while others don't support it
 
-**Suggestion**: Standardize naming. Consider renaming `input_assembler` to `rerank_strategy` or vice versa.
+~~**Suggestion**: Standardize naming. Consider renaming `input_assembler` to `rerank_strategy` or vice versa.~~
 
 #### 4. **Result Object Could Be More Robust**
 
@@ -168,7 +169,7 @@ Query decomposition breaks a complex query into simpler sub-queries, performs re
                     │                               │
                     ▼                               ▼
 ┌────────────────────────────────────────────────────────────────────────────┐
-│                       AutoAssembler (existing)                             │
+│                       AutoReranker (existing)                              │
 │  - Runs reranking for each sub-query                                       │
 └────────────────────────────────────────────────────────────────────────────┘
                     │                               │
@@ -443,7 +444,7 @@ class AutoLLMReranker:
         agent = self._create_llm_provider(config)
         result_parser = ResultParser(use_alpha=config.use_alphabetical)
         
-        self.assembler = AutoAssembler.from_config(
+        self.reranker = AutoReranker.from_config(
             config, 
             prompt_builder=prompt_builder,
             llm_provider=agent,
@@ -548,7 +549,7 @@ aggregation:
 Instead of pre/post processing stages, decomposition could be implemented as a `RerankStrategy`:
 
 ```python
-# input_assembler/decomposed.py
+# reranker/decomposed.py
 class DecomposedRerank(RerankStrategy):
     """
     A meta-strategy that decomposes queries and delegates to inner strategy.
@@ -608,7 +609,7 @@ src/autollmrerank/
 │   ├── default.yaml
 │   ├── decomposition.yaml      # NEW
 │   └── ...
-├── input_assembler/
+├── reranker/
 │   ├── __init__.py
 │   ├── base.py
 │   ├── auto.py

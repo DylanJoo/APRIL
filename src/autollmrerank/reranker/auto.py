@@ -9,8 +9,8 @@ from .point import Point
 
 from ._dev import Dev
 
-class AutoAssembler:
-    _builder_map = {
+class AutoReranker:
+    _strategy_map = {
         'RankZephyr': SlidingWindow,
         'RankGPT': SlidingWindow,
         'RankGPT+': SlidingWindowPlus,
@@ -27,10 +27,10 @@ class AutoAssembler:
     @classmethod
     def from_config(cls, config, **kwargs):
         rerank_mode = config.rerank_mode
-        builder_cls = cls._builder_map.get(rerank_mode)
-        if builder_cls is None:
+        strategy_cls = cls._strategy_map.get(rerank_mode)
+        if strategy_cls is None:
             raise ValueError(
-                f"No prompt builder found for mode: {rerank_mode}\n" 
-                f"available modes: {list(cls._builder_map.keys())}"
+                f"No reranker found for mode: {rerank_mode}\n" 
+                f"available modes: {list(cls._strategy_map.keys())}"
             )
-        return builder_cls(config=config, **kwargs)
+        return strategy_cls(config=config, **kwargs)
