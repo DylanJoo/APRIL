@@ -75,9 +75,6 @@ class LLM:
         self.id_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in id_strings]
         
         # Set up rating tokens for judge scoring (0 to rating_scale)
-        rating_strings = []
-        for i in range(rating_scale + 1):
-            rating_strings.extend([f' {i}', f'{i}'])
         self.rating_tokens = {}
         for i in range(rating_scale + 1):
             tokens = [self.tokenizer.encode(f' {i}', add_special_tokens=False)[0],

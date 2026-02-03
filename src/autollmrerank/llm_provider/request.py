@@ -63,8 +63,10 @@ class LLM:
         # Set up rating tokens for judge scoring (0 to rating_scale)
         self.rating_tokens = {}
         for i in range(rating_scale + 1):
-            tokens = [self.tokenizer.tokenize(f' {i}')[0] if self.tokenizer.tokenize(f' {i}') else f' {i}',
-                     self.tokenizer.tokenize(f'{i}')[0] if self.tokenizer.tokenize(f'{i}') else f'{i}']
+            tokens_with_space = self.tokenizer.tokenize(f' {i}')
+            tokens_without_space = self.tokenizer.tokenize(f'{i}')
+            tokens = [tokens_with_space[0] if tokens_with_space else f' {i}',
+                     tokens_without_space[0] if tokens_without_space else f'{i}']
             # Include raw strings as fallback
             tokens.extend([f' {i}', f'{i}'])
             self.rating_tokens[i] = list(set(tokens))

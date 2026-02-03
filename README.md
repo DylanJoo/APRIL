@@ -75,7 +75,7 @@ reranker = AutoLLMReranker(config)
 reranked_run = reranker.rerank(run=run, queries=queries, corpus=corpus)
 ```
 
-## Strcutre [TODO: update to the beta version]
+## Structure [TODO: update to the beta version]
 ```
 APRIL/ # the proposed new method using `autollmrerank`.
 ├── unittest/li_textlist.py

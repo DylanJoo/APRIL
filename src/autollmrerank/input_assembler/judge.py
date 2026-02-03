@@ -169,7 +169,7 @@ class JudgeFewShot(Judge):
         
         If references are not provided, can generate pseudo-references.
         """
-        if references is None and self.reference_structure == 'pseudo':
+        if references is None and self.reference_structure == 'pseudo' and self.num_references > 0:
             references = self._generate_pseudo_references(init_results)
         
         return super().run(
