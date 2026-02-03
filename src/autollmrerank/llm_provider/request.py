@@ -123,13 +123,10 @@ class LLM:
                     )
                     rating_probs.append(math.exp(rating_logprob))
                 
-                # Normalize probabilities
+                # Compute score as P(rating=5) / sum(all ratings)
+                # This is analogous to binary_probs: yes / (yes + no)
                 total_prob = sum(rating_probs)
-                if total_prob > 0:
-                    rating_probs = [p / total_prob for p in rating_probs]
-                
-                # Compute expected rating (weighted average)
-                output = sum(i * p for i, p in enumerate(rating_probs))
+                output = rating_probs[5] / total_prob if total_prob > 0 else 0
 
             elif use_dist_probs:
                 tok_logps = response.choices[0].logprobs.top_logprobs[0] # this is strings

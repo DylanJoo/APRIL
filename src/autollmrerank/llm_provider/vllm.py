@@ -115,6 +115,7 @@ class LLM:
                 output = score = yes_ / (no_ + yes_)
 
             # NOTE: Rating-based logit trick for 0-5 scale
+            # Similar to binary_probs, use rating 5 over sum of all ratings
             elif use_rating_probs:
                 tok_item = output.outputs[0].logprobs[0]
                 # Compute probability for each rating (0-5)
@@ -128,13 +129,10 @@ class LLM:
                     )
                     rating_probs.append(math.exp(rating_logprob))
                 
-                # Normalize probabilities
+                # Compute score as P(rating=5) / sum(all ratings)
+                # This is analogous to binary_probs: yes / (yes + no)
                 total_prob = sum(rating_probs)
-                if total_prob > 0:
-                    rating_probs = [p / total_prob for p in rating_probs]
-                
-                # Compute expected rating (weighted average)
-                output = score = sum(i * p for i, p in enumerate(rating_probs))
+                output = score = rating_probs[5] / total_prob if total_prob > 0 else 0
 
             # NOTE: the transformation is a bit hacky.
             # NOTE: make sure the numeric identifiers can also work

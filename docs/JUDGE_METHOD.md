@@ -30,9 +30,22 @@ Updated both `vllm.py` and `request.py` to support rating-based logit extraction
 - **`rating_probs` parameter**: New flag for generate() method
 - **Logit Processing**:
   - Extracts logit probabilities for tokens "0" through "5"
-  - Normalizes probabilities across ratings
-  - Computes expected rating as weighted average
-  - Returns continuous score in range [0, 5]
+  - Computes score as P(rating=5) / sum(all rating probabilities)
+  - Similar to binary_probs which uses yes / (yes + no)
+  - Returns score in range [0, 1] representing confidence in highest rating
+
+#### Implementation Details:
+```python
+# In set_classification():
+self.rating_tokens = {
+    i: [tokenizer.encode(s)[0] for s in rating_strings if s.strip() == str(i)]
+    for i in range(6)
+}
+
+# In _iterate_over_output():
+rating_probs = [exp(max_logprob_for_rating_i) for i in 0..5]
+score = rating_probs[5] / sum(rating_probs)  # P(rating=5) / total
+```
 
 ### 4. Configuration File (`src/autollmrerank/configs/judge.yaml`)
 - Based on the Point configuration
@@ -76,7 +89,7 @@ reranked_results = rankllm.rerank(run=run, queries=queries, corpus=corpus)
 
 1. **Rating Scale**: Uses 0-5 scale for more nuanced relevance judgments
 2. **Logit Trick**: Efficiently extracts ratings from token probabilities
-3. **Continuous Scores**: Returns expected rating (weighted average) for better ranking
+3. **Probability-Based Scoring**: Returns P(rating=5) / sum(all ratings) similar to binary_probs
 4. **Flexible**: Can be used with or without logit trick
 5. **Consistent API**: Follows same pattern as other reranking methods
 
@@ -87,5 +100,33 @@ reranked_results = rankllm.rerank(run=run, queries=queries, corpus=corpus)
 | Question | "Is this relevant?" | "How relevant is this?" |
 | Response | Yes/No | 0-5 rating |
 | Logit Tokens | Yes/No tokens | 0-5 tokens |
-| Score Range | [0, 1] probability | [0, 5] expected rating |
+| Score Computation | yes/(yes+no) | rating5/sum(all ratings) |
+| Score Range | [0, 1] probability | [0, 1] probability |
 | Use Case | Binary relevance | Graded relevance |
+
+## Integration with Logit Trick
+
+The logit trick provides several advantages:
+- **Efficiency**: Only needs first token probabilities (no full generation)
+- **Calibration**: Uses model's uncertainty in rating predictions
+- **Normalized Scores**: P(rating=5) / sum(all ratings) provides scores in [0, 1]
+- **Similar to Binary**: Follows same pattern as binary_probs (yes/no)
+
+### Scoring Method
+
+The current implementation uses:
+```python
+score = P(rating=5) / sum(P(rating=0), P(rating=1), ..., P(rating=5))
+```
+
+This is analogous to the binary approach where `score = yes / (yes + no)`, treating rating 5 as the "positive" class.
+
+### Potential Extensions
+
+Future scoring variations could include:
+1. **Threshold-based**: `P(rating≥3) / sum(all ratings)` - probability of being at least moderately relevant
+2. **Multi-threshold**: `P(rating≥4) / sum(all ratings)` - probability of being highly relevant
+3. **Weighted combination**: `(3×P(rating=3) + 4×P(rating=4) + 5×P(rating=5)) / sum(all ratings)` - weighted by rating levels
+4. **Expected value**: `Σ(i × P(rating=i)) / 5` - normalized expected rating
+
+These extensions would allow for different sensitivity levels and use cases depending on the retrieval task requirements.
