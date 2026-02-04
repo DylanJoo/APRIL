@@ -31,10 +31,7 @@ class Point(RerankStrategy):
 
             ## Iterate over pairs
             scores = []
-            for batch_prompts in tqdm(
-                batch_iterator(prompts, batch_size),
-                desc=f"Batch processing with {batch_size} pairs",
-            ):
+            for batch_prompts in batch_iterator(prompts, batch_size):
                 batch_scores = self._llm.generate(batch_prompts, binary_probs=True)
                 scores.extend(batch_scores)
 

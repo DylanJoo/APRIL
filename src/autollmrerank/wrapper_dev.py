@@ -5,6 +5,7 @@ from tqdm import tqdm
 import torch
 from functools import wraps
 import time
+import numpy as np
 
 from .utils import Result, batch_iterator
 from .input_assembler import AutoAssembler
@@ -147,7 +148,9 @@ class AutoLLMReranker:
 if __name__ == "__main__":
     import ir_measures
     from ir_measures import *
-    from autollmrerank import loader
+    import importlib
+    from crux.tools import load_diversity_qrel, load_ratings
+    from crux.evaluation.rac_eval import rac_eval
 
     # init config with CLI commands
     config = ConfigManager().get_config()
@@ -160,9 +163,12 @@ if __name__ == "__main__":
     rankllm = AutoLLMReranker(config, system_message=config.system_message)
 
     # load data
+    loader = importlib.import_module(f"autollmrerank.loader_dev.{config.data.loader_type}", package=__name__)
     run = loader.load_run(config.data.input_run)
-    corpus, queries, qrels = loader.load(config.data.ir_datasets_name, query_fields=None, doc_fields=None)
-    run = {qid: hit for qid, hit in run.items() if qid in qrels}
+    corpus, queries, qrels = loader.load(config.data.dataset_name, query_fields=None, doc_fields=None)
+    qrels = {qid: qrel for qid, qrel in qrels.items() if qid in run}
+    div_qrels = load_diversity_qrel(config.data.input_diversity_qrels)
+    ratings = load_ratings(config.data.input_ratings)
 
     # reranking
     reranked_run = rankllm.rerank(run=run, queries=queries, corpus=corpus, query_batch_size=config.data.batch_size)
@@ -176,8 +182,29 @@ if __name__ == "__main__":
                 f.write(f"{qid} Q0 {docid} {i+1} {score} {config.rerank_mode}\n")
 
     # evaluation
-    r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)
-    r2 = ir_measures.calc_aggregate([nDCG@10], qrels, reranked_run)
+    r1 = rac_eval(
+        run=run, 
+        qrel=qrel, div_qrel=div_qrel,
+        run_b=None, 
+        tau=3,
+        cutoff=10,
+        judge=ratings, 
+        filter_by_oracle=True
+    )
+    r2 = rac_eval(
+        run=reranked_run, 
+        qrel=qrel, div_qrel=div_qrel, 
+        run_b=None, 
+        tau=3,
+        cutoff=10,
+        judge=ratings, 
+        filter_by_oracle=True
+    )
+
+    for key, values in r1.items():
+        r1[key] = np.mean(values).item()
+    for key, values in r2.items():
+        r2[key] = np.mean(values).item()
 
     # print logs
     eval_log = {

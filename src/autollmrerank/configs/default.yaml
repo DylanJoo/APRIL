@@ -4,6 +4,8 @@ data:
   input_run: runs/run.msmarco-passage.bm25-trec-dl-2019.txt
   input_queries: null
   input_corpus: null
+  dataset_name: null
+  loader_type: null
 
 llm:
   model_name_or_path: Qwen/Qwen2.5-7B-Instruct
