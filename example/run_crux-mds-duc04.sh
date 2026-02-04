@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH --job-name=crux
+#SBATCH --job-name=crux-rerank
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
@@ -15,6 +15,8 @@ conda activate autollmrerank
 LOGDIR=log.vllm.new
 mkdir -p $LOGDIR
 
+dataset=crux-mds-duc04
+#
 # Pointwise YES NO
 MODEL=Qwen/Qwen2.5-7B-Instruct
 python -m autollmrerank.wrapper_dev \
@@ -22,7 +24,7 @@ python -m autollmrerank.wrapper_dev \
     --data.dataset_name=$dataset \
     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
     --data.loader_type=cruxmds \
-    --data.input_diversity_qrel=$CRUX_ROOT/$dataset/qrels/div_qrels-tau3.txt \
+    --data.input_diversity_qrels=$CRUX_ROOT/$dataset/qrels/div_qrels-tau3.txt \
     --data.input_ratings=$CRUX_ROOT/$dataset/judge/ratings.Llama-3.1-70B-Instruct.0-1.jsonl \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
@@ -38,6 +40,8 @@ python -m autollmrerank.wrapper_dev \
     --data.dataset_name=$dataset \
     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
     --data.loader_type=cruxmds \
+    --data.input_diversity_qrels=$CRUX_ROOT/$dataset/qrels/div_qrels-tau3.txt \
+    --data.input_ratings=$CRUX_ROOT/$dataset/judge/ratings.Llama-3.1-70B-Instruct.0-1.jsonl \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
     --rerank_mode=RankGPT \
@@ -53,6 +57,8 @@ python -m autollmrerank.wrapper_dev \
     --data.dataset_name=$dataset \
     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
     --data.loader_type=cruxmds \
+    --data.input_diversity_qrels=$CRUX_ROOT/$dataset/qrels/div_qrels-tau3.txt \
+    --data.input_ratings=$CRUX_ROOT/$dataset/judge/ratings.Llama-3.1-70B-Instruct.0-1.jsonl \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
     --llm.use_logits=true \
@@ -70,6 +76,8 @@ python -m autollmrerank.wrapper_dev \
     --data.dataset_name=$dataset \
     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
     --data.loader_type=cruxmds \
+    --data.input_diversity_qrels=$CRUX_ROOT/$dataset/qrels/div_qrels-tau3.txt \
+    --data.input_ratings=$CRUX_ROOT/$dataset/judge/ratings.Llama-3.1-70B-Instruct.0-1.jsonl \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
     --rerank_mode=RankGPT \
@@ -85,6 +93,8 @@ python -m autollmrerank.wrapper_dev \
     --data.dataset_name=$dataset \
     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
     --data.loader_type=cruxmds \
+    --data.input_diversity_qrels=$CRUX_ROOT/$dataset/qrels/div_qrels-tau3.txt \
+    --data.input_ratings=$CRUX_ROOT/$dataset/judge/ratings.Llama-3.1-70B-Instruct.0-1.jsonl \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
     --llm.use_logits=true \
@@ -102,6 +112,8 @@ python -m autollmrerank.wrapper_dev \
     --data.dataset_name=$dataset \
     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
     --data.loader_type=cruxmds \
+    --data.input_diversity_qrels=$CRUX_ROOT/$dataset/qrels/div_qrels-tau3.txt \
+    --data.input_ratings=$CRUX_ROOT/$dataset/judge/ratings.Llama-3.1-70B-Instruct.0-1.jsonl \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
     --llm.use_logits=true \
@@ -119,6 +131,8 @@ python -m autollmrerank.wrapper_dev \
     --data.dataset_name=$dataset \
     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
     --data.loader_type=cruxmds \
+    --data.input_diversity_qrels=$CRUX_ROOT/$dataset/qrels/div_qrels-tau3.txt \
+    --data.input_ratings=$CRUX_ROOT/$dataset/judge/ratings.Llama-3.1-70B-Instruct.0-1.jsonl \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
     --llm.use_logits=true \
@@ -135,6 +149,8 @@ python -m autollmrerank.wrapper_dev \
     --data.dataset_name=$dataset \
     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
     --data.loader_type=cruxmds \
+    --data.input_diversity_qrels=$CRUX_ROOT/$dataset/qrels/div_qrels-tau3.txt \
+    --data.input_ratings=$CRUX_ROOT/$dataset/judge/ratings.Llama-3.1-70B-Instruct.0-1.jsonl \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
     --llm.use_logits=true \

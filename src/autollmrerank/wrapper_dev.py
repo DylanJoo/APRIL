@@ -184,7 +184,7 @@ if __name__ == "__main__":
     # evaluation
     r1 = rac_eval(
         run=run, 
-        qrel=qrel, div_qrel=div_qrel,
+        qrel=qrels, div_qrel=div_qrels,
         run_b=None, 
         tau=3,
         cutoff=10,
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     )
     r2 = rac_eval(
         run=reranked_run, 
-        qrel=qrel, div_qrel=div_qrel, 
+        qrel=qrels, div_qrel=div_qrels, 
         run_b=None, 
         tau=3,
         cutoff=10,
