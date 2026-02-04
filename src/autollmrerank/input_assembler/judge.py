@@ -6,7 +6,7 @@ from typing import Optional, Tuple, List, Dict, Union, Any
 from ..utils import Result, batch_iterator
 from .base import RerankStrategy
 
-class Point(RerankStrategy):
+class Judge(RerankStrategy):
 
     def run(
         self,
@@ -35,7 +35,13 @@ class Point(RerankStrategy):
                 batch_iterator(prompts, batch_size),
                 desc=f"Batch processing with {batch_size} pairs",
             ):
-                batch_scores = self._llm.generate(batch_prompts, binary_probs=True)
+                batch_scores = self._llm.generate(
+                    batch_prompts, 
+                    binary_probs=(self.config.result_parser_name == "binary_prob"),
+                    dist_logp=(self.config.result_parser_name == "dist_logp"),
+                    rating_logp=(self.config.result_parser_name == "rating_logp"),
+                    expected_rating=(self.config.result_parser_name == "expected_rating"),
+                )
                 scores.extend(batch_scores)
 
             ## Score aggregation
@@ -50,4 +56,4 @@ class Point(RerankStrategy):
         return reranked_results
 
     def run_pass(self, **kwargs: Any):
-        raise NotImplementedError("Point does not support `run_pass`. Use run instead.")
+        raise NotImplementedError("Judge does not support `run_pass`. Use `run` instead.")

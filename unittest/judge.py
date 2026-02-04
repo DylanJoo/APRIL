@@ -9,19 +9,20 @@ home_dir=str(Path.home())
 # Initialize the reranker with the configuration
 from autollmrerank.config_manager import ConfigManager
 config = ConfigManager(
-    rerank_mode='RankGPT+',
+    rerank_mode='Judge',
     top_k=100,
     rank_start=0,
     rank_end=100,
     step_size=10,
     window_size=20,
     num_runs=1,
-    llm={'max_model_len': 8196, 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct'}
+    llm={'max_model_len': 8196, 'backend': 'vllm_dev', 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct', 'use_logits': False},
+    result_parser_name='text'
 ).get_config()
 
-from autollmrerank.wrapper import ModularReranker
-rankllm = ModularReranker(config, 
-    system_message= "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
+from autollmrerank.wrapper import AutoLLMReranker
+rankllm = AutoLLMReranker(config, 
+    system_message= "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query"
 )
 
 # start reranking
@@ -58,7 +59,7 @@ for dataset in ['trec-dl-2019', 'trec-dl-2020']:
     with open(output_path, 'w') as f:
         for qid in reranked_run:
             for i, (docid, score) in enumerate(reranked_run[qid].items()):
-                f.write(f"{qid} Q0 {docid} {i+1} {score} li_rerank\n")
+                f.write(f"{qid} Q0 {docid} {i+1} {score} rerank\n")
 
     # evaluation
     r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)

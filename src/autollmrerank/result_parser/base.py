@@ -1,13 +1,14 @@
-""" Parse the outputs and results, and return the updated results.
+""" 
+Parse the outputs and results, and return the updated results.
 Apply different parsing depending with diffrent LLM outputs.
 * non-parallel reranking methods, len(output) == len(results), 
 * parallel reranking methods: the output length equals to the number of queries.
 
 - respones: list of permutation (e.g., RankGPT)
-- swap: List[bool] (e.g., Pairwise topk) # TODO: this should be fixed. Use the doc-index pair instead.
+- swap: List[bool] (e.g., Pairwise topk) # TODO: should be fixed. Use the doc-index pair instead.
 - scores: 
-* absoluate scores: List[List[float]] (e.g., Pairwise All, Pointwise)
-* partial scores: List[List[float]] (e.g., APRIL, Setwise)
+    * absoluate scores: List[List[float]] (e.g., Pairwise All, Pointwise)
+    * partial scores: List[List[float]] (e.g., APRIL, Setwise)
 """
 import copy
 from typing import List, Optional, Tuple, Callable, Dict, Union
@@ -32,14 +33,14 @@ class ResultParser(ABC):
         assert len(outputs) == len(results), "outputs and results must have the same length."
 
         for index, (output, result) in enumerate(zip(outputs, results)):
-            if isinstance(output, str): # e.g., RankGPT
+            if isinstance(output, str): # "[1] > [3] > [5] > ... "
                 parsed_result = self._parse_responses(output, result, rank_start, rank_end)
-            elif isinstance(output, bool): # e.g., Pairwise topk
+            elif isinstance(output, bool): # True if swapping (for top-k)
                 parsed_result = self._parse_swap(output, result, rank_end)
             elif isinstance(output, list): # e.g., Pairwise or Pointwise
                 if len(output) == len(result.hits):
                     parsed_result = self._parse_absolute_scores(output, result)
-                else: # e.g. APRIL: [ ...., [rank_start(s1), s2, ...] rank_end, ... ], setwise heapsort (NOTE: this is not a good design though)
+                else: 
                     parsed_result = self._parse_scores(output, result, rank_start, rank_end) 
             else:
                 raise TypeError(f"Unsupported outputs type: {type(output)}, {output}")
@@ -77,9 +78,11 @@ class ResultParser(ABC):
         result.hits[target - 2] = init_hits[target - 1]
         return result
 
-    def _parse_absolute_scores(self, scores: List[Union[int, float]], result: Result):
+    def _parse_absolute_scores(self, scores: List[Union[int, float, str]], result: Result):
         """ Assign the scores from top to bottom, and fill the rest with decreasing scores. """
         init_hits = copy.deepcopy(result.hits)
+        if isinstance(scores[0], str):
+            scores = [float(s) for s in scores]
         min_score = min(scores) - 1
 
         for i in range(len(init_hits)):

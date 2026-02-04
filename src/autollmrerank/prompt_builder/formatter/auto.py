@@ -4,6 +4,7 @@ from .listwise import ListwiseFormatter
 from .pairwise import PairwiseFormatter
 from .setwise import SetwiseFormatter
 from .pointwise import PointwiseFormatter
+from .judge import JudgeFormatter
 from ._dev import DevFormatter
 
 class AutoPromptFormatter:
@@ -18,6 +19,7 @@ class AutoPromptFormatter:
         'SetTopK': SetwiseFormatter,
         'SetMaxHeapTopK': SetwiseFormatter,
         'Point': PointwiseFormatter,
+        'Judge': JudgeFormatter,
         'Dev': DevFormatter,
     }
     @classmethod

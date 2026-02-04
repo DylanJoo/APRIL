@@ -1,15 +1,16 @@
 #!/bin/sh
 #SBATCH --job-name=dl20-all
-#SBATCH --partition v100
-#SBATCH --gres=gpu:v100:1
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=2-00:00:00
 #SBATCH --output=%x.out
 
-module load anaconda3/2024.2
-conda activate autollmreranker
+source ${HOME}/.bashrc
+initconda
+conda activate autollmrerank
 
 LOGDIR=log.vllm
 mkdir -p $LOGDIR
@@ -40,17 +41,6 @@ python -m autollmrerank.wrapper \
     --dtype=float16 \
     --use_alphabetical=true \
     --result_parser_name=distribution_logp > $LOGDIR/rankfirst_trec-dl-2020.log
-
-# Point:binary_prob:Qwen/Qwen2.5-7B-Instruct
-# MODEL=Qwen/Qwen2.5-7B-Instruct
-# python -m autollmrerank.wrapper \
-#     --data.ir_datasets_name=msmarco-passage/trec-dl-2020/judged \
-#     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2020.txt \
-#     --llm.model_name_or_path=$MODEL \
-#     --llm.max_model_len=8196 \
-#     --rerank_mode=Point \
-#     --dtype=float16 \
-#     --result_parser_name=binary_probability > $LOGDIR/point_trec-dl-2020.log
 
 # RankGPT:list_gen:Qwen/Qwen2.5-7B-Instruct
 MODEL=Qwen/Qwen2.5-7B-Instruct

@@ -45,7 +45,8 @@ class AutoLLMReranker:
 
         # TODO: make it clearer loaded by argument
         if config.llm.backend == 'vllm':
-            from .llm_provider.vllm import LLM  # for v100
+            # from .llm_provider.vllm import LLM  # for v100
+            from .llm_provider.vllm_dev import LLM  # for v100
         if (config.llm.backend == 'openai') or (config.llm.backend == 'request'):
             from .llm_provider.request import LLM
         if config.llm.backend == 'vllm_dev':
@@ -63,9 +64,11 @@ class AutoLLMReranker:
             base_url='http://localhost:8000/v1',
             api_key='EMPTY'
         )
-        # TODO: Make this more flexible in the future
-        if config.llm.use_logits:
-            agent.set_classification(id_strings=[chr(i) for i in range(65, 91)])
+        agent.set_classification(target_ratings=[3,4,5])
+        # NOTE: set the ids by default
+        # TODO: for some types of result parsing, we dont need setting 
+        # if config.llm.use_logits:
+        #     agent.set_classification(id_strings=[chr(i) for i in range(65, 91)])
 
         result_parser = ResultParser(use_alpha=config.use_alphabetical)
 

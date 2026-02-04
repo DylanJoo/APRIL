@@ -42,7 +42,8 @@ def load(
     if ignore_corpus:
         return None, queries, qrels
 
-    # [TODO] revise this to fit all the document format 
+    # TODO revise this to fit all the document format 
+    # NOTE do we want to mention the title here
     logger.info("Loading Corpus...")
     for doc in dataset.docs_iter():
         contents = [getattr(doc, f) for f in doc_fields]
@@ -52,9 +53,9 @@ def load(
 
     return corpus, queries, qrels
 
-# [deprecated] will use the function above instead
 def load_run(path, topk=100):
     run_dict = defaultdict(list)
+    logger.info("Loading Run File from %s", path)
     with open(path, 'r') as f:
         for line in f:
             qid, _, docid, rank, score, _ = line.strip().split()
@@ -66,5 +67,5 @@ def load_run(path, topk=100):
     for qid, docid_ranks in run_dict.items():
         sorted_docid_ranks = sorted(docid_ranks, key=lambda x: x[1], reverse=False) 
         sorted_run_dict[qid] = {docid: rel_score for docid, rel_rank, rel_score in sorted_docid_ranks}
-
+    logger.info("Run Example: %s", list(sorted_run_dict.items())[:40])
     return sorted_run_dict
