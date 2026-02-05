@@ -39,6 +39,16 @@ class BaseFormatter(ABC):
     # TODO: See if we need to have separate formuation of title
     # TODO: Equalize the max length
     def _document_format(self, doc: Union[str, Dict]) -> str:
+        """Format a document for inclusion in the prompt.
+        
+        Args:
+            doc: Document as string or dict with 'contents'/'text' and optional 'title' keys.
+            
+        Returns:
+            Formatted document text, truncated to max_doc_length words if set.
+            This prevents the prompt from exceeding model's maximum context length
+            when using listwise reranking with multiple documents.
+        """
         if isinstance(doc, dict):
             if 'contents' in doc:
                 text = doc['contents'].strip()
