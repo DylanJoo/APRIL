@@ -19,4 +19,6 @@ runs/
 dist/
 build/
 
+*log/
 *.log
+*.err

@@ -21,10 +21,10 @@ The final `requirements.txt` will be provided in the future release.
 
 ## Strcutre [TODO: update to the beta version]
 ```
-APRIL/ # the proposed new method using `reranking`.
+APRIL/ # the proposed new method using `autollmrerank`.
 ├── unittest/li_textlist.py
 ├── src/
-│   └── reranking/
+│   └── autollmrerank/
 │       ├── __init__.py
 │       ├── config_manager.py
 │       ├── utils.py

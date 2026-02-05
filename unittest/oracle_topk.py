@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from reranking import loader
+from autollmrerank import loader
 from pprint import pprint
 import ir_measures
 from ir_measures import *
@@ -9,7 +9,7 @@ home_dir=str(Path.home())
 # Prepare data (inout and output)
 os.makedirs(f"{home_dir}/APRIL/pa_reranked_runs", exist_ok=True)
 
-from reranking.config_manager import ConfigManager
+from autollmrerank.config_manager import ConfigManager
 config = ConfigManager(rerank_mode='oracle_top100').get_config()
 
 results = {}
