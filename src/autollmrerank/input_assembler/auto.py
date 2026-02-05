@@ -6,6 +6,7 @@ from .set_bubble_topk import SetBubbleTopK
 from .set_maxheap_topk import SetMaxHeapTopK
 from .point import Point
 from .judge import Judge
+from .multi_query import MultiQueryAssembler, attach_sub_queries
 
 from ._dev import Dev
 
@@ -22,6 +23,7 @@ class AutoAssembler:
         'Point': Point,
         'Judge': Judge,
         'Dev': Dev,
+        'MultiQuery': MultiQueryAssembler,
     }
 
     @classmethod

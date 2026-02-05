@@ -1,15 +1,14 @@
 """
 Query Decomposer Module
 
-Pre-ranking module for decomposing complex queries into simpler sub-queries.
-This enables reranking with multiple query aspects for improved coverage and relevance.
+Simple utility for representing decomposed queries.
+Complex query reformulation should be handled externally (in a separate repo).
+This module provides just the data structures for passing sub-queries to the reranker.
 """
 from .base import QueryDecomposer, PassThroughDecomposer, DecomposedQuery
-from .llm import LLMDecomposer
 
 __all__ = [
     'QueryDecomposer',
     'PassThroughDecomposer', 
     'DecomposedQuery',
-    'LLMDecomposer',
 ]
