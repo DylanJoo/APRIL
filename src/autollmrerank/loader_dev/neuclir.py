@@ -5,7 +5,7 @@ import os
 from collections import defaultdict, OrderedDict
 from typing import Optional 
 
-from crux.tools.mds.ir_utils import load_topic, get_qrel
+from crux.tools.neuclir.ir_utils import load_topic, get_qrel
 from datasets import load_dataset
 
 logger = logging.getLogger(__name__)
@@ -17,21 +17,22 @@ def load(
     ignore_corpus: bool = False,
 ) -> tuple[dict[str, dict[str, str]], dict[str, str], dict[str, dict[str, int]]]:
 
-    subset = dataset_name.replace('crux-mds-', '')
-    queries = load_topic(subset)
+    queries = load_topic()
     logger.info("Query Example: %s", list(queries.values())[0])
 
-    qrels = get_qrel(subset)
+    qrels = get_qrel()
     logger.info("Qrel Example: %s", list(qrels.values())[0])
 
     if ignore_corpus:
         return None, queries, qrels
 
     # [TODO] revise this to fit all the document format 
-    train_corpus = load_dataset('DylanJHJ/crux-mds-corpus', split='train')
-    test_corpus = load_dataset('DylanJHJ/crux-mds-corpus', split='test')
-    corpus = {example["id"]: {"contents": example["contents"]} for example in train_corpus}
-    corpus.update({example["id"]: {"contents": example["contents"]} for example in test_corpus})
+    ds = load_dataset(
+        'json', data_files='/home/dju/datasets/neuclir1/*.processed_output.jsonl.gz', 
+        num_proc=3, split='train'
+    )
+    corpus = {example["id"]: {"contents": example["title"] + " " + example["text"]} \
+            for example in ds}
     logger.info("Doc Example: %s", list(corpus.values())[0])
 
     return corpus, queries, qrels
