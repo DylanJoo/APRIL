@@ -2,7 +2,12 @@
 Unit tests for the query decomposition module.
 """
 import sys
-sys.path.insert(0, '/home/runner/work/APRIL/APRIL/src')
+import os
+
+# Add src directory to path dynamically based on script location
+script_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.join(os.path.dirname(script_dir), 'src')
+sys.path.insert(0, src_dir)
 
 from autollmrerank.query_decomposer import (
     QueryDecomposer,
