@@ -1,8 +1,10 @@
 data:
-  batch_size: 32
+  batch_size: 128
   loader_type: cruxmds
-  dataset_name: msmarco-passage/trec-dl-2019/judged
-  input_run: runs/run.msmarco-passage.bm25-trec-dl-2019.txt
+  dataset_name: null
+  input_queries: null
+  input_corpus: null
+  input_run: runs/run.bm25.crux-mds-duc04.txt
   input_diversity_qrels: null
   input_ratings: null
 
@@ -31,5 +33,5 @@ num_runs: 1
 dtype: float16
 variable_passages: false
 include_system_message: true
-system_message: null
+system_message: "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query"
 result_parser_name: text

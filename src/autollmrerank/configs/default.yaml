@@ -1,11 +1,10 @@
 data:
   batch_size: 128
-  ir_datasets_name: msmarco-passage/trec-dl-2019/judged
-  input_run: runs/run.msmarco-passage.bm25-trec-dl-2019.txt
+  loader_type: irds
+  dataset_name: msmarco-passage/trec-dl-2019/judged
   input_queries: null
   input_corpus: null
-  dataset_name: null
-  loader_type: null
+  input_run: runs/run.msmarco-passage.bm25-trec-dl-2019.txt
 
 llm:
   model_name_or_path: Qwen/Qwen2.5-7B-Instruct
