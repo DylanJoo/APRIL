@@ -17,13 +17,12 @@ config = ConfigManager(
     window_size=20,
     num_runs=1,
     llm={'max_model_len': 8196, 'backend': 'vllm_dev', 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct', 'use_logits': False},
+    system_message= "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query",
     result_parser_name='text'
 ).get_config()
 
 from autollmrerank.wrapper import AutoLLMReranker
-rankllm = AutoLLMReranker(config, 
-    system_message= "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query"
-)
+rankllm = AutoLLMReranker(config)
 
 # start reranking
 results = {}

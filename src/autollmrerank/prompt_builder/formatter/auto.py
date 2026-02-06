@@ -20,6 +20,7 @@ class AutoPromptFormatter:
         'SetMaxHeapTopK': SetwiseFormatter,
         'Point': PointwiseFormatter,
         'Judge': JudgeFormatter,
+        'Lancer': JudgeFormatter,
         'Dev': DevFormatter,
     }
     @classmethod

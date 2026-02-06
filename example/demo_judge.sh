@@ -21,16 +21,16 @@ for year in 2019 2020;do
     MODEL=Qwen/Qwen2.5-7B-Instruct
 
     # Pointwise YES NO
-    # MODEL=Qwen/Qwen2.5-7B-Instruct
-    # python -m autollmrerank.wrapper \
-    #     --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
-    #     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
-    #     --llm.model_name_or_path=$MODEL \
-    #     --llm.max_model_len=8196 \
-    #     --llm.use_logits=true \
-    #     --rerank_mode=Point \
-    #     --dtype=float16 \
-    #     --result_parser_name=binary_probability > $LOGDIR/point_trec-dl-${year}.log
+    python -m autollmrerank.wrapper \
+        --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
+        --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
+        --llm.model_name_or_path=$MODEL \
+        --llm.max_model_len=8196 \
+        --llm.use_logits=true \
+        --rerank_mode=Point \
+        --dtype=float16 \
+        --system_message "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
+        --result_parser_name=binary_probability > $LOGDIR/point_trec-dl-${year}.log
 
     # Judge
     python -m autollmrerank.wrapper \

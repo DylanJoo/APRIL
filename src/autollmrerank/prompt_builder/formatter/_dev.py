@@ -1,38 +1,30 @@
+# Answerability judgments
 from typing import List, Optional, Union, Callable, Dict, Tuple
 from .base import BaseFormatter
 
 class DevFormatter(BaseFormatter):
 
-    def prefix(self, query: str, doc_list: Optional[List[Dict]] = None, filtering=False, **kwargs) -> str:
+    def prefix(self, **kwargs) -> str:
         return (
-            f"I will provide you with {len(doc_list)} passages, "
-            f"each indicated by a {self.id_type} identifier []. "
-            f"Rank the passages based on their relevance to the search query: {query}.\n\n"
+            "Instruction: Determine whether the question can be answered based on the provided context?"
+            "Rate the context on a scale from 0 to 5 according to the guideline below. "
+            "Do not write anything except the rating.\n\n"
+            "Guideline: \n"
+            "- 5: The context is highly relevant, complete, and accurate to the question.\n"
+            "- 4: The context is mostly relevant and complete but may have minor gaps or inaccuracies to the question.\n"
+            "- 3: The context is partially relevant and complete, with noticeable gaps or inaccuracies to the question.\n"
+            "- 2: The context has limited relevance and completeness, with significant gaps or inaccuracies to the question.\n"
+            "- 1: The context is minimally relevant or complete, with substantial shortcomings to the question.\n"
+            "- 0: The context is not relevant or complete at all.\n\n"
         )
 
-    def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, filtering=False, **kwargs) -> str:
-        if filtering:
-            return (
-                f"Search Query: {query}.\n"
-                f"Identify the {len(doc_list)} passages above based on their relevance to the search query. "
-                f"List the relevant passages using identifiers, the output format should be: [x, y, z], leaving"
-                f"Only respond with the results, do not say any word or explain."
-            )
+    def postfix(self, **kwargs) -> str:
+        return "Rating: \n"
 
-        return (
-            f"Search Query: {query}.\n"
-            f"Rank the {len(doc_list)} passages above based on their relevance to the search query. "
-            f"All the passages should be included and listed using identifiers, "
-            f"in descending order of relevance. The output format should be [] > [], "
-            f"e.g., {self.example_ordering}, "
-            f"Only respond with the ranking results, do not say any word or explain."
-        )
-
-    def body(self, query: str, doc_list: Optional[List[Dict]], **kwargs) -> str:
-        prompt_body = ""
+    def body(self, query, doc_list, **kwargs) -> str:
+        prompts = []
         doc_list = [self._document_format(doc) for doc in doc_list]
-        for i, doc in enumerate(doc_list, start=1): # chr(65) is 'A'
-            identifier = f"[{chr(64 + i)}]" if self._use_alpha else f"[{i}]"
-            doc_text = self.replace_number(doc)
-            prompt_body += f"{identifier} {doc_text}\n"
-        return prompt_body
+        for doc in doc_list:
+            prompt = f"Question: {query}\n\nContext: {doc}\n\n"
+            prompts.append(prompt)
+        return prompts

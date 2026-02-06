@@ -37,7 +37,6 @@ def load(
             qrels[qrel.query_id] = {qrel.doc_id: qrel.relevance}
         else:
             qrels[qrel.query_id][qrel.doc_id] = qrel.relevance
-    logger.info("Qrel Example: %s (%s)", n, list(qrels.values())[0])
 
     if ignore_corpus:
         return None, queries, qrels
@@ -67,5 +66,4 @@ def load_run(path, topk=100):
     for qid, docid_ranks in run_dict.items():
         sorted_docid_ranks = sorted(docid_ranks, key=lambda x: x[1], reverse=False) 
         sorted_run_dict[qid] = {docid: rel_score for docid, rel_rank, rel_score in sorted_docid_ranks}
-    logger.info("Run Example: %s", list(sorted_run_dict.items())[:40])
     return sorted_run_dict

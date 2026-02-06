@@ -26,6 +26,7 @@ python -m autollmrerank.wrapper \
     --rerank_mode=Point \
     --dtype=float16 \
     --result_parser_name=binary_probability > $LOGDIR/point_trec-dl-${year}.log
+
 # RankZephyr:list_gen:castorini/rank_zephyr_7b_v1_full
 MODEL=castorini/rank_zephyr_7b_v1_full
 python -m autollmrerank.wrapper \

@@ -123,8 +123,6 @@ class AutoLLMReranker:
                 rank_end=min(self.config.rank_end, self.config.top_k),
                 batch_size=query_batch_size,
                 num_runs=self.config.num_runs,
-                references=self.references if hasattr(self, 'references') else None,
-                anchor_index=self.config.anchor_index if hasattr(self.config, 'anchor_index') else None,
             )
             reranked_results.extend(batch_reranked_results)
 
@@ -160,7 +158,7 @@ if __name__ == "__main__":
     results = {}
 
     # init reranker
-    rankllm = AutoLLMReranker(config, system_message=config.system_message)
+    rankllm = AutoLLMReranker(config)
 
     # load data
     loader = importlib.import_module(f"autollmrerank.loader_dev.{config.data.loader_type}", package=__name__)
@@ -210,7 +208,7 @@ if __name__ == "__main__":
     eval_log = {
         'rerank_mode': config.rerank_mode,
         'model_name_or_path': config.llm.model_name_or_path, 
-        'ir_datasets_name': config.data.ir_datasets_name,
+        'dataset_name': f"{config.data.loader_type}:{config.data.dataset_name}",
         'run_path': config.data.input_run,
         'original': r1, 
         'reranked': r2

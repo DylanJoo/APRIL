@@ -6,6 +6,7 @@ from .set_bubble_topk import SetBubbleTopK
 from .set_maxheap_topk import SetMaxHeapTopK
 from .point import Point
 from .judge import Judge
+from .lancer import Lancer
 
 from ._dev import Dev
 
@@ -21,6 +22,7 @@ class AutoAssembler:
         'SetMaxHeapTopK': SetMaxHeapTopK,
         'Point': Point,
         'Judge': Judge,
+        'Lancer': Lancer,
         'Dev': Dev,
     }
 

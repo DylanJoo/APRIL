@@ -60,15 +60,11 @@ class AutoLLMReranker:
             max_model_len=config.llm.max_model_len,
             max_tokens=5 if config.llm.use_logits else 128,
             dtype=config.llm.dtype,
-            num_gpus=max(1, int(torch.cuda.device_count())), # NOTE: do we want it to be specified?
+            num_gpus=max(1, int(torch.cuda.device_count())),
             base_url='http://localhost:8000/v1',
             api_key='EMPTY'
         )
-        agent.set_classification(target_ratings=[3,4,5])
-        # NOTE: set the ids by default
-        # TODO: for some types of result parsing, we dont need setting 
-        # if config.llm.use_logits:
-        #     agent.set_classification(id_strings=[chr(i) for i in range(65, 91)])
+        # agent.set_classification(target_ratings=[3,4,5])
 
         result_parser = ResultParser(use_alpha=config.use_alphabetical)
 
@@ -122,8 +118,6 @@ class AutoLLMReranker:
                 rank_end=min(self.config.rank_end, self.config.top_k),
                 batch_size=query_batch_size,
                 num_runs=self.config.num_runs,
-                references=self.references if hasattr(self, 'references') else None,
-                anchor_index=self.config.anchor_index if hasattr(self.config, 'anchor_index') else None,
             )
             reranked_results.extend(batch_reranked_results)
 
@@ -147,7 +141,7 @@ class AutoLLMReranker:
 if __name__ == "__main__":
     import ir_measures
     from ir_measures import *
-    from autollmrerank import loader
+    import importlib
 
     # init config with CLI commands
     config = ConfigManager().get_config()
@@ -157,12 +151,13 @@ if __name__ == "__main__":
     results = {}
 
     # init reranker
-    rankllm = AutoLLMReranker(config, system_message=config.system_message)
+    rankllm = AutoLLMReranker(config)
 
     # load data
+    loader = importlib.import_module(f"autollmrerank.loader_dev.{config.data.loader_type}", package=__name__)
     run = loader.load_run(config.data.input_run)
-    corpus, queries, qrels = loader.load(config.data.ir_datasets_name, query_fields=None, doc_fields=None)
-    run = {qid: hit for qid, hit in run.items() if qid in qrels}
+    corpus, queries, qrels = loader.load(config.data.dataset_name, query_fields=None, doc_fields=None)
+    qrels = {qid: qrel for qid, qrel in qrels.items() if qid in run}
 
     # reranking
     reranked_run = rankllm.rerank(run=run, queries=queries, corpus=corpus, query_batch_size=config.data.batch_size)
@@ -183,7 +178,7 @@ if __name__ == "__main__":
     eval_log = {
         'rerank_mode': config.rerank_mode,
         'model_name_or_path': config.llm.model_name_or_path, 
-        'ir_datasets_name': config.data.ir_datasets_name,
+        'dataset_name': f"{config.data.loader_type}:{config.data.dataset_name}",
         'run_path': config.data.input_run,
         'original': r1, 
         'reranked': r2

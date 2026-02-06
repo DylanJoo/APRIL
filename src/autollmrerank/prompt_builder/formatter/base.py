@@ -32,10 +32,6 @@ class BaseFormatter(ABC):
         """Returns the body of the prompt."""
         pass
 
-    # @abstractmethod
-    # def demo(self) -> str:
-    #     """Returns a demonstration of the formatter."""
-    #     pass
     # TODO: See if we need to have separate formuation of title
     # TODO: Equalize the max length
     def _document_format(self, doc: Union[str, Dict]) -> str:
@@ -54,7 +50,7 @@ class BaseFormatter(ABC):
             raise ValueError(f"Document must be a string or a dictionary with 'content' key: got {doc}")
 
         if self.max_doc_length is not None:
-            return " ".join(text.split()[:self.max_doc_length])  
+            return " ".join(text.split(" ")[:self.max_doc_length])  
         else:
             return text
 

@@ -6,6 +6,7 @@ from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.sampling_params import SamplingParams
 from transformers import AutoTokenizer
 from typing import List
+from contextlib import contextmanager
 import logging
 logger = logging.getLogger("vllm.engine.async_llm_engine").setLevel(logging.WARNING)
 
@@ -62,14 +63,14 @@ class LLM:
         no_strings=[' No', 'No', ' no', 'no', 'NO', ' NO'],
         id_strings=[chr(i) for i in range(65, 91)],
         max_rating=5, 
-        target_ratings=[5],
+        target_ratings=[3,4,5],
     ):
-        self.yes_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in yes_strings]
-        self.no_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in no_strings]
+        # self.yes_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in yes_strings]
+        # self.no_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in no_strings]
         self.id_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in id_strings]
         self.max_rating = max_rating
         self.target_ratings = target_ratings
-        print(f"YES TOKENS: {self.yes_tokens} | NO TOKENS: {self.no_tokens}")
+        # print(f"YES TOKENS: {self.yes_tokens} | NO TOKENS: {self.no_tokens}")
         print(f"ID TOKENS: {self.id_tokens}")
         print(f"MAX RATING TOKEN: {self.max_rating} | TARGET TOKENS: {target_ratings}")
 
@@ -171,3 +172,20 @@ class LLM:
             for output_iterator in output_iterators
         ])
         return list(outputs)
+
+    @contextmanager
+    def default(self):
+        """
+        Usage example:
+        with llm.default():
+            outputs = llm.generate(prompts)
+        """
+        old_sampling_params = self.sampling_params
+        try:
+            print("Entering default sampling parameters context ...\nTemperature: 1.0, Top-p: 1.0, Max tokens: 512")
+            self.sampling_params.temperature = 1.0
+            self.sampling_params.top_p = 1.0
+            self.sampling_params.max_tokens = 512
+            yield  # This is where the code inside the 'with' block runs
+        finally:
+            self.sampling_params = old_sampling_params

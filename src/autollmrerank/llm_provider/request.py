@@ -48,15 +48,13 @@ class LLM:
         no_strings=[' No', 'No', ' no', 'no', 'NO', ' NO'],
         id_strings=[chr(i) for i in range(65, 91)],
         max_rating=5, 
-        target_ratings=[5],
+        target_ratings=[3,4,5],
     ):
         # self.yes_tokens = [self.tokenizer.tokenize(item)[0] for item in yes_strings]
         # self.no_tokens = [self.tokenizer.tokenize(item)[0] for item in no_strings]
         self.id_tokens = [self.tokenizer.tokenize(item)[0] for item in id_strings]
-
-        # also include the strings
-        # self.yes_tokens += yes_strings
-        # self.no_tokens += no_strings
+        self.max_rating = max_rating
+        self.target_ratings = target_ratings
 
     def generate(
         self, 

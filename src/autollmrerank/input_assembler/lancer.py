@@ -8,8 +8,13 @@ from ..utils import Result, batch_iterator
 from .base import RerankStrategy
 
 TEMPLATE = """
-Instruction: 
-Given the following request, write {NUM} diverse and non-repeating sub-questions that can help guide the creation of a focused and comprehensive report. The sub-questions should help break down the topic into key areas that need to be investigated or explained. Each sub-question should be short (ideally under 20 words) and should focus on a single aspect or dimension of the report.
+Instruction: Given the following request, write {NUM} diverse and non-repeating sub-questions that can help guide the creation of a focused and comprehensive report. The sub-questions should help break down the topic into key areas that need to be investigated or explained. Each sub-question should be short (ideally under 20 words) and should focus on a single aspect or dimension of the report.
+
+Here are examples of sub-questions for a request about the mysteries of Machu Picchu's architecture:
+- Where is Machu Picchu located?
+- How high is the mountain ridge on which Machu Picchu sits?
+- What make Machu Picchu one of the world's most visited sites?
+- What are the most remarkable aspects of the construction structure of Machu Picchu?
 
 Request:
 {query}
@@ -22,7 +27,7 @@ Output format:
 Now, generate the {NUM} sub-questions:
 """
 
-class Dev(RerankStrategy):
+class Lancer(RerankStrategy):
 
     def run(
         self,
@@ -51,8 +56,8 @@ class Dev(RerankStrategy):
         # 2. Answerability judgment for each question and add the score
         for i in range(num_subquestions):
             for j, r in enumerate(results):
-                r.query = r.query + " " + subquestions[j][i]
-                # r.query = subquestions[j][i]
+                # r.query = r.query + "\n" + subquestions[j][i]
+                r.query = subquestions[j][i]
 
             subresults = self.run_pass(
                 results,
@@ -93,8 +98,6 @@ class Dev(RerankStrategy):
             for batch_prompts in batch_iterator(prompts, batch_size):
                 batch_scores = self._llm.generate(
                     batch_prompts, 
-                    binary_probs=(self.config.result_parser_name == "binary_prob"),
-                    dist_logp=(self.config.result_parser_name == "dist_logp"),
                     rating_logp=(self.config.result_parser_name == "rating_logp"),
                     expected_rating=(self.config.result_parser_name == "expected_rating"),
                 )

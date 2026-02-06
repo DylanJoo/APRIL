@@ -127,7 +127,19 @@ class PromptBuilder:
         return prompt, num_tokens
 
     def __str__(self) -> str:
-        return self.formatter.prefix("") + self.formatter.body("", []) + self.formatter.postfix("")
+        inputs = {
+            "query": "{QUERY}", 
+            "doc_list": [
+                {"title": "{TITLE1}", "contents": "{DOCUMENT1}"}, 
+                {"title": "{TITLE2}", "contents": "{DOCUMENT2}"}
+            ]
+        }
+        prefix = self.formatter.prefix(**inputs)
+        body = self.formatter.body(**inputs)
+        body = body if isinstance(body, str) else body[0]
+        postfix = self.formatter.postfix(**inputs)
+        postfix = postfix if isinstance(postfix, str) else postfix[0]
+        return prefix + body + postfix
 
 # [NOTE] consider this if flatten the prompting 
 # this is for compatibility the list of list
