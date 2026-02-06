@@ -20,7 +20,6 @@ dataset=neuclir
 # Pointwise YES NO
 MODEL=Qwen/Qwen2.5-7B-Instruct
 python -m autollmrerank.wrapper_dev \
-    --data.batch_size=128 \
     --data.dataset_name=$dataset \
     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
     --data.loader_type=neuclir \
@@ -37,7 +36,6 @@ python -m autollmrerank.wrapper_dev \
 # RankZephyr:list_gen:castorini/rank_zephyr_7b_v1_full
 MODEL=castorini/rank_zephyr_7b_v1_full
 python -m autollmrerank.wrapper_dev \
-    --data.batch_size=128 \
     --data.dataset_name=$dataset \
     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
     --data.loader_type=neuclir \
@@ -55,7 +53,6 @@ python -m autollmrerank.wrapper_dev \
 # # RankFirst:dist_logp:castorini/first_mistral
 # MODEL=castorini/first_mistral
 # python -m autollmrerank.wrapper_dev \
-#     --data.batch_size=128 \
 #     --data.dataset_name=$dataset \
 #     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
 #     --data.loader_type=neuclir \
@@ -75,7 +72,6 @@ python -m autollmrerank.wrapper_dev \
 # # RankGPT:list_gen:Qwen/Qwen2.5-7B-Instruct
 # MODEL=Qwen/Qwen2.5-7B-Instruct
 # python -m autollmrerank.wrapper_dev \
-#     --data.batch_size=128 \
 #     --data.dataset_name=$dataset \
 #     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
 #     --data.loader_type=neuclir \
@@ -93,7 +89,6 @@ python -m autollmrerank.wrapper_dev \
 # # SetTopK:dist_logp:Qwen/Qwen2.5-7B-Instruct
 # MODEL=Qwen/Qwen2.5-7B-Instruct
 # python -m autollmrerank.wrapper_dev \
-#     --data.batch_size=128 \
 #     --data.dataset_name=$dataset \
 #     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
 #     --data.loader_type=neuclir \
@@ -113,7 +108,6 @@ python -m autollmrerank.wrapper_dev \
 # # SetMaxHeapTopK:dist_logp:Qwen/Qwen2.5-7B-Instruct
 # MODEL=Qwen/Qwen2.5-7B-Instruct
 # python -m autollmrerank.wrapper_dev \
-#     --data.batch_size=128 \
 #     --data.dataset_name=$dataset \
 #     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
 #     --data.loader_type=neuclir \
@@ -133,7 +127,6 @@ python -m autollmrerank.wrapper_dev \
 # # PairTopK:binary_prob:Qwen/Qwen2.5-7B-Instruct
 # MODEL=Qwen/Qwen2.5-7B-Instruct
 # python -m autollmrerank.wrapper_dev \
-#     --data.batch_size=128 \
 #     --data.dataset_name=$dataset \
 #     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
 #     --data.loader_type=neuclir \
@@ -152,7 +145,6 @@ python -m autollmrerank.wrapper_dev \
 # # PairAll:binary_prob:Qwen/Qwen2.5-7B-Instruct
 # MODEL=Qwen/Qwen2.5-7B-Instruct
 # python -m autollmrerank.wrapper_dev \
-#     --data.batch_size=128 \
 #     --data.dataset_name=$dataset \
 #     --data.input_run=runs/run.bm25.${dataset%%/*}.txt \
 #     --data.loader_type=neuclir \

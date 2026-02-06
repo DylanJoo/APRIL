@@ -18,7 +18,7 @@ mkdir -p $LOGDIR
 # Pointwise YES NO
 MODEL=Qwen/Qwen2.5-7B-Instruct
 python -m autollmrerank.wrapper \
-    --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
+    --data.dataset_name=msmarco-passage/trec-dl-${year}/judged \
     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
@@ -30,7 +30,7 @@ python -m autollmrerank.wrapper \
 # RankZephyr:list_gen:castorini/rank_zephyr_7b_v1_full
 MODEL=castorini/rank_zephyr_7b_v1_full
 python -m autollmrerank.wrapper \
-    --data.ir_datasets_name=msmarco-passage/trec-dl-2019/judged \
+    --data.dataset_name=msmarco-passage/trec-dl-2019/judged \
     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2019.txt \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
@@ -43,7 +43,7 @@ python -m autollmrerank.wrapper \
 # RankFirst:dist_logp:castorini/first_mistral
 MODEL=castorini/first_mistral
 python -m autollmrerank.wrapper \
-    --data.ir_datasets_name=msmarco-passage/trec-dl-2019/judged \
+    --data.dataset_name=msmarco-passage/trec-dl-2019/judged \
     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2019.txt \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
@@ -58,7 +58,7 @@ python -m autollmrerank.wrapper \
 # RankGPT:list_gen:Qwen/Qwen2.5-7B-Instruct
 MODEL=Qwen/Qwen2.5-7B-Instruct
 python -m autollmrerank.wrapper \
-    --data.ir_datasets_name=msmarco-passage/trec-dl-2019/judged \
+    --data.dataset_name=msmarco-passage/trec-dl-2019/judged \
     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2019.txt \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
@@ -71,7 +71,7 @@ python -m autollmrerank.wrapper \
 # SetTopK:dist_logp:Qwen/Qwen2.5-7B-Instruct
 MODEL=Qwen/Qwen2.5-7B-Instruct
 python -m autollmrerank.wrapper \
-    --data.ir_datasets_name=msmarco-passage/trec-dl-2019/judged \
+    --data.dataset_name=msmarco-passage/trec-dl-2019/judged \
     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2019.txt \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
@@ -86,7 +86,7 @@ python -m autollmrerank.wrapper \
 # SetMaxHeapTopK:dist_logp:Qwen/Qwen2.5-7B-Instruct
 MODEL=Qwen/Qwen2.5-7B-Instruct
 python -m autollmrerank.wrapper \
-    --data.ir_datasets_name=msmarco-passage/trec-dl-2019/judged \
+    --data.dataset_name=msmarco-passage/trec-dl-2019/judged \
     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2019.txt \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
@@ -101,7 +101,7 @@ python -m autollmrerank.wrapper \
 # PairTopK:binary_prob:Qwen/Qwen2.5-7B-Instruct
 MODEL=Qwen/Qwen2.5-7B-Instruct
 python -m autollmrerank.wrapper \
-    --data.ir_datasets_name=msmarco-passage/trec-dl-2019/judged \
+    --data.dataset_name=msmarco-passage/trec-dl-2019/judged \
     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2019.txt \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \
@@ -115,7 +115,7 @@ python -m autollmrerank.wrapper \
 # PairAll:binary_prob:Qwen/Qwen2.5-7B-Instruct
 MODEL=Qwen/Qwen2.5-7B-Instruct
 python -m autollmrerank.wrapper \
-    --data.ir_datasets_name=msmarco-passage/trec-dl-2019/judged \
+    --data.dataset_name=msmarco-passage/trec-dl-2019/judged \
     --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-2019.txt \
     --llm.model_name_or_path=$MODEL \
     --llm.max_model_len=8196 \

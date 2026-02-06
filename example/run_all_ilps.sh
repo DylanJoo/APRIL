@@ -39,14 +39,14 @@ for year in 2019 2020;do
             --config=src/autollmrerank/configs/$method.yaml \
             --llm.backend=request \
             --llm.model_name_or_path=$MODEL \
-            --data.ir_datasets_name=msmarco-passage/trec-dl-$year/judged \
+            --data.dataset_name=msmarco-passage/trec-dl-$year/judged \
             --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-$year.txt > $LOGDIR/${method}_trec-dl-${year}.log 2>&1
     done
 
     # SetTopK:dist_logp:Qwen/Qwen2.5-7B-Instruct
     python -m autollmrerank.wrapper \
         --config=src/autollmrerank/configs/setmaxheaptopk.yaml \
-        --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
+        --data.dataset_name=msmarco-passage/trec-dl-${year}/judged \
         --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
         --llm.backend=request \
         --llm.model_name_or_path=$MODEL \
@@ -55,7 +55,7 @@ for year in 2019 2020;do
     # PairAll:binary_prob:Qwen/Qwen2.5-7B-Instruct
     python -m autollmrerank.wrapper \
         --config=src/autollmrerank/configs/pairtopk.yaml \
-        --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
+        --data.dataset_name=msmarco-passage/trec-dl-${year}/judged \
         --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
         --llm.backend=request \
         --llm.model_name_or_path=$MODEL \
@@ -86,7 +86,7 @@ echo "vLLM server is up and running."
 for year in 2019 2020;do
     python -m autollmrerank.wrapper \
         --config=src/autollmrerank/configs/rankgpt.yaml \
-        --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
+        --data.dataset_name=msmarco-passage/trec-dl-${year}/judged \
         --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
         --llm.backend=request \
         --llm.model_name_or_path=$MODEL > $LOGDIR/rankzephyr_trec-dl-${year}.log
@@ -113,7 +113,7 @@ echo "vLLM server is up and running."
 for year in 2019 2020;do
     python -m autollmrerank.wrapper \
         --config=src/autollmrerank/configs/rankgpt.yaml \
-        --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
+        --data.dataset_name=msmarco-passage/trec-dl-${year}/judged \
         --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
         --llm.backend=request \
         --llm.model_name_or_path=$MODEL \

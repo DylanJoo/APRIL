@@ -45,7 +45,7 @@ for year in 2019 2020;do
             --config=src/reranking/configs/$method.yaml \
             --llm.backend=request \
             --llm.model_name_or_path=$MODEL \
-            --data.ir_datasets_name=msmarco-passage/trec-dl-$year/judged \
+            --data.dataset_name=msmarco-passage/trec-dl-$year/judged \
             --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-$year.txt > $LOGDIR/${method}_trec-dl-${year}.log 2>&1
     done
 
@@ -53,7 +53,7 @@ for year in 2019 2020;do
     srun singularity exec $SIF \
         python -m reranking.wrapper \
         --config=src/reranking/configs/setmaxheaptopk.yaml \
-        --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
+        --data.dataset_name=msmarco-passage/trec-dl-${year}/judged \
         --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
         --llm.backend=request \
         --llm.model_name_or_path=$MODEL \
@@ -63,7 +63,7 @@ for year in 2019 2020;do
     srun singularity exec $SIF \
         python -m reranking.wrapper \
         --config=src/reranking/configs/pairtopk.yaml \
-        --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
+        --data.dataset_name=msmarco-passage/trec-dl-${year}/judged \
         --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
         --llm.backend=request \
         --llm.model_name_or_path=$MODEL \
@@ -96,7 +96,7 @@ for year in 2019 2020;do
     srun singularity exec $SIF \
     python -m reranking.wrapper \
         --config=src/reranking/configs/rankgpt.yaml \
-        --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
+        --data.dataset_name=msmarco-passage/trec-dl-${year}/judged \
         --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
         --llm.backend=request \
         --llm.model_name_or_path=$MODEL > $LOGDIR/rankzephyr_trec-dl-${year}.log
@@ -125,7 +125,7 @@ for year in 2019 2020;do
     srun singularity exec $SIF \
     python3 -m reranking.wrapper \
         --config=src/reranking/configs/rankgpt.yaml \
-        --data.ir_datasets_name=msmarco-passage/trec-dl-${year}/judged \
+        --data.dataset_name=msmarco-passage/trec-dl-${year}/judged \
         --data.input_run=runs/run.msmarco-passage.bm25.trec-dl-${year}.txt \
         --llm.backend=request \
         --llm.model_name_or_path=$MODEL \
