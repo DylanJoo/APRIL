@@ -57,7 +57,7 @@ for subset in "${BEIR_DATASETS[@]}"; do
         --llm.max_model_len=8196 \
         --rerank_mode=Judge \
         --dtype=float16 \
-        --system_message "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
+        --system_message="You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
         --result_parser_name=text > $LOGDIR/judge_beir-${subset%%/*}.log
 
     # Judge with max-rating logP
@@ -70,7 +70,7 @@ for subset in "${BEIR_DATASETS[@]}"; do
         --llm.use_logits=true \
         --rerank_mode=Judge \
         --dtype=float16 \
-        --system_message "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
+        --system_message="You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
         --result_parser_name=rating_logp > $LOGDIR/judge_logp_beir-${subset%%/*}.log
 
     # Judge with expected rating
@@ -83,6 +83,6 @@ for subset in "${BEIR_DATASETS[@]}"; do
         --llm.use_logits=true \
         --rerank_mode=Judge \
         --dtype=float16 \
-        --system_message "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
+        --system_message="You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
         --result_parser_name=expected_rating > $LOGDIR/judge_expr_beir-${subset%%/*}.log
 done

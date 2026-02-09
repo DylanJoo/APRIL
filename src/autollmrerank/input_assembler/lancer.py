@@ -1,3 +1,4 @@
+import json
 import re
 import math
 import copy
@@ -48,16 +49,27 @@ class Lancer(RerankStrategy):
 
         # 1. Generate n sub-questions for all queries
         queries = [r.query for r in init_results]
-        prompts = [self.preprocess(q, num_subquestions) for q in queries]
-        with self._llm.default(): 
-            outputs = self._llm.generate(prompts)
-        subquestions = [self.postprocess(o, num_subquestions) for o in outputs]
+        # prompts = [self.preprocess(q, num_subquestions) for q in queries]
+        # with self._llm.default(): 
+        #     outputs = self._llm.generate(prompts)
+        # subquestions = [self.postprocess(o, num_subquestions) for o in outputs]
+
+        ## TODO: replace the subquestion generation with the pregenerated.
+        # with open("/home/dju/lancer-legacy/results/crux-mds-duc04-subquestions/qwen3-next-80b-a3b-instruct.json", "r") as f:
+        #     all_subquestions = json.loads(f.read())
+        with open("/home/dju/lancer-legacy/results/crux-mds-duc04-subquestions/subquestions.oracle.json", "r") as f:
+            all_subquestions = json.loads(f.read())
+
+        subquestions = []
+        for r in results:
+            qid = r.qid
+            subquestions.append(all_subquestions[qid])
 
         # 2. Answerability judgment for each question and add the score
         for i in range(num_subquestions):
             for j, r in enumerate(results):
-                # r.query = r.query + "\n" + subquestions[j][i]
-                r.query = subquestions[j][i]
+                r.query = r.query + "\n" + subquestions[j][i]
+                # r.query = subquestions[j][i]
 
             subresults = self.run_pass(
                 results,
