@@ -12,7 +12,7 @@ llm:
   top_p: 1.0
   backend: vllm
   max_model_len: 8196
-  dtype: float16
+  dtype: bfloat16
   use_logits: true
   base_url: null
   api_key: null
@@ -28,7 +28,6 @@ window_size: 5
 step_size: 1
 exp: implemented
 num_runs: 10
-dtype: float16
 variable_passages: null
 include_system_message: true
 system_message: "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
