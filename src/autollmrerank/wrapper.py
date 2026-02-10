@@ -61,7 +61,7 @@ class AutoLLMReranker:
             max_tokens=5 if config.llm.use_logits else 128,
             dtype=config.llm.dtype,
             num_gpus=max(1, int(torch.cuda.device_count())),
-            base_url='http://localhost:8000/v1',
+            base_url=('http://localhost:8000/v1' or config.llm.base_url),
             api_key='EMPTY'
         )
         # agent.set_classification(target_ratings=[3,4,5])
@@ -163,7 +163,10 @@ if __name__ == "__main__":
     reranked_run = rankllm.rerank(run=run, queries=queries, corpus=corpus, query_batch_size=config.data.batch_size)
 
     # output reranked result
-    output_path = os.path.join(config.data.input_run.replace('runs', f'runs/{config.rerank_mode}'))
+    if config.data.output_run is None:
+        output_path = os.path.join(config.data.input_run.replace('runs', f'runs/{config.rerank_mode}'))
+    else:
+        output_path = config.data.output_run
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as f:
         for qid in reranked_run:

@@ -29,7 +29,7 @@ for year in 2019 2020;do
         --llm.use_logits=true \
         --rerank_mode=Point \
         --dtype=float16 \
-        --system_message "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
+        --system_message="You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
         --result_parser_name=binary_probability > $LOGDIR/point_trec-dl-${year}.log
 
     # Judge
@@ -40,7 +40,7 @@ for year in 2019 2020;do
         --llm.max_model_len=8196 \
         --rerank_mode=Judge \
         --dtype=float16 \
-        --system_message "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
+        --system_message="You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
         --result_parser_name=text > $LOGDIR/judge_trec-dl-${year}.log
 
     # Judge with max-rating logP
@@ -52,7 +52,7 @@ for year in 2019 2020;do
         --llm.use_logits=true \
         --rerank_mode=Judge \
         --dtype=float16 \
-        --system_message "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
+        --system_message="You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
         --result_parser_name=rating_logp > $LOGDIR/judge_logp_trec-dl-${year}.log
 
     # Judge with expected rating
@@ -64,6 +64,6 @@ for year in 2019 2020;do
         --llm.use_logits=true \
         --rerank_mode=Judge \
         --dtype=float16 \
-        --system_message "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
+        --system_message="You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
         --result_parser_name=expected_rating > $LOGDIR/judge_exprating_trec-dl-${year}.log
 done
