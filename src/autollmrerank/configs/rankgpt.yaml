@@ -28,4 +28,4 @@ num_runs: 1
 variable_passages: true
 include_system_message: true
 system_message: "You are RankLLM, an intelligent assistant that can rank passages based on their relevancy to the query"
-result_parser_name: listwise
+result_parser_name: text
