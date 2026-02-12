@@ -3,7 +3,11 @@ from .base import BaseFormatter
 
 class ListwiseFormatter(BaseFormatter):
 
+    paradigm = 'listwise'
+
     def prefix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:
+        # NOTE: Examples are not supported for listwise paradigm yet
+        # as it involves many documents and complex ranking format
         return (
             f"I will provide you with {len(doc_list)} passages, "
             f"each indicated by a {self.id_type} identifier []. "

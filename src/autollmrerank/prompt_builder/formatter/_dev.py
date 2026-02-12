@@ -4,7 +4,10 @@ from .base import BaseFormatter
 
 class DevFormatter(BaseFormatter):
 
+    paradigm = 'judge'
+
     def prefix(self, **kwargs) -> str:
+        examples_text = self.examples()
         return (
             "Instruction: Determine whether the question can be answered based on the provided context?"
             "Rate the context on a scale from 0 to 5 according to the guideline below. "
@@ -16,6 +19,7 @@ class DevFormatter(BaseFormatter):
             "- 2: The context has limited relevance and completeness, with significant gaps or inaccuracies to the question.\n"
             "- 1: The context is minimally relevant or complete, with substantial shortcomings to the question.\n"
             "- 0: The context is not relevant or complete at all.\n\n"
+            f"{examples_text}"
         )
 
     def postfix(self, **kwargs) -> str:

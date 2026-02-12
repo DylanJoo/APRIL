@@ -4,10 +4,14 @@ from .base import BaseFormatter
 
 class PairwiseFormatter(BaseFormatter):
 
+    paradigm = 'pairwise'
+
     def prefix(self, query, **kwargs) -> str:
+        examples_text = self.examples()
         return (
             f"I will provide you with two passages. Read and memorize both carefully. "
             f"Your task is to determine which passage is more relevant to the query: {query}\n\n"
+            f"{examples_text}"
         )
 
     def postfix(self, **kwargs) -> str:

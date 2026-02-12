@@ -17,6 +17,19 @@ llm:
   base_url: null
   api_key: null
 
+# Examples for few-shot learning (pointwise, pairwise, judge only)
+# Provide a list of query-document pairs directly, or null for no examples
+# Each example should have: query, document, label (relevant/irrelevant), and optionally score
+examples: null
+# Example:
+# examples:
+#   - query: "What is the capital of France?"
+#     document: "Paris is the capital and most populous city of France."
+#     label: "relevant"
+#   - query: "What is the capital of France?"
+#     document: "The Eiffel Tower is a famous landmark."
+#     label: "irrelevant"
+
 rerank_mode: RankGPT 
 use_alphabetical: false
 top_k: 100 

@@ -4,8 +4,11 @@ from .base import BaseFormatter
 
 class PointwiseFormatter(BaseFormatter):
 
+    paradigm = 'pointwise'
+
     def prefix(self, **kwargs) -> str:
-        return ""
+        examples_text = self.examples()
+        return f"{examples_text}"
 
     def postfix(self, **kwargs) -> str:
         return (

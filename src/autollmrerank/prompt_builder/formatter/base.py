@@ -2,8 +2,14 @@ import re
 from typing import List, Optional, Union, Callable, Dict, Tuple
 from abc import ABC, abstractmethod
 
+from .example import ExampleFormatter
+
+
 class BaseFormatter(ABC):
     """Base class for all formatters."""
+
+    # Subclasses should override this to specify their paradigm type
+    paradigm = 'base'
 
     def __init__(self, config=None):
         self._use_alpha = config.use_alphabetical
@@ -16,6 +22,42 @@ class BaseFormatter(ABC):
         else:
             self.id_type = "numerical"
             self.example_ordering = "[2] > [1]" if self._variable_passages else "[4] > [2]"
+
+        # Initialize example formatter if examples are configured
+        # Simplified config: examples is just a list of dicts directly (or None)
+        examples_config = getattr(config, 'examples', None)
+        
+        # Handle both list format and legacy dict format
+        if examples_config is None:
+            self._example_formatter = ExampleFormatter(examples=None)
+        elif isinstance(examples_config, list):
+            # New simplified format: examples is a list of dicts directly
+            self._example_formatter = ExampleFormatter(
+                examples=examples_config,
+                max_doc_length=self.max_doc_length
+            )
+        else:
+            # Legacy format: examples is a namespace/dict with 'data' key
+            # This provides backward compatibility
+            if hasattr(examples_config, 'data'):
+                examples_data = examples_config.data
+            elif isinstance(examples_config, dict):
+                examples_data = examples_config.get('data', None)
+            else:
+                examples_data = None
+            self._example_formatter = ExampleFormatter(
+                examples=examples_data,
+                max_doc_length=self.max_doc_length
+            )
+
+    def examples(self, **kwargs) -> str:
+        """
+        Returns formatted examples based on the paradigm type.
+        
+        This method can be called by subclasses to include examples in their prompts.
+        The formatting is determined automatically based on the paradigm type.
+        """
+        return self._example_formatter.format(paradigm=self.paradigm)
 
     @abstractmethod
     def prefix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:

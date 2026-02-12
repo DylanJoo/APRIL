@@ -4,8 +4,12 @@ from .base import BaseFormatter
 
 class SetwiseFormatter(BaseFormatter):
 
+    paradigm = 'setwise'
+
     def prefix(self, query, idx_pairs, **kwargs) -> str:
         n_pairs = len(idx_pairs[0])
+        # NOTE: Examples are not supported for setwise paradigm yet
+        # as it involves selecting from multiple documents
         return (
             f"I will provide you with {n_pairs} passages. Read and memorize all carefully. "
             f"Your task is to determine which passage is the most relevant to the query: {query}\n\n"
