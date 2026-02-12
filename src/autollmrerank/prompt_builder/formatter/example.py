@@ -41,6 +41,10 @@ class ExampleFormatter:
     
     SUPPORTED_STRATEGIES = ['inline', 'block', 'interleaved', 'none']
     
+    # Preview lengths for truncating document text in different contexts
+    INLINE_DOC_PREVIEW_LENGTH = 200
+    LISTWISE_DOC_PREVIEW_LENGTH = 150
+    
     def __init__(
         self, 
         examples: Optional[List[Dict]] = None,
@@ -104,12 +108,12 @@ class ExampleFormatter:
             ex = relevant_examples[0]
             parts.append(
                 f"For example, for the query \"{ex.query}\", "
-                f"a relevant passage would be: \"{ex.document[:200]}...\""
+                f"a relevant passage would be: \"{ex.document[:self.INLINE_DOC_PREVIEW_LENGTH]}...\""
             )
         if irrelevant_examples:
             ex = irrelevant_examples[0]
             parts.append(
-                f"An irrelevant passage would be: \"{ex.document[:200]}...\""
+                f"An irrelevant passage would be: \"{ex.document[:self.INLINE_DOC_PREVIEW_LENGTH]}...\""
             )
         
         return " ".join(parts)
@@ -201,9 +205,9 @@ class ExampleFormatter:
         lines = ["Example of relevance:\n"]
         
         for ex in relevant:
-            lines.append(f"For query \"{ex.query}\", a relevant passage: {ex.document[:150]}...")
+            lines.append(f"For query \"{ex.query}\", a relevant passage: {ex.document[:self.LISTWISE_DOC_PREVIEW_LENGTH]}...")
         for ex in irrelevant:
-            lines.append(f"An irrelevant passage: {ex.document[:150]}...")
+            lines.append(f"An irrelevant passage: {ex.document[:self.LISTWISE_DOC_PREVIEW_LENGTH]}...")
         
         lines.append("")
         return "\n".join(lines)
@@ -216,6 +220,15 @@ class ExampleFormatter:
         """
         return self.format_for_listwise()  # Similar format works for setwise
     
+    def _get_default_score(self, label: str) -> int:
+        """Get default score based on relevance label."""
+        if label == 'highly_relevant':
+            return 5
+        elif label == 'relevant':
+            return 3
+        else:
+            return 1
+
     def format_for_judge(self) -> str:
         """
         Format examples specifically for judge/rating tasks.
@@ -228,7 +241,7 @@ class ExampleFormatter:
         lines = ["Example ratings:\n"]
         
         for ex in self._examples:
-            score = ex.score if ex.score is not None else (5 if ex.label == 'highly_relevant' else 3 if ex.label == 'relevant' else 1)
+            score = ex.score if ex.score is not None else self._get_default_score(ex.label)
             lines.append(f"Question: {ex.query}")
             lines.append(f"Context: {ex.document}")
             lines.append(f"Rating: {score}")
