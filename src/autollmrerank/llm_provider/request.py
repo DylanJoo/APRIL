@@ -50,8 +50,6 @@ class LLM:
         max_rating=5, 
         target_ratings=[3,4,5],
     ):
-        # self.yes_tokens = [self.tokenizer.tokenize(item)[0] for item in yes_strings]
-        # self.no_tokens = [self.tokenizer.tokenize(item)[0] for item in no_strings]
         self.id_tokens = [self.tokenizer.tokenize(item)[0] for item in id_strings]
         self.max_rating = max_rating
         self.target_ratings = target_ratings

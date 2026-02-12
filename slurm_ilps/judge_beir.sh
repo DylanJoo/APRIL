@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
-#SBATCH --array=11
+#SBATCH --array=0-12%4
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=10:00:00
 #SBATCH --output=%x-%a.out
@@ -14,7 +14,8 @@ initconda
 conda activate autollmrerank
 
 cd $HOME/APRIL
-LOGDIR=log.vllm.new/pointwise_judge
+seed=51 # from 42 to 51
+LOGDIR=auto-qrels/bootstrapping_$seed
 mkdir -p $LOGDIR
 
 BEIR_DATASETS=(
@@ -33,50 +34,58 @@ BEIR_DATASETS=(
 "webis-touche2020/v2"
 )
 
-# Point:binary_prob:Qwen/Qwen2.5-7B-Instruct
-subset=${BEIR_DATASETS[$SLURM_ARRAY_ID]}
+subset=${BEIR_DATASETS[$SLURM_ARRAY_TASK_ID]}
 MODEL=Qwen/Qwen2.5-7B-Instruct
 
-# Pointwise YES NO
-python -m autollmrerank.wrapper \
+python -m autollmrerank.wrapper_bootstrap \
     --config=$HOME/APRIL/src/autollmrerank/configs/point.yaml \
-    --data.batch_size=128 \
     --data.dataset_name=beir/${subset} \
     --data.input_run=runs/run.beir.bm25.${subset%%/*}.txt \
+    --bootstrapping=true \
+    --bootstrapping_size=50 \
+    --bootstrapping_seed=$seed \
+    --data.output_run=auto-qrels/point-beir-${subset%%/*}.txt \
     --llm.model_name_or_path=$MODEL \
     --system_message="You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
     --result_parser_name=binary_probability > $LOGDIR/point_beir-${subset%%/*}.log
 
 # Judge
-python -m autollmrerank.wrapper \
+python -m autollmrerank.wrapper_bootstrap \
     --config=$HOME/APRIL/src/autollmrerank/configs/judge.yaml \
-    --data.batch_size=128 \
     --data.dataset_name=beir/${subset} \
     --data.input_run=runs/run.beir.bm25.${subset%%/*}.txt \
+    --bootstrapping=true \
+    --bootstrapping_size=50 \
+    --bootstrapping_seed=$seed \
+    --data.output_run=auto-qrels/judge-beir-${subset%%/*}.txt \
     --llm.use_logits=true \
     --llm.model_name_or_path=$MODEL \
     --system_message="You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
     --result_parser_name=text > $LOGDIR/judge_beir-${subset%%/*}.log
 
 # Judge with max-rating logP
-python -m autollmrerank.wrapper \
+python -m autollmrerank.wrapper_bootstrap \
     --config=$HOME/APRIL/src/autollmrerank/configs/judge.yaml \
-    --data.batch_size=128 \
     --data.dataset_name=beir/${subset} \
     --data.input_run=runs/run.beir.bm25.${subset%%/*}.txt \
-    --data.output_run=runs/Dev/judge-rating-logp.txt \
+    --bootstrapping=true \
+    --bootstrapping_size=50 \
+    --bootstrapping_seed=$seed \
+    --data.output_run=auto-qrels/judge-logp-beir-${subset%%/*}.txt \
     --llm.use_logits=true \
     --llm.model_name_or_path=$MODEL \
     --system_message="You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \
     --result_parser_name=rating_logp > $LOGDIR/judge_logp_beir-${subset%%/*}.log
 
 # Judge with expected rating
-python -m autollmrerank.wrapper \
+python -m autollmrerank.wrapper_bootstrap \
     --config=$HOME/APRIL/src/autollmrerank/configs/judge.yaml \
-    --data.batch_size=128 \
     --data.dataset_name=beir/${subset} \
     --data.input_run=runs/run.beir.bm25.${subset%%/*}.txt \
-    --data.output_run=runs/Dev/judge-exp-rating.txt \
+    --bootstrapping=true \
+    --bootstrapping_size=50 \
+    --bootstrapping_seed=$seed \
+    --data.output_run=auto-qrels/judge-expr-beir-${subset%%/*}.txt \
     --llm.use_logits=true \
     --llm.model_name_or_path=$MODEL \
     --system_message="You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query" \

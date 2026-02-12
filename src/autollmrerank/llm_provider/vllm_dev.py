@@ -65,12 +65,9 @@ class LLM:
         max_rating=5, 
         target_ratings=[3,4,5],
     ):
-        # self.yes_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in yes_strings]
-        # self.no_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in no_strings]
         self.id_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in id_strings]
         self.max_rating = max_rating
         self.target_ratings = target_ratings
-        # print(f"YES TOKENS: {self.yes_tokens} | NO TOKENS: {self.no_tokens}")
         print(f"ID TOKENS: {self.id_tokens}")
         print(f"MAX RATING TOKEN: {self.max_rating} | TARGET TOKENS: {target_ratings}")
 
@@ -127,7 +124,6 @@ class LLM:
                 result = yes_ / (no_ + yes_)
 
             elif (use_rating_logp) or (use_expected_rating):
-                print(response)
                 tok_item = response.outputs[0].logprobs[0]
                 rating_logp = [0.0 for _ in range(self.max_rating+1)]
                 for topk, item in tok_item.items():
