@@ -19,6 +19,8 @@ llm:
 
 # Examples configuration for few-shot learning
 # Examples are query-document pairs that demonstrate relevance/irrelevance
+# NOTE: Currently supported for pointwise, pairwise, and judge paradigms only
+# Listwise and setwise do not support examples yet (they will be ignored)
 examples:
   strategy: none  # Options: 'none', 'inline', 'block', 'interleaved'
   max_examples: 2  # Maximum number of examples to include

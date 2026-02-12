@@ -3,12 +3,20 @@ Example formatter for including query-document pairs in prompts.
 
 This module provides different strategies for formatting examples that demonstrate
 relevant and irrelevant query-document pairs. These examples can be included in
-the prompts for various ranking paradigms to guide the LLM's behavior.
+the prompts for ranking paradigms to guide the LLM's behavior.
+
+Currently supported paradigms for examples:
+    - pointwise: In-context examples showing Yes/No relevance assessments
+    - pairwise: Examples using one positive and one negative document to demonstrate comparison
+    - judge: Examples showing rating scale assessments
+
+Note: Listwise and setwise paradigms do not currently support examples
+as they involve complex multi-document ranking that is harder to demonstrate with examples.
 
 Supported strategies:
     - inline: Include examples directly in the instruction text
     - block: Include examples as a separate block before the main content
-    - interleaved: Include examples within the document list
+    - interleaved: Paradigm-specific formatting (recommended for pointwise, pairwise, judge)
 """
 from typing import List, Optional, Dict, Union
 
@@ -41,9 +49,8 @@ class ExampleFormatter:
     
     SUPPORTED_STRATEGIES = ['inline', 'block', 'interleaved', 'none']
     
-    # Preview lengths for truncating document text in different contexts
+    # Preview length for truncating document text in inline strategy
     INLINE_DOC_PREVIEW_LENGTH = 200
-    LISTWISE_DOC_PREVIEW_LENGTH = 150
     
     def __init__(
         self, 
@@ -190,35 +197,21 @@ class ExampleFormatter:
         """
         Format examples specifically for listwise ranking tasks.
         
-        Returns examples showing expected ranking format.
+        Note: Listwise examples are not currently supported as they involve
+        complex multi-document ranking. Returns empty string.
         """
-        if not self.has_examples:
-            return ""
-        
-        # Group by relevance for demonstration
-        relevant = [ex for ex in self._examples if ex.label in ['relevant', 'highly_relevant']]
-        irrelevant = [ex for ex in self._examples if ex.label == 'irrelevant']
-        
-        if not relevant and not irrelevant:
-            return ""
-        
-        lines = ["Example of relevance:\n"]
-        
-        for ex in relevant:
-            lines.append(f"For query \"{ex.query}\", a relevant passage: {ex.document[:self.LISTWISE_DOC_PREVIEW_LENGTH]}...")
-        for ex in irrelevant:
-            lines.append(f"An irrelevant passage: {ex.document[:self.LISTWISE_DOC_PREVIEW_LENGTH]}...")
-        
-        lines.append("")
-        return "\n".join(lines)
+        # Listwise examples are not supported yet
+        return ""
     
     def format_for_setwise(self) -> str:
         """
         Format examples specifically for setwise comparison tasks.
         
-        Returns examples showing selection from a set of documents.
+        Note: Setwise examples are not currently supported as they involve
+        selecting from multiple documents. Returns empty string.
         """
-        return self.format_for_listwise()  # Similar format works for setwise
+        # Setwise examples are not supported yet
+        return ""
     
     def _get_default_score(self, label: str) -> int:
         """Get default score based on relevance label."""
@@ -249,17 +242,25 @@ class ExampleFormatter:
         
         return "\n".join(lines)
     
-    def format(self, paradigm: str = 'listwise') -> str:
+    def format(self, paradigm: str = 'pointwise') -> str:
         """
         Format examples based on the current strategy and paradigm.
         
         Args:
-            paradigm: The ranking paradigm ('listwise', 'pairwise', 'setwise', 'pointwise', 'judge')
+            paradigm: The ranking paradigm. Currently supported: 'pointwise', 'pairwise', 'judge'.
+                     'listwise' and 'setwise' are not supported and will return empty string.
+                     Note: The default value changed from 'listwise' to 'pointwise' since 
+                     listwise is not supported. This should not affect normal usage as the
+                     paradigm is typically passed explicitly via the formatter's paradigm attribute.
         
         Returns:
             Formatted example string ready for inclusion in prompt
         """
         if self.strategy == 'none' or not self.has_examples:
+            return ""
+        
+        # Listwise and setwise do not support examples
+        if paradigm in ['listwise', 'setwise']:
             return ""
         
         if self.strategy == 'inline':
@@ -269,9 +270,7 @@ class ExampleFormatter:
         elif self.strategy == 'interleaved':
             # For interleaved, use paradigm-specific formatting
             paradigm_formatters = {
-                'listwise': self.format_for_listwise,
                 'pairwise': self.format_for_pairwise,
-                'setwise': self.format_for_setwise,
                 'pointwise': self.format_for_pointwise,
                 'judge': self.format_for_judge,
             }

@@ -6,12 +6,12 @@ class ListwiseFormatter(BaseFormatter):
     paradigm = 'listwise'
 
     def prefix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:
-        examples_text = self.examples()
+        # NOTE: Examples are not supported for listwise paradigm yet
+        # as it involves many documents and complex ranking format
         return (
             f"I will provide you with {len(doc_list)} passages, "
             f"each indicated by a {self.id_type} identifier []. "
             f"Rank the passages based on their relevance to the search query: {query}.\n\n"
-            f"{examples_text}"
         )
 
     def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, filtering=False, **kwargs) -> str:
