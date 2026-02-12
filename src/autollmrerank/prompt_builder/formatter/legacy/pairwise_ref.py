@@ -23,8 +23,11 @@ class PairwiseRefFormatter(BaseFormatter):
         if idx_pairs is None:
             idx_pairs = [(i, j) for i in range(len(doc_list)) for j in range(len(doc_list)) if i != j]
 
+        # Filter out invalid index pairs that exceed doc_list bounds
+        valid_idx_pairs = [(i, j) for i, j in idx_pairs if i < len(doc_list) and j < len(doc_list)]
+
         prompts = []
-        for i, j in idx_pairs:
+        for i, j in valid_idx_pairs:
             prompt = template.format(query=query, doc1=doc_list[i], doc2=doc_list[j])
             prompts.append(prompt)
         return prompts

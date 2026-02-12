@@ -22,9 +22,18 @@ class PairwiseGenRefFormatter(BaseFormatter):
 
         prompts = []
         for i, j in idx_pairs:
+            # Skip if indices are out of bounds (except -1 which means use reference)
+            # Also skip invalid negative indices (other than -1)
+            if i != -1 and (i < 0 or i >= len(doc_list)):
+                continue
+            if j != -1 and (j < 0 or j >= len(doc_list)):
+                continue
             if j == -1:
                 prompt = template.format(query=query, doc1=doc_list[i], doc2=reference)
-            if i == -1:
+            elif i == -1:
                 prompt = template.format(query=query, doc1=reference, doc2=doc_list[j])
+            else:
+                # Both i and j are valid doc indices
+                prompt = template.format(query=query, doc1=doc_list[i], doc2=doc_list[j])
             prompts.append(prompt)
         return prompts
