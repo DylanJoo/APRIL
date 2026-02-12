@@ -4,11 +4,15 @@ from .base import BaseFormatter
 
 class SetwiseFormatter(BaseFormatter):
 
+    paradigm = 'setwise'
+
     def prefix(self, query, idx_pairs, **kwargs) -> str:
         n_pairs = len(idx_pairs[0])
+        examples_text = self.examples()
         return (
             f"I will provide you with {n_pairs} passages. Read and memorize all carefully. "
             f"Your task is to determine which passage is the most relevant to the query: {query}\n\n"
+            f"{examples_text}"
         )
 
     def postfix(self, query: str, doc_list: Optional[List[Dict]] = None, idx_pairs = None, **kwargs) -> str:

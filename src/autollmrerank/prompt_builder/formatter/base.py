@@ -2,8 +2,25 @@ import re
 from typing import List, Optional, Union, Callable, Dict, Tuple
 from abc import ABC, abstractmethod
 
+from .example import ExampleFormatter
+
+
+def _get_attr(obj, key, default=None):
+    """Helper function to get attribute from namespace or dict."""
+    if obj is None:
+        return default
+    if hasattr(obj, key):
+        return getattr(obj, key)
+    if isinstance(obj, dict):
+        return obj.get(key, default)
+    return default
+
+
 class BaseFormatter(ABC):
     """Base class for all formatters."""
+
+    # Subclasses should override this to specify their paradigm type
+    paradigm = 'base'
 
     def __init__(self, config=None):
         self._use_alpha = config.use_alphabetical
@@ -16,6 +33,27 @@ class BaseFormatter(ABC):
         else:
             self.id_type = "numerical"
             self.example_ordering = "[2] > [1]" if self._variable_passages else "[4] > [2]"
+
+        # Initialize example formatter if examples are configured
+        examples_config = getattr(config, 'examples', None)
+        if examples_config is not None:
+            self._example_formatter = ExampleFormatter(
+                examples=_get_attr(examples_config, 'data', None),
+                strategy=_get_attr(examples_config, 'strategy', 'none'),
+                max_examples=_get_attr(examples_config, 'max_examples', 2),
+                max_doc_length=self.max_doc_length
+            )
+        else:
+            self._example_formatter = ExampleFormatter(strategy='none')
+
+    def examples(self, **kwargs) -> str:
+        """
+        Returns formatted examples based on the configured strategy.
+        
+        This method can be called by subclasses to include examples in their prompts.
+        The formatting depends on the example strategy and the paradigm type.
+        """
+        return self._example_formatter.format(paradigm=self.paradigm)
 
     @abstractmethod
     def prefix(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:
