@@ -5,17 +5,6 @@ from abc import ABC, abstractmethod
 from .example import ExampleFormatter
 
 
-def _get_attr(obj, key, default=None):
-    """Helper function to get attribute from namespace or dict."""
-    if obj is None:
-        return default
-    if hasattr(obj, key):
-        return getattr(obj, key)
-    if isinstance(obj, dict):
-        return obj.get(key, default)
-    return default
-
-
 class BaseFormatter(ABC):
     """Base class for all formatters."""
 
@@ -35,23 +24,38 @@ class BaseFormatter(ABC):
             self.example_ordering = "[2] > [1]" if self._variable_passages else "[4] > [2]"
 
         # Initialize example formatter if examples are configured
+        # Simplified config: examples is just a list of dicts directly (or None)
         examples_config = getattr(config, 'examples', None)
-        if examples_config is not None:
+        
+        # Handle both list format and legacy dict format
+        if examples_config is None:
+            self._example_formatter = ExampleFormatter(examples=None)
+        elif isinstance(examples_config, list):
+            # New simplified format: examples is a list of dicts directly
             self._example_formatter = ExampleFormatter(
-                examples=_get_attr(examples_config, 'data', None),
-                strategy=_get_attr(examples_config, 'strategy', 'none'),
-                max_examples=_get_attr(examples_config, 'max_examples', 2),
+                examples=examples_config,
                 max_doc_length=self.max_doc_length
             )
         else:
-            self._example_formatter = ExampleFormatter(strategy='none')
+            # Legacy format: examples is a namespace/dict with 'data' key
+            # This provides backward compatibility
+            if hasattr(examples_config, 'data'):
+                examples_data = examples_config.data
+            elif isinstance(examples_config, dict):
+                examples_data = examples_config.get('data', None)
+            else:
+                examples_data = None
+            self._example_formatter = ExampleFormatter(
+                examples=examples_data,
+                max_doc_length=self.max_doc_length
+            )
 
     def examples(self, **kwargs) -> str:
         """
-        Returns formatted examples based on the configured strategy.
+        Returns formatted examples based on the paradigm type.
         
         This method can be called by subclasses to include examples in their prompts.
-        The formatting depends on the example strategy and the paradigm type.
+        The formatting is determined automatically based on the paradigm type.
         """
         return self._example_formatter.format(paradigm=self.paradigm)
 

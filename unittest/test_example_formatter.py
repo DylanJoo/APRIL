@@ -9,8 +9,8 @@ import argparse
 sys.path.insert(0, 'src')
 
 
-def test_example_formatter_strategies():
-    """Test different example formatting strategies for supported paradigms."""
+def test_example_formatter_basic():
+    """Test basic example formatting for supported paradigms."""
     from autollmrerank.prompt_builder.formatter.example import ExampleFormatter, Example
     
     examples_data = [
@@ -18,25 +18,7 @@ def test_example_formatter_strategies():
         {'query': 'What is Python?', 'document': 'Java is a coffee.', 'label': 'irrelevant', 'score': 1}
     ]
     
-    # Test 'none' strategy returns empty string
-    formatter = ExampleFormatter(examples=examples_data, strategy='none')
-    assert formatter.format('pointwise') == '', "None strategy should return empty string"
-    
-    # Test 'block' strategy returns formatted block for supported paradigms
-    formatter = ExampleFormatter(examples=examples_data, strategy='block')
-    result = formatter.format('pointwise')
-    assert 'Examples of relevance assessment' in result, "Block format should have header"
-    assert 'Example 1:' in result, "Block format should have numbered examples"
-    assert 'Relevant' in result, "Block format should show relevance assessment"
-    
-    # Test 'inline' strategy returns inline description for supported paradigms
-    formatter = ExampleFormatter(examples=examples_data, strategy='inline')
-    result = formatter.format('pairwise')
-    assert 'For example' in result, "Inline format should start with example phrase"
-    assert 'relevant passage' in result, "Inline format should mention relevant passage"
-    
-    # Test 'interleaved' strategy for supported paradigms
-    formatter = ExampleFormatter(examples=examples_data, strategy='interleaved')
+    formatter = ExampleFormatter(examples=examples_data)
     
     # Pairwise
     result = formatter.format('pairwise')
@@ -53,7 +35,7 @@ def test_example_formatter_strategies():
     assert 'Example ratings' in result, "Judge format should show ratings"
     assert 'Rating:' in result, "Judge format should have ratings"
     
-    print("✓ All strategy tests passed")
+    print("✓ Basic example formatting tests passed")
 
 
 def test_unsupported_paradigms():
@@ -65,14 +47,9 @@ def test_unsupported_paradigms():
         {'query': 'What is Python?', 'document': 'Java is a coffee.', 'label': 'irrelevant', 'score': 1}
     ]
     
-    # Test that listwise and setwise return empty string even with examples
-    formatter = ExampleFormatter(examples=examples_data, strategy='block')
+    formatter = ExampleFormatter(examples=examples_data)
     assert formatter.format('listwise') == '', "Listwise should return empty (not supported)"
     assert formatter.format('setwise') == '', "Setwise should return empty (not supported)"
-    
-    formatter = ExampleFormatter(examples=examples_data, strategy='interleaved')
-    assert formatter.format('listwise') == '', "Listwise interleaved should return empty"
-    assert formatter.format('setwise') == '', "Setwise interleaved should return empty"
     
     print("✓ Unsupported paradigms tests passed")
 
@@ -82,59 +59,35 @@ def test_example_formatter_empty():
     from autollmrerank.prompt_builder.formatter.example import ExampleFormatter
     
     # No examples provided
-    formatter = ExampleFormatter(examples=None, strategy='block')
+    formatter = ExampleFormatter(examples=None)
     assert formatter.format('pointwise') == '', "Should return empty with no examples"
     
     # Empty list
-    formatter = ExampleFormatter(examples=[], strategy='block')
+    formatter = ExampleFormatter(examples=[])
     assert formatter.format('pairwise') == '', "Should return empty with empty list"
     
     print("✓ Empty examples tests passed")
 
 
-def test_example_formatter_max_examples():
-    """Test max_examples parameter."""
-    from autollmrerank.prompt_builder.formatter.example import ExampleFormatter
-    
-    examples_data = [
-        {'query': 'Q1', 'document': 'D1', 'label': 'relevant'},
-        {'query': 'Q2', 'document': 'D2', 'label': 'relevant'},
-        {'query': 'Q3', 'document': 'D3', 'label': 'relevant'},
-    ]
-    
-    # Only 1 example should be used
-    formatter = ExampleFormatter(examples=examples_data, strategy='block', max_examples=1)
-    assert formatter._examples is not None
-    assert len(formatter._examples) == 1, "Should only have 1 example"
-    
-    # All 3 examples
-    formatter = ExampleFormatter(examples=examples_data, strategy='block', max_examples=5)
-    assert len(formatter._examples) == 3, "Should have all 3 examples"
-    
-    print("✓ Max examples tests passed")
-
-
-def test_formatter_integration():
-    """Test that formatters properly integrate examples (for supported paradigms)."""
-    from autollmrerank.prompt_builder.formatter.listwise import ListwiseFormatter
+def test_formatter_integration_simplified():
+    """Test that formatters properly integrate examples with simplified config."""
     from autollmrerank.prompt_builder.formatter.pairwise import PairwiseFormatter
     from autollmrerank.prompt_builder.formatter.pointwise import PointwiseFormatter
-    from autollmrerank.prompt_builder.formatter.setwise import SetwiseFormatter
     from autollmrerank.prompt_builder.formatter.judge import JudgeFormatter
+    from autollmrerank.prompt_builder.formatter.listwise import ListwiseFormatter
+    from autollmrerank.prompt_builder.formatter.setwise import SetwiseFormatter
     
     examples_data = [
-        {'query': 'Test query', 'document': 'Test document', 'label': 'relevant', 'score': 5}
+        {'query': 'Test query', 'document': 'Test document', 'label': 'relevant', 'score': 5},
+        {'query': 'Test query', 'document': 'Irrelevant doc', 'label': 'irrelevant', 'score': 1}
     ]
     
+    # New simplified config: examples is just a list
     config_with_examples = argparse.Namespace(
         use_alphabetical=False,
         variable_passages=True,
         max_doc_length=50,
-        examples=argparse.Namespace(
-            strategy='block',
-            max_examples=2,
-            data=examples_data
-        )
+        examples=examples_data  # Direct list, not nested dict
     )
     
     config_without_examples = argparse.Namespace(
@@ -147,34 +100,34 @@ def test_formatter_integration():
     # Test ListwiseFormatter - should NOT include examples (not supported)
     formatter = ListwiseFormatter(config_with_examples)
     prefix = formatter.prefix(query='Q', doc_list=[{}, {}])
-    assert 'Examples of relevance assessment' not in prefix, "Listwise should NOT include examples"
+    assert 'Example' not in prefix, "Listwise should NOT include examples"
     
     # Test SetwiseFormatter - should NOT include examples (not supported)
     formatter = SetwiseFormatter(config_with_examples)
     prefix = formatter.prefix(query='Q', idx_pairs=[[0,1]])
-    assert 'Examples of relevance assessment' not in prefix, "Setwise should NOT include examples"
+    assert 'Example' not in prefix, "Setwise should NOT include examples"
     
     # Test PairwiseFormatter - should include examples
     formatter = PairwiseFormatter(config_with_examples)
     prefix = formatter.prefix(query='Q')
-    assert 'Examples of relevance assessment' in prefix, "Pairwise should include examples"
+    assert 'Example comparison' in prefix, "Pairwise should include examples"
     
     # Test PointwiseFormatter - should include examples
     formatter = PointwiseFormatter(config_with_examples)
     prefix = formatter.prefix()
-    assert 'Examples of relevance assessment' in prefix, "Pointwise should include examples"
+    assert 'Example assessments' in prefix, "Pointwise should include examples"
     
     # Test JudgeFormatter - should include examples
     formatter = JudgeFormatter(config_with_examples)
     prefix = formatter.prefix()
-    assert 'Examples of relevance assessment' in prefix, "Judge should include examples"
+    assert 'Example ratings' in prefix, "Judge should include examples"
     
     # Test without examples config
     formatter = PairwiseFormatter(config_without_examples)
     prefix = formatter.prefix(query='Q')
-    assert 'Examples of relevance assessment' not in prefix, "Without config should not have examples"
+    assert 'Example' not in prefix, "Without config should not have examples"
     
-    print("✓ All formatter integration tests passed")
+    print("✓ Formatter integration tests passed")
 
 
 def test_formatter_paradigm_attribute():
@@ -201,25 +154,10 @@ def test_formatter_paradigm_attribute():
     print("✓ All paradigm attribute tests passed")
 
 
-def test_invalid_strategy():
-    """Test that invalid strategy raises an error."""
-    from autollmrerank.prompt_builder.formatter.example import ExampleFormatter
-    
-    try:
-        ExampleFormatter(strategy='invalid_strategy')
-        assert False, "Should have raised ValueError"
-    except ValueError as e:
-        assert 'Unsupported example strategy' in str(e)
-    
-    print("✓ Invalid strategy test passed")
-
-
 if __name__ == '__main__':
-    test_example_formatter_strategies()
+    test_example_formatter_basic()
     test_unsupported_paradigms()
     test_example_formatter_empty()
-    test_example_formatter_max_examples()
-    test_formatter_integration()
+    test_formatter_integration_simplified()
     test_formatter_paradigm_attribute()
-    test_invalid_strategy()
     print("\n✓✓✓ All tests passed! ✓✓✓")

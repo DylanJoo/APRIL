@@ -1,9 +1,9 @@
 """
 Example formatter for including query-document pairs in prompts.
 
-This module provides different strategies for formatting examples that demonstrate
-relevant and irrelevant query-document pairs. These examples can be included in
-the prompts for ranking paradigms to guide the LLM's behavior.
+This module provides formatting for examples that demonstrate relevant and irrelevant 
+query-document pairs. These examples can be included in prompts for ranking paradigms 
+to guide the LLM's behavior (few-shot learning).
 
 Currently supported paradigms for examples:
     - pointwise: In-context examples showing Yes/No relevance assessments
@@ -13,10 +13,16 @@ Currently supported paradigms for examples:
 Note: Listwise and setwise paradigms do not currently support examples
 as they involve complex multi-document ranking that is harder to demonstrate with examples.
 
-Supported strategies:
-    - inline: Include examples directly in the instruction text
-    - block: Include examples as a separate block before the main content
-    - interleaved: Paradigm-specific formatting (recommended for pointwise, pairwise, judge)
+Configuration:
+    Simply provide a list of example dictionaries in the config:
+    
+    examples:
+      - query: "What is the capital of France?"
+        document: "Paris is the capital city of France."
+        label: "relevant"
+      - query: "What is the capital of France?"
+        document: "The Eiffel Tower is tall."
+        label: "irrelevant"
 """
 from typing import List, Optional, Dict, Union
 
@@ -42,44 +48,26 @@ class ExampleFormatter:
     """
     Formats examples for inclusion in prompts.
     
-    This class provides various strategies for formatting and including examples
-    in ranking prompts. The strategy determines how examples are presented to
-    guide the LLM's understanding of relevance.
+    This class formats and includes examples in ranking prompts using paradigm-specific
+    formatting automatically based on the ranking paradigm type.
     """
-    
-    SUPPORTED_STRATEGIES = ['inline', 'block', 'interleaved', 'none']
-    
-    # Preview length for truncating document text in inline strategy
-    INLINE_DOC_PREVIEW_LENGTH = 200
     
     def __init__(
         self, 
         examples: Optional[List[Dict]] = None,
-        strategy: str = 'none',
-        max_examples: int = 2,
         max_doc_length: Optional[int] = None
     ):
         """
         Args:
             examples: List of example dictionaries with keys: query, document, label, score (optional)
-            strategy: How to format examples ('inline', 'block', 'interleaved', 'none')
-            max_examples: Maximum number of examples to include
             max_doc_length: Maximum length of document text in examples (words)
         """
-        if strategy not in self.SUPPORTED_STRATEGIES:
-            raise ValueError(
-                f"Unsupported example strategy: {strategy}. "
-                f"Supported strategies: {self.SUPPORTED_STRATEGIES}"
-            )
-        
-        self.strategy = strategy
-        self.max_examples = max_examples
         self.max_doc_length = max_doc_length
         
         # Convert dict examples to Example objects
         self._examples = []
         if examples:
-            for ex in examples[:max_examples]:
+            for ex in examples:
                 self._examples.append(Example(
                     query=ex.get('query', ''),
                     document=self._truncate_doc(ex.get('document', '')),
@@ -95,58 +83,8 @@ class ExampleFormatter:
     
     @property
     def has_examples(self) -> bool:
-        """Check if examples are available and strategy is not 'none'."""
-        return len(self._examples) > 0 and self.strategy != 'none'
-    
-    def format_inline(self, paradigm: str = 'listwise') -> str:
-        """
-        Format examples for inline inclusion in instruction text.
-        
-        Returns a brief mention of what constitutes relevant/irrelevant documents.
-        """
-        if not self.has_examples:
-            return ""
-        
-        relevant_examples = [ex for ex in self._examples if ex.label in ['relevant', 'highly_relevant']]
-        irrelevant_examples = [ex for ex in self._examples if ex.label == 'irrelevant']
-        
-        parts = []
-        if relevant_examples:
-            ex = relevant_examples[0]
-            parts.append(
-                f"For example, for the query \"{ex.query}\", "
-                f"a relevant passage would be: \"{ex.document[:self.INLINE_DOC_PREVIEW_LENGTH]}...\""
-            )
-        if irrelevant_examples:
-            ex = irrelevant_examples[0]
-            parts.append(
-                f"An irrelevant passage would be: \"{ex.document[:self.INLINE_DOC_PREVIEW_LENGTH]}...\""
-            )
-        
-        return " ".join(parts)
-    
-    def format_block(self, paradigm: str = 'listwise') -> str:
-        """
-        Format examples as a separate block to be included in the prompt.
-        
-        Returns a formatted block containing all examples with clear labeling.
-        """
-        if not self.has_examples:
-            return ""
-        
-        lines = ["Examples of relevance assessment:\n"]
-        
-        for i, ex in enumerate(self._examples, start=1):
-            label_text = "Relevant" if ex.label in ['relevant', 'highly_relevant'] else "Irrelevant"
-            score_text = f" (Score: {ex.score})" if ex.score is not None else ""
-            
-            lines.append(f"Example {i}:")
-            lines.append(f"  Query: {ex.query}")
-            lines.append(f"  Document: {ex.document}")
-            lines.append(f"  Assessment: {label_text}{score_text}")
-            lines.append("")
-        
-        return "\n".join(lines)
+        """Check if examples are available."""
+        return len(self._examples) > 0
     
     def format_for_pairwise(self) -> str:
         """
@@ -193,26 +131,6 @@ class ExampleFormatter:
         
         return "\n".join(lines)
     
-    def format_for_listwise(self) -> str:
-        """
-        Format examples specifically for listwise ranking tasks.
-        
-        Note: Listwise examples are not currently supported as they involve
-        complex multi-document ranking. Returns empty string.
-        """
-        # Listwise examples are not supported yet
-        return ""
-    
-    def format_for_setwise(self) -> str:
-        """
-        Format examples specifically for setwise comparison tasks.
-        
-        Note: Setwise examples are not currently supported as they involve
-        selecting from multiple documents. Returns empty string.
-        """
-        # Setwise examples are not supported yet
-        return ""
-    
     def _get_default_score(self, label: str) -> int:
         """Get default score based on relevance label."""
         if label == 'highly_relevant':
@@ -244,37 +162,30 @@ class ExampleFormatter:
     
     def format(self, paradigm: str = 'pointwise') -> str:
         """
-        Format examples based on the current strategy and paradigm.
+        Format examples based on the paradigm type.
         
         Args:
             paradigm: The ranking paradigm. Currently supported: 'pointwise', 'pairwise', 'judge'.
                      'listwise' and 'setwise' are not supported and will return empty string.
-                     Note: The default value changed from 'listwise' to 'pointwise' since 
-                     listwise is not supported. This should not affect normal usage as the
-                     paradigm is typically passed explicitly via the formatter's paradigm attribute.
         
         Returns:
             Formatted example string ready for inclusion in prompt
         """
-        if self.strategy == 'none' or not self.has_examples:
+        if not self.has_examples:
             return ""
         
         # Listwise and setwise do not support examples
         if paradigm in ['listwise', 'setwise']:
             return ""
         
-        if self.strategy == 'inline':
-            return self.format_inline(paradigm)
-        elif self.strategy == 'block':
-            return self.format_block(paradigm)
-        elif self.strategy == 'interleaved':
-            # For interleaved, use paradigm-specific formatting
-            paradigm_formatters = {
-                'pairwise': self.format_for_pairwise,
-                'pointwise': self.format_for_pointwise,
-                'judge': self.format_for_judge,
-            }
-            formatter = paradigm_formatters.get(paradigm, self.format_block)
+        # Use paradigm-specific formatting
+        paradigm_formatters = {
+            'pairwise': self.format_for_pairwise,
+            'pointwise': self.format_for_pointwise,
+            'judge': self.format_for_judge,
+        }
+        formatter = paradigm_formatters.get(paradigm)
+        if formatter:
             return formatter()
         
         return ""
