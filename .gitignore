@@ -22,3 +22,6 @@ build/
 *log/
 *.log
 *.err
+
+bbeir/
+bbier/

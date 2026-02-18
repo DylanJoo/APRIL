@@ -40,7 +40,9 @@ class SetMaxHeapTopK(RerankStrategy):
             # Iteration until we have enough sorted hits
             while len(sorted_hits) < num_runs: # TODO: maybe we should use variable top_k
 
-                # print(f"number of sorted hits: {len(sorted_hits)}, number of remaining hits: {len(result.hits)}, num_runs: {num_runs}")
+                if len(result.hits) == 0:
+                    break
+
                 # iter-1: build maxheap for the remaining hits (only from the root)
                 result = self.run_pass(result, target=0)
                 # iter-2: swap the top1 with the last element

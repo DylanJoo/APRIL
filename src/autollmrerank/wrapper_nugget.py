@@ -5,6 +5,7 @@ from tqdm import tqdm
 import torch
 from functools import wraps
 import time
+import numpy as np
 
 from .utils import Result, batch_iterator
 from .input_assembler import AutoAssembler
@@ -60,11 +61,15 @@ class AutoLLMReranker:
             max_model_len=config.llm.max_model_len,
             max_tokens=5 if config.llm.use_logits else 128,
             dtype=config.llm.dtype,
-            num_gpus=max(1, int(torch.cuda.device_count())),
-            base_url=('http://localhost:8000/v1' or config.llm.base_url),
+            num_gpus=max(1, int(torch.cuda.device_count())), # NOTE: do we want it to be specified?
+            base_url='http://localhost:8000/v1',
             api_key='EMPTY'
         )
-        # agent.set_classification(target_ratings=[3,4,5])
+        agent.set_classification(target_ratings=[3,4,5])
+        # NOTE: set the ids by default
+        # TODO: for some types of result parsing, we dont need setting 
+        # if config.llm.use_logits:
+        #     agent.set_classification(id_strings=[chr(i) for i in range(65, 91)])
 
         result_parser = ResultParser(use_alpha=config.use_alphabetical)
 
@@ -130,7 +135,11 @@ class AutoLLMReranker:
         for result in reranked_results:
             reranked_run[result.qid] = {}
             for rank, hit in enumerate(result.hits, start=1):
-                reranked_run[result.qid].update({ hit['docid']: hit['score'] })
+                hit['rank'] = rank
+                if 'score' in hit:
+                    reranked_run[result.qid].update({ hit['docid']: hit['score'] })
+                else:
+                    reranked_run[result.qid].update({ hit['docid']: 1/rank })
 
         return reranked_run
 
@@ -138,6 +147,8 @@ if __name__ == "__main__":
     import ir_measures
     from ir_measures import *
     import importlib
+    from crux.tools import load_diversity_qrel, load_ratings
+    from crux.evaluation.rac_eval import rac_eval
 
     # init config with CLI commands
     config = ConfigManager().get_config()
@@ -154,15 +165,14 @@ if __name__ == "__main__":
     run = loader.load_run(config.data.input_run)
     corpus, queries, qrels = loader.load(config.data.dataset_name, query_fields=None, doc_fields=None)
     qrels = {qid: qrel for qid, qrel in qrels.items() if qid in run}
+    div_qrels = load_diversity_qrel(config.data.input_diversity_qrels)
+    ratings = load_ratings(config.data.input_ratings)
 
     # reranking
     reranked_run = rankllm.rerank(run=run, queries=queries, corpus=corpus, query_batch_size=config.data.batch_size)
 
     # output reranked result
-    if config.data.output_run is None:
-        output_path = os.path.join(config.data.input_run.replace('runs', f'runs/{config.rerank_mode}'))
-    else:
-        output_path = config.data.output_run
+    output_path = os.path.join(config.data.input_run.replace('runs', f'runs/{config.rerank_mode}'))
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as f:
         for qid in reranked_run:
@@ -170,8 +180,29 @@ if __name__ == "__main__":
                 f.write(f"{qid} Q0 {docid} {i+1} {score} {config.rerank_mode}\n")
 
     # evaluation
-    r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)
-    r2 = ir_measures.calc_aggregate([nDCG@10], qrels, reranked_run)
+    r1 = rac_eval(
+        run=run, 
+        qrel=qrels, div_qrel=div_qrels,
+        run_b=None, 
+        tau=3,
+        cutoff=10,
+        judge=ratings, 
+        filter_by_oracle=True
+    )
+    r2 = rac_eval(
+        run=reranked_run, 
+        qrel=qrels, div_qrel=div_qrels, 
+        run_b=None, 
+        tau=3,
+        cutoff=10,
+        judge=ratings, 
+        filter_by_oracle=True
+    )
+
+    for key, values in r1.items():
+        r1[key] = np.mean(values).item()
+    for key, values in r2.items():
+        r2[key] = np.mean(values).item()
 
     # print logs
     eval_log = {

@@ -77,6 +77,7 @@ class PromptBuilder:
         prefix = self.formatter.prefix(**inputs, **kwargs)
         postfix = self.formatter.postfix(**inputs, **kwargs)
         body = self.formatter.body(**inputs, **kwargs)
+        # examples = self.formatter.examples(**inputs, **kwargs)
 
         # organize the prompts with reranking methods 
         # Case1: postfix and body are single string --> listwise method

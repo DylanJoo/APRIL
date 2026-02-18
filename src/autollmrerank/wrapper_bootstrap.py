@@ -150,7 +150,7 @@ if __name__ == "__main__":
 
     results = {}
 
-    # init reranker
+   # init reranker
     rankllm = AutoLLMReranker(config)
 
     # load data

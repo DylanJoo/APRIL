@@ -9,6 +9,10 @@ class BaseFormatter(ABC):
         self._use_alpha = config.use_alphabetical
         self._variable_passages = config.variable_passages
         self.max_doc_length = config.max_doc_length
+        if hasattr(config, 'examples'):
+            self.examples = config.examples
+        else:
+            self.examples = None
 
         if self._use_alpha: 
             self.id_type = "alphabetical"
@@ -31,6 +35,10 @@ class BaseFormatter(ABC):
     def body(self, query: str, doc_list: Optional[List[Dict]] = None, **kwargs) -> str:
         """Returns the body of the prompt."""
         pass
+
+    # @abstractmethod
+    # def example(self, **kwargs) -> str:
+    #     pass
 
     # TODO: See if we need to have separate formuation of title
     # TODO: Equalize the max length

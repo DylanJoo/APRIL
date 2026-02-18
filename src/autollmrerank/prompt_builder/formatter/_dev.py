@@ -18,13 +18,22 @@ class DevFormatter(BaseFormatter):
             "- 0: The context is not relevant or complete at all.\n\n"
         )
 
+    def example(self, examples, **kwargs) -> str:
+        prompt = "Here are some examples for references:\n\n"
+        for example in examples:
+            query = example["query"]
+            doc = self._document_format(example["doc"])
+            label = example["label"]
+            prompt += f"Question: {query}\nContext: {doc}\nRating:\n{label}\n\n"
+        return prompt
+
     def postfix(self, **kwargs) -> str:
-        return "Rating: \n"
+        return "Rating:\n"
 
     def body(self, query, doc_list, **kwargs) -> str:
         prompts = []
         doc_list = [self._document_format(doc) for doc in doc_list]
         for doc in doc_list:
-            prompt = f"Question: {query}\n\nContext: {doc}\n\n"
+            prompt = f"Question: {query}\nContext: {doc}\n"
             prompts.append(prompt)
         return prompts
