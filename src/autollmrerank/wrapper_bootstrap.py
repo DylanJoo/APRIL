@@ -150,9 +150,6 @@ if __name__ == "__main__":
 
     results = {}
 
-   # init reranker
-    rankllm = AutoLLMReranker(config)
-
     # load data
     loader = importlib.import_module(f"autollmrerank.loader_dev.{config.data.loader_type}", package=__name__)
     run = loader.load_run(config.data.input_run)
@@ -167,8 +164,12 @@ if __name__ == "__main__":
         run = {qid: run[qid] for qid in selected_qids}
         qrels = {qid: qrels[qid] for qid in selected_qids}
 
-    # reranking
-    reranked_run = rankllm.rerank(run=run, queries=queries, corpus=corpus, query_batch_size=config.data.batch_size)
+    if config.rerank_mode is None:
+        reranked_run = run
+    else:
+        # reranking
+        rankllm = AutoLLMReranker(config)
+        reranked_run = rankllm.rerank(run=run, queries=queries, corpus=corpus, query_batch_size=config.data.batch_size)
 
     # output reranked result
     if config.data.output_run is None:

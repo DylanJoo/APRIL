@@ -2,6 +2,7 @@
 source ${HOME}/.bashrc
 initconda
 conda activate inference 
+cd ${HOME}/APRIL
 
 DATASETS=(
 "beir.arguana"
@@ -35,14 +36,20 @@ QRELS=(
 "beir/webis-touche2020/v2"
 )
 
-run_path=${HOME}/APRIL/runs/run.beir.bm25.dataset.txt
 
-# BM25 
-for id in {0..12};do
+for boopstrap_id in {1..10};do
+for method in bm25-null judge judge_expr point rankfirst rankgpt rankzephyr setmaxheap;do
+for id in {0..10};do # 11 and 12 only needs to be done once as smaller than 50
     dataset=${DATASETS[$id]}
     dataset=${dataset/beir./}
     short_name=$(basename "$dataset" | cut -c1-3)
-    nDCG=$(python -m ir_measures ${QRELS[$id]} ${run_path/dataset/$dataset} nDCG@10 | cut -f2) 
-    R=$(python -m ir_measures ${QRELS[$id]} ${run_path/dataset/$dataset} R@100 | cut -f2)
-    echo "bm25 | ${short_name} | $nDCG | $R"
+
+    run_path=bbier/run_${boopstrap_id}/${method}.beir-${dataset}.txt
+    # nDCG=$(python -m ir_measures ${QRELS[$id]} $run_path nDCG@10 | cut -f2) 
+    # echo "${method} | ${short_name} | $id | $nDCG "
+  
+    nDCG=$(python src/autollmrerank/eval_bootstrap.py --irds_tag ${QRELS[$id]} --path $run_path)
+    echo "${method} | ${short_name} | $boopstrap_id | $nDCG " 
+done
+done
 done

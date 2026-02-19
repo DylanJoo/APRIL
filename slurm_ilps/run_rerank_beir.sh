@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
-#SBATCH --array=0-10%4
+#SBATCH --array=2
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=24:00:00
 #SBATCH --output=%x-%a.out
@@ -14,10 +14,10 @@ initconda
 conda activate autollmrerank
 
 cd $HOME/APRIL
-seed=5
+seed=6
 LOGDIR=bbier/result_$seed
-mkdir -p $LOGDIR
 OUTDIR=bbier/run_$seed
+mkdir -p $LOGDIR
 mkdir -p $OUTDIR
 
 BEIR_DATASETS=(
@@ -38,6 +38,15 @@ BEIR_DATASETS=(
 
 subset=${BEIR_DATASETS[$SLURM_ARRAY_TASK_ID]}
 MODEL=Qwen/Qwen2.5-7B-Instruct
+
+# python -m autollmrerank.wrapper_bootstrap \
+#     --bootstrapping=true \
+#     --bootstrapping_size=50 \
+#     --bootstrapping_seed=$seed \
+#     --data.dataset_name=beir/${subset} \
+#     --data.input_run=runs/run.beir.bm25.${subset%%/*}.txt \
+#     --data.output_run=$OUTDIR/bm25-null.beir-${subset%%/*}.txt \
+#     --llm.model_name_or_path=$MODEL
 
 # # POINTWISE BINARY PROBABILITY
 # python -m autollmrerank.wrapper_bootstrap \

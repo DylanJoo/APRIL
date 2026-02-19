@@ -1,13 +1,13 @@
 from autollmrerank.loader_dev.irds import load
 
-BEIR_DATASETS = \
-["arguana", "climate-fever", "dbpedia-entity/test", "fever/test", "fiqa/test", "hotpotqa/test", "nfcorpus/test", "nq", "quora/test", "scidocs", "scifact/test", "trec-covid", "webis-touche2020/v2"]
+# msmarco-pssage
+ALL = ["msmarco-passage/trec-dl-2019/judged", "msmarco-passage/trec-dl-2020/judged"]
+ALL += ["beir/arguana", "beir/climate-fever", "beir/dbpedia-entity/test", "beir/fever/test", "beir/fiqa/test", "beir/hotpotqa/test", "beir/nfcorpus/test", "beir/nq", "beir/quora/test", "beir/scidocs", "beir/scifact/test", "beir/trec-covid", "beir/webis-touche2020/v2"]
 
-for dataset in BEIR_DATASETS:
-    corpus, queries, qrels = load(f"beir/{dataset}")
+print("Dataset | # Queries | # Corpus | # Judgments | (Avg) Q length | (Avg) D length | (Avg) d+/Q | (Avg) d-/Q")
 
-    print("Dataset | # Queries | # Corpus | # Judgments |" + \
-          "(Avg) Q length | (Avg) D length | (Avg) d+/Q | (Avg) d-/Q")
+for dataset in ALL:
+    corpus, queries, qrels = load(dataset)
 
     ## Total numbers
     num_queries = len(queries)

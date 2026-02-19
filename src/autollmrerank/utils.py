@@ -58,4 +58,3 @@ def batch_iterator(iterable, size=1, return_index=False):
             yield (ndx, min(ndx + size, l))
         else:
             yield iterable[ndx:min(ndx + size, l)]
-

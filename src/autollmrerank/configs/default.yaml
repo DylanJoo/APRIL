@@ -15,7 +15,7 @@ llm:
   base_url: null
   api_key: null
 
-rerank_mode: RankGPT 
+rerank_mode: null 
 use_alphabetical: false
 top_k: 100 
 rank_start: 0

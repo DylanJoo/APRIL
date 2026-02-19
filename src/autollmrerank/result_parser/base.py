@@ -53,6 +53,7 @@ class ResultParser(ABC):
         cut_range = copy.deepcopy(result.hits[rank_start:rank_end])
         permutation = [(idx, s) for idx, s in zip(range(len(scores)), scores)]
         permutation.sort(key=lambda x: x[1], reverse=True)
+        permutation = [(idx, s) for idx, s in permutation if idx < len(cut_range)]
         for j, (p, s) in enumerate(permutation):
             result.hits[j + rank_start] = copy.deepcopy(cut_range[p])
         return result
