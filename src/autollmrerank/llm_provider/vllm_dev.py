@@ -127,9 +127,9 @@ class LLM:
                 result = yes_ / (no_ + yes_)
 
             elif (use_rating_logp) or (use_expected_rating):
+                print(response)
                 tok_item = response.outputs[0].logprobs[0]
                 rating_logp = [0.0 for _ in range(self.max_rating+1)]
-                print('output tokens', [item.decoded_token for item in tok_item.values()])
                 for topk, item in tok_item.items():
                     for r in range(self.max_rating+1):
                         if str(r) in item.decoded_token:
@@ -137,7 +137,6 @@ class LLM:
 
                 if use_expected_rating:
                     result = sum([r * rating_logp[r] for r in self.target_ratings]) / sum(rating_logp)
-                    print('exp rating', result)
                 else:
                     target_ = sum([rating_logp[r] for r in self.target_ratings])
                     result = target_ / sum(rating_logp)

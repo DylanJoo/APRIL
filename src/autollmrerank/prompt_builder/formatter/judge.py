@@ -19,7 +19,7 @@ class JudgeFormatter(BaseFormatter):
         )
 
     def postfix(self, **kwargs) -> str:
-        return "Rating: \n"
+        return "Rating:\n"
 
     def body(self, query, doc_list, **kwargs) -> str:
         prompts = []

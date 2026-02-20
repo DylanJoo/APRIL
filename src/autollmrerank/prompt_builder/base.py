@@ -79,16 +79,17 @@ class PromptBuilder:
         body = self.formatter.body(**inputs, **kwargs)
 
         # organize the prompts with reranking methods 
-        # NOTE Sacrifice consistency for simplicity
         # Case1: postfix and body are single string --> listwise method
         if isinstance(postfix, str) and isinstance(body, str): 
             prompt, token_count = self._convert_message_to_prompt(messages, prefix, body, postfix)
             return prompt
+
         # Case2: body is a list of string --> pointwise method
         elif isinstance(body, list) and isinstance(postfix, str):
             prefix = [prefix] * len(body)
             postfix = [postfix] * len(body)
-        # Case2: postfix is a list of string --> prompt caching (dev)
+
+        # Case3: postfix is a list of string --> prompt caching (dev)
         elif isinstance(postfix, list) and isinstance(body, str):
             prefix = [prefix] * len(postfix)
             body = [body] * len(postfix)
@@ -113,7 +114,7 @@ class PromptBuilder:
 
         if self.system_message_supported:
             message_ = message.copy()
-            message_[1]['content'] = prefix + body + postfix
+            message_[-1]['content'] = prefix + body + postfix
             prompt = self._tokenizer.apply_chat_template(
                 message_,
                 tokenize=False, 
