@@ -33,7 +33,7 @@ subset=$(echo $dataset | cut -d'@' -f2)
 
 MODEL=Qwen/Qwen2.5-7B-Instruct
 for r in bm25;do
-for method in point judge judge_expr setmaxheap rankgpt; do
+for method in setmaxheaptopk; do
     python -m autollmrerank.wrapper \
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
         --data.dataset_name=${benchmark}/${subset} \
