@@ -45,8 +45,7 @@ class AutoLLMReranker:
 
         # TODO: make it clearer loaded by argument
         if config.llm.backend == 'vllm':
-            # from .llm_provider.vllm import LLM  # for v100
-            from .llm_provider.vllm_dev import LLM  # for v100
+            from .llm_provider.vllm import LLM
         if (config.llm.backend == 'openai') or (config.llm.backend == 'request'):
             from .llm_provider.request import LLM
         if config.llm.backend == 'vllm_dev':
@@ -61,7 +60,7 @@ class AutoLLMReranker:
             max_tokens=5 if config.llm.use_logits else 128,
             dtype=config.llm.dtype,
             num_gpus=max(1, int(torch.cuda.device_count())),
-            base_url=('http://localhost:8000/v1' or config.llm.base_url),
+            base_url=(config.llm.base_url or 'http://localhost:8000/v1'),
             api_key='EMPTY'
         )
         # agent.set_classification(target_ratings=[3,4,5])
