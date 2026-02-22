@@ -11,7 +11,8 @@ import uuid
 import re
 from typing import List
 import logging
-logger = logging.getLogger("vllm.engine.async_llm_engine").setLevel(logging.WARNING)
+logger = logging.getLogger("vllm.engine.async_llm_engine")
+logger.setLevel(logging.WARNING)
 
 class LLM:
 
@@ -22,7 +23,7 @@ class LLM:
         top_p=1.0,
         logprobs=None,
         max_tokens=128,
-        dtype='half',
+        dtype='float16',
         gpu_memory_utilization=0.9,
         num_gpus=1, 
         max_model_len=10240,
