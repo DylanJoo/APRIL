@@ -1,5 +1,5 @@
 data:
-  batch_size: 128
+  batch_size: 32
   loader_type: irds
   dataset_name: msmarco-passage/trec-dl-2019/judged
   input_run: runs/run.msmarco-passage.bm25-trec-dl-2019.txt
@@ -9,7 +9,7 @@ llm:
   temperature: 0.0
   top_p: 1.0
   backend: vllm
-  max_model_len: 8196
+  max_model_len: 20480
   dtype: bfloat16
   use_logits: true
   base_url: null
