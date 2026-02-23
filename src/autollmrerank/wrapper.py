@@ -157,7 +157,7 @@ if __name__ == "__main__":
     loader = importlib.import_module(f"autollmrerank.loader_dev.{config.data.loader_type}", package=__name__)
     run = loader.load_run(config.data.input_run)
     corpus, queries, qrels = loader.load(config.data.dataset_name, query_fields=None, doc_fields=None)
-    runs = {qid: hits for qid, hits in run.items() if qid in qrels}
+    run = {qid: hits for qid, hits in run.items() if qid in qrels}
     # qrels = {qid: qrel for qid, qrel in qrels.items() if qid in run}
 
     # reranking
