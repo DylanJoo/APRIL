@@ -1,10 +1,10 @@
 #!/bin/sh
-#SBATCH --job-name=qwen3
+#SBATCH --job-name=dense
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
-#SBATCH --array=1
+#SBATCH --array=6
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=25:00:00
 #SBATCH --output=%x-%a.out
@@ -33,8 +33,8 @@ benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
 MODEL=Qwen/Qwen2.5-7B-Instruct
-for r in bm25 qwen3-embed-600m;do
-for method in judge_expr rankgpt; do
+for r in bm25;do
+for method in rankgpt; do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt 
     python -m autollmrerank.wrapper \
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
