@@ -45,14 +45,13 @@ class AutoLLMReranker:
 
         # TODO: make it clearer loaded by argument
         if config.llm.backend == 'vllm':
-            # from .llm_provider.vllm import LLM  # for v100
-            from .llm_provider.vllm_dev import LLM  # for v100
+            from .llm_provider.vllm_dev import LLM
         if (config.llm.backend == 'openai') or (config.llm.backend == 'request'):
             from .llm_provider.request import LLM
         if config.llm.backend == 'vllm_dev':
             from .llm_provider.vllm_dev import LLM
 
-        agent = LLM( 
+        agent = LLM(
             model_name_or_path=config.llm.model_name_or_path,
             temperature=config.llm.temperature,
             top_p=config.llm.top_p,
@@ -70,7 +69,7 @@ class AutoLLMReranker:
 
         # initialize the algorithm module
         self.assembler = AutoAssembler.from_config(
-            config, 
+            config,
             prompt_builder=prompt_builder,
             llm_provider=agent,
             result_parser=result_parser,

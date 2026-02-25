@@ -58,11 +58,11 @@ class BaseFormatter(ABC):
             raise ValueError(f"Document must be a string or a dictionary with 'content' key: got {doc}")
 
         if self.max_doc_length is not None:
-            doc = len(text.split(" "))
-            if len(doc) < self.max_doc_length:
+            split_doc = text.split(" ")
+            if len(split_doc) < self.max_doc_length:
                 return text
             else:
-                return " ".join(doc[:self.max_doc_length])
+                return " ".join(split_doc[:self.max_doc_length])
         else:
             return text
 
