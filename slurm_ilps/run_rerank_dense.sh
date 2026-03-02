@@ -33,8 +33,9 @@ benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
 MODEL=Qwen/Qwen2.5-7B-Instruct
-for r in colbert-small;do
-for method in point judge judge_expr setmaxheaptopk rankgpt; do
+for r in colbert-small splade-v3;do
+# for method in point judge judge_expr setmaxheaptopk rankgpt; do
+for method in point judge judge_expr; do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt 
     python -m autollmrerank.wrapper \
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \

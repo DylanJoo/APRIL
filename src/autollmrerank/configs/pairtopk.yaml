@@ -9,7 +9,7 @@ llm:
   temperature: 0.0
   top_p: 1.0
   backend: vllm
-  max_model_len: 8196
+  max_model_len: 10240
   dtype: bfloat16
   use_logits: true
   base_url: null
