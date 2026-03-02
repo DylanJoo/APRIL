@@ -4,8 +4,8 @@ initconda
 conda activate inference 
 
 DATASETS=(
-# "msmarco-passage@trec-dl-2019/judged"
-# "msmarco-passage@trec-dl-2020/judged"
+"msmarco-passage@trec-dl-2019/judged"
+"msmarco-passage@trec-dl-2020/judged"
 "beir@dbpedia-entity/test"
 "beir@nfcorpus/test"
 "beir@scidocs"
@@ -13,11 +13,10 @@ DATASETS=(
 "beir@webis-touche2020/v2"
 )
 
-# run_path=${HOME}/APRIL/runs/run.beir.bm25.dataset.txt
 MODEL_DIR=Qwen/Qwen2.5-7B-Instruct
 
 # BM25 
-for retrieval in bm25 qwen3-embed-600m;do
+for retrieval in bm25 nomicai-modernbert-embed qwen3-embed-600m;do
 for rerank in point judge judge_expr setmaxheaptopk rankgpt;do
     run_path=${HOME}/APRIL/runs/${MODEL_DIR##*/}/run.beir.$retrieval-rerank-$rerank.dataset.txt
     for dataset in ${DATASETS[@]};do

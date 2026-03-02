@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
-#SBATCH --array=0,1
+#SBATCH --array=5
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=25:00:00
 #SBATCH --output=%x-%a.out
@@ -33,9 +33,7 @@ benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
 MODEL=Qwen/Qwen2.5-7B-Instruct
-# for r in bm25 qwen3-embed-600m;do
-# for method in rankgpt; do
-for r in qwen3-embed-600m;do
+for r in colbert-small;do
 for method in point judge judge_expr setmaxheaptopk rankgpt; do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt 
     python -m autollmrerank.wrapper \
