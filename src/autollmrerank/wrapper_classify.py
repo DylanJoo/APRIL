@@ -12,7 +12,7 @@ than full reranking for datasets with many queries, because the pool is small
 """
 
 import os
-from typing import Optional, Dict, List
+from typing import Optional, Tuple, List, Dict, Union, Any
 from pprint import pprint
 from tqdm import tqdm
 import torch
@@ -25,7 +25,6 @@ from .input_assembler import AutoAssembler
 from .prompt_builder import PromptBuilder
 from .result_parser import ResultParser
 from .config_manager import ConfigManager
-
 
 class AutoLLMClassifier:
     """
@@ -78,9 +77,11 @@ class AutoLLMClassifier:
             base_url=('http://localhost:8000/v1' or config.llm.base_url),
             api_key='EMPTY'
         )
+        # agent.set_classification(target_ratings=[3,4,5])
 
         result_parser = ResultParser(use_alpha=config.use_alphabetical)
 
+        # initialize the algorithm module
         self.assembler = AutoAssembler.from_config(
             config,
             prompt_builder=prompt_builder,

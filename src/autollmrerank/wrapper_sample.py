@@ -39,20 +39,17 @@ class AutoLLMReranker:
         return wrapper
 
     def __init__(self, config, **kwargs) -> None:
-
         self.config = config
         prompt_builder = PromptBuilder(config=config)
 
-        # TODO: make it clearer loaded by argument
         if config.llm.backend == 'vllm':
-            # from .llm_provider.vllm import LLM  # for v100
-            from .llm_provider.vllm_dev import LLM  # for v100
+            from .llm_provider.vllm_dev import LLM
         if (config.llm.backend == 'openai') or (config.llm.backend == 'request'):
             from .llm_provider.request import LLM
         if config.llm.backend == 'vllm_dev':
             from .llm_provider.vllm_dev import LLM
 
-        agent = LLM( 
+        agent = LLM(
             model_name_or_path=config.llm.model_name_or_path,
             temperature=config.llm.temperature,
             top_p=config.llm.top_p,
@@ -70,7 +67,7 @@ class AutoLLMReranker:
 
         # initialize the algorithm module
         self.assembler = AutoAssembler.from_config(
-            config, 
+            config,
             prompt_builder=prompt_builder,
             llm_provider=agent,
             result_parser=result_parser,
@@ -154,15 +151,17 @@ if __name__ == "__main__":
     loader = importlib.import_module(f"autollmrerank.loader_dev.{config.data.loader_type}", package=__name__)
     run = loader.load_run(config.data.input_run)
     corpus, queries, qrels = loader.load(config.data.dataset_name, query_fields=None, doc_fields=None)
+    run = {qid: hits for qid, hits in run.items() if qid in qrels}
     qrels = {qid: qrel for qid, qrel in qrels.items() if qid in run}
 
-    # bootstrapping for preliminary evaluation
-    if config.bootstrapping:
-        import random
-        random.seed( (config.bootstrapping_seed or 42) )
-        selected_qids = random.sample( list(run.keys()), min(config.bootstrapping_size, len(run)) )
-        run = {qid: run[qid] for qid in selected_qids}
-        qrels = {qid: qrels[qid] for qid in selected_qids}
+    if config.sampling is False:
+        exit(0)
+
+    import random
+    random.seed( (config.sampling_seed or 42) )
+    selected_qids = random.sampling( list(run.keys()), min(config.sampling_size, len(run)) )
+    run = {qid: run[qid] for qid in selected_qids}
+    qrels = {qid: qrels[qid] for qid in selected_qids}
 
     if config.rerank_mode is None:
         reranked_run = run

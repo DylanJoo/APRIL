@@ -39,11 +39,9 @@ class AutoLLMReranker:
         return wrapper
 
     def __init__(self, config, **kwargs) -> None:
-
         self.config = config
         prompt_builder = PromptBuilder(config=config)
 
-        # TODO: make it clearer loaded by argument
         if config.llm.backend == 'vllm':
             from .llm_provider.vllm_dev import LLM
         if (config.llm.backend == 'openai') or (config.llm.backend == 'request'):

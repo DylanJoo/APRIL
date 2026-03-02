@@ -1,10 +1,10 @@
 #!/bin/sh
-#SBATCH --job-name=spv
+#SBATCH --job-name=spv-d
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
-#SBATCH --array=0-6%4
+#SBATCH --array=0-6%2
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=25:00:00
 #SBATCH --output=%x-%a.out
@@ -32,9 +32,9 @@ dataset=${DATASETS[$SLURM_ARRAY_TASK_ID]}
 benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
-for r in bm25 qwen3-embed-600m;do
+for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
 for method in rankfirst rankzephyr; do
-    inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt 
+    inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     python -m autollmrerank.wrapper \
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
         --data.dataset_name=${benchmark}/${subset} \
