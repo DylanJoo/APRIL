@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
-#SBATCH --array=0-4
+#SBATCH --array=0-7%4
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=25:00:00
 #SBATCH --output=%x-%a.out
@@ -14,16 +14,19 @@ initconda
 conda activate autollmrerank
 
 cd $HOME/APRIL
-LOGDIR=log.sparse-beir
+LOGDIR=log.sparse-judged
 mkdir -p $LOGDIR
 mkdir -p runs/${MODEL##*/}
 
 DATASETS=(
-"beir@dbpedia-entity/test"
-"beir@nfcorpus/test"
-"beir@scidocs"
-"beir@trec-covid"
-"beir@webis-touche2020/v2"
+"beir@arguana"
+"beir@climate-fever"
+"beir@fever/test"
+"beir@fiqa/test"
+"beir@hotpotqa/test"
+"beir@nq"
+"beir@quora/test"
+"beir@scifact/test"
 )
 
 dataset=${DATASETS[$SLURM_ARRAY_TASK_ID]}
@@ -31,7 +34,7 @@ benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
 MODEL=Qwen/Qwen2.5-7B-Instruct
-for r in bm25; do
+for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
 for method in point judge judge_expr setmaxheaptopk rankgpt; do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     python -m autollmrerank.wrapper \

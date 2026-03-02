@@ -16,7 +16,7 @@ DATASETS=(
 MODEL_DIR=Qwen/Qwen2.5-7B-Instruct
 
 # retrieval 
-for retrieval in bm25 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
+for retrieval in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
 for dataset in ${DATASETS[@]};do
     benchmark=$(echo $dataset | cut -d'@' -f1)
     subset=$(echo $dataset | cut -d'@' -f2)
@@ -25,12 +25,12 @@ for dataset in ${DATASETS[@]};do
 
     short_name=$(basename "$name" | cut -c1-3)
     nDCG=$(python -m ir_measures $benchmark/$subset ${run_path/dataset/$name} nDCG@10 | cut -f2) 
-    echo "${retrieval} | - | ${short_name} | $nDCG"
+    echo "${retrieval} | - | ${name} | $nDCG"
 done
 done
 
 # reranking
-for retrieval in bm25 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
+for retrieval in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
 for rerank in point judge judge_expr setmaxheaptopk rankgpt;do
 for dataset in ${DATASETS[@]};do
     benchmark=$(echo $dataset | cut -d'@' -f1)
@@ -40,7 +40,7 @@ for dataset in ${DATASETS[@]};do
 
     short_name=$(basename "$name" | cut -c1-3)
     nDCG=$(python -m ir_measures $benchmark/$subset ${run_path/dataset/$name} nDCG@10 | cut -f2) 
-    echo "${retrieval} | ${rerank} | ${short_name} | $nDCG"
+    echo "${retrieval} | ${rerank} | ${name} | $nDCG"
 done
 done
 done
