@@ -5,6 +5,13 @@ bm25 | - | nfcorpus | 0.3254
 bm25 | - | scidocs | 0.1581
 bm25 | - | trec-covid | 0.6559
 bm25 | - | webis-touche2020 | 0.3673
+splade-v3 | - | trec-dl-2019 | 0.7270
+splade-v3 | - | trec-dl-2020 | 0.7536
+splade-v3 | - | dbpedia-entity | 0.4419
+splade-v3 | - | nfcorpus | 0.3586
+splade-v3 | - | scidocs | 0.1453
+splade-v3 | - | trec-covid | 0.6669
+splade-v3 | - | webis-touche2020 | 0.3591
 nomicai-modernbert-embed | - | trec-dl-2019 | 0.6960
 nomicai-modernbert-embed | - | trec-dl-2020 | 0.6933
 nomicai-modernbert-embed | - | dbpedia-entity | 0.4154
