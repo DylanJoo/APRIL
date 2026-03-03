@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
     import random
     random.seed( (config.sampling_seed or 42) )
-    selected_qids = random.sampling( list(run.keys()), min(config.sampling_size, len(run)) )
+    selected_qids = random.sample( list(run.keys()), min(config.sampling_size, len(run)) )
     run = {qid: run[qid] for qid in selected_qids}
     qrels = {qid: qrels[qid] for qid in selected_qids}
 
