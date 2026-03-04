@@ -4,7 +4,7 @@ from autollmrerank.loader_dev.irds import load
 ALL = ["msmarco-passage/trec-dl-2019/judged", "msmarco-passage/trec-dl-2020/judged"]
 ALL += ["beir/arguana", "beir/climate-fever", "beir/dbpedia-entity/test", "beir/fever/test", "beir/fiqa/test", "beir/hotpotqa/test", "beir/nfcorpus/test", "beir/nq", "beir/quora/test", "beir/scidocs", "beir/scifact/test", "beir/trec-covid", "beir/webis-touche2020/v2"]
 
-print("Dataset | # Queries | # Corpus | # Judgments | (Avg) Q length | (Avg) D length | (Avg) d+/Q | (Avg) d-/Q")
+print("Dataset | # Queries | # Corpus | # Judgments | (Avg) Q length | (Avg) D length | (Avg) d+/Q | (Avg) d-/Q | Judgment Levels")
 
 for dataset in ALL:
     corpus, queries, qrels = load(dataset)
@@ -31,7 +31,10 @@ for dataset in ALL:
     avg_d_minus_q = sum(avg_d_minus_q.values()) / num_queries
     avg_d_q = avg_d_plus_q + avg_d_minus_q
 
+    ## Judgment levels
+    all_levels = sorted(set(score for qid in qrels for score in qrels[qid].values()))
+    judgment_levels = "{" + ",".join(str(v) for v in all_levels) + "}"
 
     ## print out
     print(f"{dataset} | {num_queries} | {num_corpus} | {sum(num_judgments)} | " + \
-          f"{avg_q_length:.2f} | {avg_d_length:.2f} | {avg_d_plus_q:.2f} | {avg_d_minus_q:.2f}")
+          f"{avg_q_length:.2f} | {avg_d_length:.2f} | {avg_d_plus_q:.2f} | {avg_d_minus_q:.2f} | {judgment_levels}")
