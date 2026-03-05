@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
-#SBATCH --array=0-7%4
+#SBATCH --array=2
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=72:00:00
 #SBATCH --output=%x-%a.out
@@ -14,8 +14,6 @@ initconda
 conda activate autollmrerank
 
 cd $HOME/APRIL
-LOGDIR=log.sparse-judged
-mkdir -p $LOGDIR
 mkdir -p runs/${MODEL##*/}
 
 DATASETS=(
@@ -38,13 +36,19 @@ for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;
 for seed in $(seq 1 10); do
 for method in point judge judge_expr setmaxheaptopk rankgpt; do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
+    output_run=runs/${MODEL##*/}/sample-$seed/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
+    if [ -f "$output_run" ]; then
+        echo "Skipping $output_run (already exists)"
+        continue
+    fi
+    echo "=== RUNNING: dataset=$dataset r=$r seed=$seed method=$method ==="
     python -m autollmrerank.wrapper_sample \
         --sampling=true --sampling_size=32 --sampling_seed=$seed \
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \
-        --data.output_run=runs/${MODEL##*/}/sample-$seed/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt \
-        --llm.model_name_or_path=$MODEL > $LOGDIR/${method}.${benchmark}-${subset%%/*}.log
+        --data.output_run=${output_run} \
+        --llm.model_name_or_path=$MODEL
 done
 done
 done

@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
-#SBATCH --array=0-6%2
+#SBATCH --array=6
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=25:00:00
 #SBATCH --output=%x-%a.out
@@ -34,11 +34,17 @@ subset=$(echo $dataset | cut -d'@' -f2)
 
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
 for method in rankfirst rankzephyr; do
+    output_run=runs/supervised/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
+    if [ -f "$output_run" ]; then
+        echo "Skipping $output_run (already exists)"
+        continue
+    fi
+    echo "=== RUNNING: dataset=$dataset r=$r method=$method ==="
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     python -m autollmrerank.wrapper \
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \
-        --data.output_run=runs/supervised/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt > $LOGDIR/${method}.${benchmark}-${subset%%/*}.log
+        --data.output_run=${output_run}
 done
 done
