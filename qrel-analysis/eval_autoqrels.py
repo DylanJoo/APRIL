@@ -255,14 +255,14 @@ if __name__ == "__main__":
     parser.add_argument("--gap_k", type=int, default=1, help="k-th largest gap for --thresholding largest_gap.")
     parser.add_argument("--quantile_cutoff", type=float, default=0.75, help="Quantile for --thresholding quantile.")
     parser.add_argument("--min_relevance", type=int, default=1, help="Min relevance grade for oracle strategies.")
-    parser.add_argument("--output", type=str, default=None, help="Path to JSONL file to append results to.")
+    parser.add_argument("--exp", type=str, default=None, help="the experiment tag to record in the output")
     args = parser.parse_args()
 
     # Loading
     loader = importlib.import_module(f"autollmrerank.loader_dev.{args.loader_type}")
-    judge_run = loader.load_run(args.judge_run)
-    eval_run = loader.load_run(args.evaluate_run)
     _, _, qrel = loader.load(args.dataset_name)
+    judge_run = loader.load_run(args.judge_run) if args.judge_run else None
+    eval_run = loader.load_run(args.evaluate_run)
 
     autoqrel = AutoQrel(
         qrel=qrel,
@@ -298,6 +298,11 @@ if __name__ == "__main__":
         results['results'][strategy] = r1
         results['results'][f"{strategy}:qrel"] = r2
 
-    with open(args.output, 'a' if os.path.exists(args.output) else 'w') as f:
-        f.write(json.dumps(results) + "\n")
-    # pprint(results)
+    for strategy, score in results['results'].items():
+        row = {
+            'dataset': args.dataset_name,
+            'exp': args.exp,
+            'strategy': strategy,
+            'nDCG@10': round(score, 4),
+        }
+        print(json.dumps(row))
