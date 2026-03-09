@@ -1,17 +1,19 @@
-#!/bin/sh
+#!/bin/bash -l
 #SBATCH --job-name=rerank
-#SBATCH --partition=gpu
-#SBATCH --gres=gpu:nvidia_rtx_a6000:1
-#SBATCH --mem=32G
+#SBATCH --partition=small-g           # partition name
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem=64G
 #SBATCH --nodes=1
 #SBATCH --array=2
-#SBATCH --ntasks-per-node=1
-#SBATCH --time=24:00:00
-#SBATCH --output=%x-%a.out
+#SBATCH --gpus-per-node=1
+#SBATCH --time=24:00:00             # Run time (d-hh:mm:ss)
+#SBATCH --account=project_465002532 # Project for billing
+#SBATCH --output=logs/%x.%a.out
+#SBATCH --error=logs/%x.%a.err
 
-source ~/.bashrc
-initconda
-conda activate autollmrerank
+module use /appl/local/csc/modulefiles/
+module load pytorch/2.5
+export HIP_VISIBLE_DEVICES=0
 
 cd $HOME/APRIL
 seed=6
