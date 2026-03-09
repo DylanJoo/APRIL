@@ -1,0 +1,7 @@
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25", "strategy": "direct", "nDCG@10": 0.4115}
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25", "strategy": "thresholding", "nDCG@10": 0.412}
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25", "strategy": "rank", "nDCG@10": 0.302}
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25", "strategy": "quantile", "nDCG@10": 0.4576}
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25", "strategy": "largest_gap", "nDCG@10": 0.4197}
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25", "strategy": "optimal_per_topic", "nDCG@10": 0.494}
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25", "strategy": "optimal_global", "nDCG@10": 0.427}

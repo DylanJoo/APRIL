@@ -1,0 +1,7 @@
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "splade-v3-rerank-judge_expr:bm25", "strategy": "direct", "nDCG@10": 0.4117}
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "splade-v3-rerank-judge_expr:bm25", "strategy": "thresholding", "nDCG@10": 0.4059}
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "splade-v3-rerank-judge_expr:bm25", "strategy": "rank", "nDCG@10": 0.2839}
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "splade-v3-rerank-judge_expr:bm25", "strategy": "quantile", "nDCG@10": 0.463}
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "splade-v3-rerank-judge_expr:bm25", "strategy": "largest_gap", "nDCG@10": 0.4066}
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "splade-v3-rerank-judge_expr:bm25", "strategy": "optimal_per_topic", "nDCG@10": 0.5153}
+{"dataset": "msmarco-passage/trec-dl-2020/judged", "exp": "splade-v3-rerank-judge_expr:bm25", "strategy": "optimal_global", "nDCG@10": 0.4405}
