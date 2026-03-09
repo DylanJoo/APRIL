@@ -22,7 +22,11 @@ R=(
 "colbert-small"
 )
 r=${R[$SLURM_ARRAY_TASK_ID]}
-rerank4judge=judge_expr
+# rerank4judge=judge
+# rerank4judge=judge_expr
+rerank4judge=point
+rerank4judge=setmaxheaptopk
+# rerank4judge=rankgpt
 
 DATASETS=(
 "msmarco-passage@trec-dl-2019/judged"
@@ -36,34 +40,63 @@ DATASETS=(
 
 MODEL=Qwen/Qwen2.5-7B-Instruct
 OUTDIR=${HOME}/APRIL/qrel-analysis/results
-output_path=$OUTDIR/${r}-rerank-${rerank4judge}/raaj.jsonl
-mkdir -p $(dirname $output_path)
-: > $output_path
+
+# for dataset in "${DATASETS[@]}"; do
+#     benchmark=$(echo $dataset | cut -d'@' -f1)
+#     subset=$(echo $dataset | cut -d'@' -f2)
+#     judge_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${rerank4judge}.${subset%%/*}.txt
+#
+#     output_path=$OUTDIR/${r}-rerank-${rerank4judge}/raaj-${subset%%/*}.jsonl
+#     mkdir -p $(dirname $output_path)
+#     : > $output_path
+#
+#     for r2 in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
+#         eval_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r2}.${subset%%/*}.txt
+#         python qrel-analysis/eval_autoqrels.py \
+#             --dataset_name ${benchmark}/${subset} \
+#             --loader_type irds \
+#             --judge_run $judge_run \
+#             --evaluate_run $eval_run \
+#             --strategies direct \
+#             --strategies thresholding --threshold=3 \
+#             --strategies rank --rank_cutoff=10 \
+#             --strategies quantile --quantile_cutoff=0.75 \
+#             --strategies largest_gap --gap_k 1 \
+#             --strategies optimal_per_topic --min_relevance 2 \
+#             --strategies optimal_global \
+#             --exp ${r}-rerank-${rerank4judge}:${r2} >> $output_path
+#
+#         # second stage reranking
+#         for rerank in point judge judge_expr rankgpt setmaxheaptopk;do
+#             eval_run=runs/${MODEL##*/}/run.${benchmark}.${r2}-rerank-${rerank}.${subset%%/*}.txt
+#             python qrel-analysis/eval_autoqrels.py \
+#                 --dataset_name ${benchmark}/${subset} \
+#                 --loader_type irds \
+#                 --judge_run $judge_run \
+#                 --evaluate_run $eval_run \
+#                 --strategies direct \
+#                 --strategies thresholding --threshold=3 \
+#                 --strategies rank --rank_cutoff=10 \
+#                 --strategies quantile --quantile_cutoff=0.75 \
+#                 --strategies largest_gap --gap_k 1 \
+#                 --strategies optimal_per_topic --min_relevance 2 \
+#                 --strategies optimal_global \
+#                 --exp ${r}-rerank-${rerank4judge}:${r2}-rerank-${rerank} >> $output_path
+#         done
+#     done
+# done
 
 for dataset in "${DATASETS[@]}"; do
     benchmark=$(echo $dataset | cut -d'@' -f1)
     subset=$(echo $dataset | cut -d'@' -f2)
     judge_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${rerank4judge}.${subset%%/*}.txt
 
+    output_path=$OUTDIR/${r}-rerank-${rerank4judge}/raaj-${subset%%/*}.jsonl
     for r2 in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
-        eval_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r2}.${subset%%/*}.txt
-        python qrel-analysis/eval_autoqrels.py \
-            --dataset_name ${benchmark}/${subset} \
-            --loader_type irds \
-            --judge_run $judge_run \
-            --evaluate_run $eval_run \
-            --strategies direct \
-            --strategies thresholding --threshold=3 \
-            --strategies rank --rank_cutoff=10 \
-            --strategies quantile --quantile_cutoff=0.75 \
-            --strategies largest_gap --gap_k 1 \
-            --strategies optimal_per_topic --min_relevance 2 \
-            --strategies optimal_global \
-            --exp ${r}-rerank-${rerank4judge}:${r2} >> $output_path
 
         # second stage reranking
-        for rerank in point judge judge_expr rankgpt setmaxheaptopk;do
-            eval_run=runs/${MODEL##*/}/run.${benchmark}.${r2}-rerank-${rerank}.${subset%%/*}.txt
+        for rerank in rankfirst rankzepyhr;do
+            eval_run=runs/supervised/run.${benchmark}.${r2}-rerank-${rerank}.${subset%%/*}.txt
             python qrel-analysis/eval_autoqrels.py \
                 --dataset_name ${benchmark}/${subset} \
                 --loader_type irds \
