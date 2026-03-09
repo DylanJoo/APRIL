@@ -22,11 +22,11 @@ R=(
 "colbert-small"
 )
 r=${R[$SLURM_ARRAY_TASK_ID]}
+# rerank4judge=point
+# rerank4judge=setmaxheaptopk
 # rerank4judge=judge
 # rerank4judge=judge_expr
-rerank4judge=point
-rerank4judge=setmaxheaptopk
-# rerank4judge=rankgpt
+rerank4judge=rankgpt
 
 DATASETS=(
 "msmarco-passage@trec-dl-2019/judged"
