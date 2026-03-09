@@ -58,7 +58,7 @@ def save_grouped_csvs(df: pd.DataFrame, output_dir: str):
 
         pivot = pivot.reset_index()
         out_path = os.path.join(output_dir, f"{retriever}.csv")
-        pivot.to_csv(out_path, index=False, sep="|")
+        pivot.to_csv(out_path, index=False, sep="|", header=None)
         print(f"Saved {out_path}")
 
 
