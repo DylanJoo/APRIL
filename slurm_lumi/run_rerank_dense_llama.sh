@@ -4,10 +4,10 @@
 #SBATCH --ntasks-per-node=1         # 8 MPI ranks per node, 16 total (2x8)
 #SBATCH --mem=256G
 #SBATCH --nodes=1
-#SBATCH --array=1-6
-#SBATCH --gpus-per-node=4           # Allocate one gpu per MPI rank
-#SBATCH --time=48:00:00             # Run time (d-hh:mm:ss)
-#SBATCH --account=project_465002532 # Project for billing
+#SBATCH --array=2-5
+#SBATCH --gpus-per-node=4
+#SBATCH --time=24:00:00
+#SBATCH --account=project_465002532
 #SBATCH --output=logs/%x.%a.out
 #SBATCH --error=logs/%x.%a.err
 
@@ -36,6 +36,18 @@ benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
 ## POINTWISE
+needs_pointwise=false
+for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
+    for method in judge judge_expr point; do
+        output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
+        if [ ! -f "$output_run" ]; then
+            needs_pointwise=true
+            break 2
+        fi
+    done
+done
+
+if [ "$needs_pointwise" = true ]; then
 python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
     --disable-custom-all-reduce \
@@ -46,10 +58,11 @@ PID=$!
 until curl -s http://localhost:8000/v1/models >/dev/null; do
   sleep 10
 done
+echo "vLLM server is up and running."
 
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
 for method in judge judge_expr point; do
-    inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt 
+    inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ -f "$output_run" ]; then
         echo "Skipping $output_run (already exists)"
@@ -66,13 +79,25 @@ for method in judge judge_expr point; do
 done
 done
 kill $PID
+fi
 
 ## SETWISE
+method=setmaxheaptopk
+needs_setwise=false
+for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
+    output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
+    if [ ! -f "$output_run" ]; then
+        needs_setwise=true
+        break
+    fi
+done
+
+if [ "$needs_setwise" = true ]; then
 python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
+    --disable-custom-all-reduce \
     --max-model-len 20480 \
     --dtype bfloat16 \
-    --disable-custom-all-reduce \
     --tensor-parallel-size 4 > vllm_server.log 2>&1 &
 PID=$!
 until curl -s http://localhost:8000/v1/models >/dev/null; do
@@ -80,9 +105,8 @@ until curl -s http://localhost:8000/v1/models >/dev/null; do
 done
 echo "vLLM server is up and running."
 
-method=setmaxheaptopk
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
-    inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt 
+    inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ -f "$output_run" ]; then
         echo "Skipping $output_run (already exists)"
@@ -97,13 +121,26 @@ for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;
         --data.output_run=${output_run} \
         --llm.model_name_or_path=$MODEL
 done
+kill $PID
+fi
 
 ## LISTWISE
+method=rankgpt
+needs_listwise=false
+for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
+    output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
+    if [ ! -f "$output_run" ]; then
+        needs_listwise=true
+        break
+    fi
+done
+
+if [ "$needs_listwise" = true ]; then
 python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
+    --disable-custom-all-reduce \
     --max-model-len 30720 \
     --dtype bfloat16 \
-    --disable-custom-all-reduce \
     --tensor-parallel-size 4 > vllm_server.log 2>&1 &
 PID=$!
 until curl -s http://localhost:8000/v1/models >/dev/null; do
@@ -111,9 +148,8 @@ until curl -s http://localhost:8000/v1/models >/dev/null; do
 done
 echo "vLLM server is up and running."
 
-method=rankgpt
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
-    inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt 
+    inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ -f "$output_run" ]; then
         echo "Skipping $output_run (already exists)"
@@ -128,3 +164,5 @@ for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;
         --data.output_run=${output_run} \
         --llm.model_name_or_path=$MODEL
 done
+kill $PID
+fi
