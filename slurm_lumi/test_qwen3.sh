@@ -17,23 +17,25 @@ module use /appl/local/containers/ai-modules
 module load singularity-AI-bindings
 
 source ${HOME}/.bashrc
-cd ${HOME}/APRIL
+cd ${HOME}/temp
 
 export HIP_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 
+# MODEL=Qwen/Qwen2.5-7B-Instruct
 MODEL=Qwen/Qwen3-Next-80B-A3B-Instruct
-# MODEL=Qwen/Qwen3.5-0.8B
-srun singularity exec $SIF_QWEN \
+singularity exec $SIF_QWEN \
     python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
     --disable-custom-all-reduce \
     --disable-log-stats \
     --enforce-eager \
-    --max-model-len 10240 \
+    --max-model-len 32768 \
     --tensor-parallel-size 8 \
-    --dtype half > ${HOME}/APRIL/vllm_server_qwenn.log 2>&1 & 
+    --dtype bfloat16 > ${HOME}/APRIL/vllm_server_qwen.log 2>&1 & 
 PID=$!
 
-until curl -s http://localhost:8000/v1/models >/dev/null; do
+until curl -sf http://localhost:8000/v1/models >/dev/null; do
+  echo "$(date '+%Y-%m-%d %H:%M:%S') waiting... server not up yet"
   sleep 10
 done
+echo "$(date '+%Y-%m-%d %H:%M:%S') start running"
