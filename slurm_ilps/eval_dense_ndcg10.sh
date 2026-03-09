@@ -44,3 +44,19 @@ for dataset in ${DATASETS[@]};do
 done
 done
 done
+
+# supervised reranking
+for retrieval in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
+for rerank in rankfirst rankzephyr;do
+for dataset in ${DATASETS[@]};do
+    benchmark=$(echo $dataset | cut -d'@' -f1)
+    subset=$(echo $dataset | cut -d'@' -f2)
+    run_path=${HOME}/APRIL/runs/supervised/run.$benchmark.$retrieval-rerank-$rerank.dataset.txt
+    name=${subset%%/*}
+
+    short_name=$(basename "$name" | cut -c1-3)
+    nDCG=$(python -m ir_measures $benchmark/$subset ${run_path/dataset/$name} nDCG@10 | cut -f2) 
+    echo "${retrieval} | ${rerank} | ${name} | $nDCG"
+done
+done
+done

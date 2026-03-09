@@ -296,7 +296,7 @@ if __name__ == "__main__":
         r1 = ir_measures.calc_aggregate([nDCG@10], llm_qrel, eval_run)[nDCG@10]
         r2 = ir_measures.calc_aggregate([nDCG@10], llm_qrel, qrel_as_run)[nDCG@10]
         results['results'][strategy] = r1
-        results['results'][f"{strategy}:qrel"] = r2
+        # results['results'][f"{strategy}:qrel"] = r2
 
     for strategy, score in results['results'].items():
         row = {
