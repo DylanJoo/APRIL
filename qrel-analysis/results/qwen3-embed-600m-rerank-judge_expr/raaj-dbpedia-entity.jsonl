@@ -243,3 +243,17 @@
 {"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:colbert-small-rerank-rankfirst", "strategy": "largest_gap", "nDCG@10": 0.5719}
 {"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:colbert-small-rerank-rankfirst", "strategy": "optimal_per_topic", "nDCG@10": 0.5664}
 {"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:colbert-small-rerank-rankfirst", "strategy": "optimal_global", "nDCG@10": 0.5289}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "direct", "nDCG@10": 0.4197}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "thresholding", "nDCG@10": 0.3869}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "rank", "nDCG@10": 0.3278}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "quantile", "nDCG@10": 0.4903}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "largest_gap", "nDCG@10": 0.4385}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "optimal_per_topic", "nDCG@10": 0.4271}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "optimal_global", "nDCG@10": 0.4118}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "direct", "nDCG@10": 0.5353}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "thresholding", "nDCG@10": 0.5045}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "rank", "nDCG@10": 0.426}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "quantile", "nDCG@10": 0.5982}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "largest_gap", "nDCG@10": 0.5721}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "optimal_per_topic", "nDCG@10": 0.5635}
+{"dataset": "beir/dbpedia-entity/test", "exp": "qwen3-embed-600m-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "optimal_global", "nDCG@10": 0.5309}

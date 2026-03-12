@@ -243,3 +243,17 @@
 {"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:colbert-small-rerank-rankfirst", "strategy": "largest_gap", "nDCG@10": 0.6718}
 {"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:colbert-small-rerank-rankfirst", "strategy": "optimal_per_topic", "nDCG@10": 0.6626}
 {"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:colbert-small-rerank-rankfirst", "strategy": "optimal_global", "nDCG@10": 0.617}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "direct", "nDCG@10": 0.4116}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "thresholding", "nDCG@10": 0.3811}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "rank", "nDCG@10": 0.3182}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "quantile", "nDCG@10": 0.4646}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "largest_gap", "nDCG@10": 0.4303}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "optimal_per_topic", "nDCG@10": 0.4232}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "optimal_global", "nDCG@10": 0.4035}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "direct", "nDCG@10": 0.5219}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "thresholding", "nDCG@10": 0.4878}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "rank", "nDCG@10": 0.4142}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "quantile", "nDCG@10": 0.5762}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "largest_gap", "nDCG@10": 0.5501}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "optimal_per_topic", "nDCG@10": 0.5529}
+{"dataset": "beir/dbpedia-entity/test", "exp": "colbert-small-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "optimal_global", "nDCG@10": 0.5093}

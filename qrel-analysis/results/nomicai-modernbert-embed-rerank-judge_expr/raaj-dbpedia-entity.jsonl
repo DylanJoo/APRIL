@@ -243,3 +243,17 @@
 {"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:colbert-small-rerank-rankfirst", "strategy": "largest_gap", "nDCG@10": 0.5786}
 {"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:colbert-small-rerank-rankfirst", "strategy": "optimal_per_topic", "nDCG@10": 0.5742}
 {"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:colbert-small-rerank-rankfirst", "strategy": "optimal_global", "nDCG@10": 0.533}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "direct", "nDCG@10": 0.4191}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "thresholding", "nDCG@10": 0.3923}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "rank", "nDCG@10": 0.3226}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "quantile", "nDCG@10": 0.4834}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "largest_gap", "nDCG@10": 0.4454}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "optimal_per_topic", "nDCG@10": 0.4339}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:bm25-rerank-rankzephyr", "strategy": "optimal_global", "nDCG@10": 0.4157}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "direct", "nDCG@10": 0.5405}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "thresholding", "nDCG@10": 0.5118}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "rank", "nDCG@10": 0.431}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "quantile", "nDCG@10": 0.6037}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "largest_gap", "nDCG@10": 0.5832}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "optimal_per_topic", "nDCG@10": 0.5774}
+{"dataset": "beir/dbpedia-entity/test", "exp": "nomicai-modernbert-embed-rerank-judge_expr:splade-v3-rerank-rankzephyr", "strategy": "optimal_global", "nDCG@10": 0.5356}
