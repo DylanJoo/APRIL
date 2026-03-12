@@ -1,6 +1,7 @@
 #!/bin/bash
 RUNS_DIR="$HOME/APRIL/runs"
 MODEL_DIR="$RUNS_DIR/Llama-3.3-70B-Instruct"
+# MODEL_DIR="$RUNS_DIR/Qwen/Qwen2.5-7B-Instruct"
 # MODEL_DIR="$RUNS_DIR/Qwen3-Next-80B-A3B-Instruct"
 DATASETS=(
     "msmarco-passage@trec-dl-2019/judged"
