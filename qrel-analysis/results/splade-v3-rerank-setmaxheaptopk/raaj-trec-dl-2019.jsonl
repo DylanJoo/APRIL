@@ -89,3 +89,17 @@
 {"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed", "strategy": "largest_gap", "nDCG@10": 0.5}
 {"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed", "strategy": "optimal_per_topic", "nDCG@10": 0.7874}
 {"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed", "strategy": "optimal_global", "nDCG@10": 0.7898}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-point", "strategy": "direct", "nDCG@10": 0.2672}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-point", "strategy": "thresholding", "nDCG@10": 0.0}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-point", "strategy": "rank", "nDCG@10": 0.3952}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-point", "strategy": "quantile", "nDCG@10": 0.6033}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-point", "strategy": "largest_gap", "nDCG@10": 0.2672}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-point", "strategy": "optimal_per_topic", "nDCG@10": 0.7324}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-point", "strategy": "optimal_global", "nDCG@10": 0.677}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-judge", "strategy": "direct", "nDCG@10": 0.3168}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-judge", "strategy": "thresholding", "nDCG@10": 0.0}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-judge", "strategy": "rank", "nDCG@10": 0.4353}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-judge", "strategy": "quantile", "nDCG@10": 0.6221}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-judge", "strategy": "largest_gap", "nDCG@10": 0.3168}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-judge", "strategy": "optimal_per_topic", "nDCG@10": 0.7358}
+{"dataset": "msmarco-passage/trec-dl-2019/judged", "exp": "splade-v3-rerank-setmaxheaptopk:nomicai-modernbert-embed-rerank-judge", "strategy": "optimal_global", "nDCG@10": 0.6715}
