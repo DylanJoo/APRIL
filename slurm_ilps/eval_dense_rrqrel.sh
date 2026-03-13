@@ -7,6 +7,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=9:00:00
 #SBATCH --output=%x-%a.out
+#SBATCH --error=%x-%a.err
 
 source $HOME/.bashrc
 initconda
@@ -22,10 +23,10 @@ R=(
 "colbert-small"
 )
 r=${R[$SLURM_ARRAY_TASK_ID]}
-# rerank4judge=point
-# rerank4judge=setmaxheaptopk
-# rerank4judge=judge
-# rerank4judge=judge_expr
+rerank4judge=point
+rerank4judge=setmaxheaptopk
+rerank4judge=judge
+rerank4judge=judge_expr
 rerank4judge=rankgpt
 
 DATASETS=(
@@ -95,7 +96,8 @@ for dataset in "${DATASETS[@]}"; do
     for r2 in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
 
         # second stage reranking
-        for rerank in rankfirst rankzepyhr;do
+        # for rerank in rankfirst rankzepyhr;do
+        for rerank in rankzephyr;do
             eval_run=runs/supervised/run.${benchmark}.${r2}-rerank-${rerank}.${subset%%/*}.txt
             python qrel-analysis/eval_autoqrels.py \
                 --dataset_name ${benchmark}/${subset} \
