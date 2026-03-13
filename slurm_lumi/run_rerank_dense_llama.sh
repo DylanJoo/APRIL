@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=1         # 8 MPI ranks per node, 16 total (2x8)
 #SBATCH --mem=256G
 #SBATCH --nodes=1
-#SBATCH --array=5
+#SBATCH --array=2,3,6
 #SBATCH --cpus-per-task=32
 #SBATCH --gpus-per-node=4
 #SBATCH --time=24:00:00
@@ -21,6 +21,7 @@ export VLLM_SKIP_P2P_CHECK=1
 
 cd $HOME/APRIL
 MODEL=meta-llama/Llama-3.3-70B-Instruct
+LOG=vllm_server.log.c
 mkdir -p runs/${MODEL##*/}
 
 DATASETS=(
@@ -53,9 +54,10 @@ if [ "$needs_pointwise" = true ]; then
 python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
     --port 8000 \
+    --enforce-eager \
     --max-model-len 10240 \
     --dtype bfloat16 \
-    --tensor-parallel-size 4 > vllm_server.log 2>&1 &
+    --tensor-parallel-size 4 > $LOG 2>&1 &
 PID=$!
 until curl -s http://localhost:8000/v1/models >/dev/null; do
   sleep 10
@@ -98,9 +100,10 @@ if [ "$needs_setwise" = true ]; then
 python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
     --port 8000 \
+    --enforce-eager \
     --max-model-len 20480 \
     --dtype bfloat16 \
-    --tensor-parallel-size 4 > vllm_server.log 2>&1 &
+    --tensor-parallel-size 4 > $LOG 2>&1 &
 PID=$!
 until curl -s http://localhost:8000/v1/models >/dev/null; do
   sleep 10
@@ -142,8 +145,9 @@ python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
     --max-model-len 30720 \
     --port 8000 \
+    --enforce-eager \
     --dtype bfloat16 \
-    --tensor-parallel-size 4 > vllm_server.log 2>&1 &
+    --tensor-parallel-size 4 > $LOG 2>&1 &
 PID=$!
 until curl -s http://localhost:8000/v1/models >/dev/null; do
   sleep 10
