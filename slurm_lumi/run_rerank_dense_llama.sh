@@ -4,24 +4,24 @@
 #SBATCH --ntasks-per-node=1         # 8 MPI ranks per node, 16 total (2x8)
 #SBATCH --mem=256G
 #SBATCH --nodes=1
-#SBATCH --array=2,3,6
+#SBATCH --array=4
 #SBATCH --cpus-per-task=32
-#SBATCH --gpus-per-node=4
-#SBATCH --time=24:00:00
-#SBATCH --account=project_465002532
+#SBATCH --gpus-per-node=8
+#SBATCH --time=72:00:00
+#SBATCH --account=project_465002438
 #SBATCH --output=logs/%x.%a.out
 #SBATCH --error=logs/%x.%a.err
 
 module --force purge
 module use /appl/local/csc/modulefiles/
 module load pytorch/2.5
-export HIP_VISIBLE_DEVICES=0,1,2,3
+export HIP_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 export NCCL_P2P_DISABLE=1 
 export VLLM_SKIP_P2P_CHECK=1
 
 cd $HOME/APRIL
 MODEL=meta-llama/Llama-3.3-70B-Instruct
-LOG=vllm_server.log.c
+LOG=vllm_server.log
 mkdir -p runs/${MODEL##*/}
 
 DATASETS=(
@@ -57,7 +57,7 @@ python -m vllm.entrypoints.openai.api_server \
     --enforce-eager \
     --max-model-len 10240 \
     --dtype bfloat16 \
-    --tensor-parallel-size 4 > $LOG 2>&1 &
+    --tensor-parallel-size 8 > $LOG 2>&1 &
 PID=$!
 until curl -s http://localhost:8000/v1/models >/dev/null; do
   sleep 10
@@ -75,6 +75,7 @@ for method in judge judge_expr point; do
     srun singularity exec $SIF \
     python -m autollmrerank.wrapper \
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
+        --data.batch_size=512 \
         --llm.backend=request \
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \
@@ -103,7 +104,7 @@ python -m vllm.entrypoints.openai.api_server \
     --enforce-eager \
     --max-model-len 20480 \
     --dtype bfloat16 \
-    --tensor-parallel-size 4 > $LOG 2>&1 &
+    --tensor-parallel-size 8 > $LOG 2>&1 &
 PID=$!
 until curl -s http://localhost:8000/v1/models >/dev/null; do
   sleep 10
@@ -147,7 +148,7 @@ python -m vllm.entrypoints.openai.api_server \
     --port 8000 \
     --enforce-eager \
     --dtype bfloat16 \
-    --tensor-parallel-size 4 > $LOG 2>&1 &
+    --tensor-parallel-size 8 > $LOG 2>&1 &
 PID=$!
 until curl -s http://localhost:8000/v1/models >/dev/null; do
   sleep 10
