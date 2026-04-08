@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=1         # 8 MPI ranks per node, 16 total (2x8)
 #SBATCH --mem=256G
 #SBATCH --nodes=1
-#SBATCH --array=2,5,6,7
+#SBATCH --array=2
 #SBATCH --cpus-per-task=32
 #SBATCH --gpus-per-node=8
 #SBATCH --time=72:00:00
@@ -89,7 +89,7 @@ for method in point judge judge_expr; do
     python -m autollmrerank.wrapper_sample \
         --sampling=true --sampling_size=32 --sampling_seed=$seed \
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
-        --data.batch_size=512 \
+        --data.batch_size=128 \
         --llm.backend=request \
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \

@@ -39,8 +39,11 @@ class AutoQrel:
         min_relevance: int relevance grade threshold for human qrel
         """
         self.human_qrel = qrel
-        strategies = self.STRATEGIES if strategies == "all" else strategies
-        self.strategies = strategies if isinstance(strategies, list) else [strategies]
+        if "all" in strategies:
+            self.strategies = self.STRATEGIES
+            self.strategies.remove('all')
+        else:
+            self.strategies = strategies
 
         # Parameters
         self.threshold = threshold
@@ -53,22 +56,30 @@ class AutoQrel:
         self.llm_qrels = {s: self._dispatch(s, judge_run) for s in self.strategies}
 
     def _dispatch(self, strategy, run):
+        if strategy == "human":
+            return self.human_qrel
         if strategy == "direct":
-            return AutoQrel.direct(run)
+            result = AutoQrel.direct(run)
         elif strategy == "thresholding":
-            return AutoQrel.thresholding(run, self.threshold)
+            result = AutoQrel.thresholding(run, self.threshold)
         elif strategy == "rank":
-            return AutoQrel.rank_cutoff(run, self.rank_cutoff)
+            result = AutoQrel.rank_cutoff(run, self.rank_cutoff)
         elif strategy == "largest_gap":
-            return AutoQrel.largest_gap(run, self.gap_k)
+            result = AutoQrel.largest_gap(run, self.gap_k)
         elif strategy == "quantile":
-            return AutoQrel.quantile(run, self.quantile_cutoff)
+            result = AutoQrel.quantile(run, self.quantile_cutoff)
         elif strategy == "optimal_per_topic":
-            return AutoQrel.optimal_per_topic(run, self.human_qrel, self.min_relevance)
+            result = AutoQrel.optimal_per_topic(run, self.human_qrel, self.min_relevance)
         elif strategy == "optimal_global":
-            return AutoQrel.optimal_global(run, self.human_qrel, self.min_relevance)
+            result = AutoQrel.optimal_global(run, self.human_qrel, self.min_relevance)
         else:
             raise ValueError(f"Unknown thresholding strategy: {strategy!r}")
+        return AutoQrel._filter_no_relevant(result)
+
+    @staticmethod
+    def _filter_no_relevant(qrel):
+        """Remove qids where all judged documents have zero relevance."""
+        return {qid: docs for qid, docs in qrel.items() if any(v > 0 for v in docs.values())}
 
     @staticmethod
     def direct(run):
@@ -242,20 +253,21 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate retrieval runs against LLM-judge-derived qrel.")
     parser.add_argument("--dataset_name", type=str, required=True)
     parser.add_argument("--loader_type", type=str, default="irds")
-    parser.add_argument("--judge_run", type=str, required=True, help="Path to LLM judge run (converted to qrels).")
-    parser.add_argument("--evaluate_run", type=str, default=None, help="Path to retrieval run to evaluate. Defaults to judge_run itself.")
+    parser.add_argument("--judge_run", type=str, required=True)
+    parser.add_argument("--evaluate_run", type=str, required=True, default=None)
 
     ## classification thresholding strategies
     parser.add_argument("--strategies", action='append', choices=AutoQrel.STRATEGIES, default=None)
 
     ### binarize
-    parser.add_argument("--threshold", type=float, default=None)
+    parser.add_argument("--threshold", type=float, default=0.5)
     ### rank_cutoff
     parser.add_argument("--rank_cutoff", type=int, default=10, help="Top-k for --thresholding rank_cutoff.")
     parser.add_argument("--gap_k", type=int, default=1, help="k-th largest gap for --thresholding largest_gap.")
     parser.add_argument("--quantile_cutoff", type=float, default=0.75, help="Quantile for --thresholding quantile.")
     parser.add_argument("--min_relevance", type=int, default=1, help="Min relevance grade for oracle strategies.")
     parser.add_argument("--exp", type=str, default=None, help="the experiment tag to record in the output")
+    parser.add_argument("--output", type=str, default=None, help="Path to save a per-query CSV for Colab analysis (long format).")
     args = parser.parse_args()
 
     # Loading
@@ -275,34 +287,44 @@ if __name__ == "__main__":
         min_relevance=args.min_relevance,
     )
 
-    qrel_as_run = AutoQrel.qrel_to_run(qrel, judge_run)
+    # NOTE: this is deprecated as we are not going to use qrel as a run. It's the grountruth
+    # qrel_as_run = AutoQrel.qrel_to_run(qrel, judge_run)
+    # r3 = ir_measures.calc_aggregate([nDCG@10], autoqrel.human_qrel, qrel_as_run)[nDCG@10]
 
-    # Reference for sanity check
-    r1 = ir_measures.calc_aggregate([nDCG@10], autoqrel.human_qrel, judge_run)[nDCG@10]
-    r2 = ir_measures.calc_aggregate([nDCG@10], autoqrel.human_qrel, eval_run)[nDCG@10]
-    r3 = ir_measures.calc_aggregate([nDCG@10], autoqrel.human_qrel, qrel_as_run)[nDCG@10]
-    results = {
-        'references': {
-            f'human_qrel:{args.judge_run.split("/")[-1]}': r1,
-            f'human_qrel:{args.evaluate_run.split("/")[-1]}': r2,
-            f'human_qrel:human_qrel_as_run': r3
-        },
-        'metadata': {'dataset': args.dataset_name, 'judge_run': args.judge_run, 'evaluate_run': args.evaluate_run},
-        'results': {}
-    }
+    # Evaluate with the judge with ground-truth judge
+    judge_name = os.path.basename(args.judge_run)
+    results = []
+    r = ir_measures.calc_aggregate([nDCG@10], autoqrel.human_qrel, judge_run)[nDCG@10]
+    results = [{
+        'dataset': args.dataset_name,
+        'exp': args.exp,
+        'judge_run': 'human.qrel',
+        'evaluate_run': judge_name,
+        'strategy': 'human',
+        'nDCG@10': round(r, 4),
+   }]
 
     # Evaluate against each thresholding strategy
+    eval_name = os.path.basename(args.evaluate_run)
     for strategy, llm_qrel in autoqrel.llm_qrels.items():
-        r1 = ir_measures.calc_aggregate([nDCG@10], llm_qrel, eval_run)[nDCG@10]
-        r2 = ir_measures.calc_aggregate([nDCG@10], llm_qrel, qrel_as_run)[nDCG@10]
-        results['results'][strategy] = r1
-        # results['results'][f"{strategy}:qrel"] = r2
-
-    for strategy, score in results['results'].items():
-        row = {
+        llm_qrel = {qid: item for qid, item in llm_qrel.items() if qid in eval_run}
+        r = ir_measures.calc_aggregate([nDCG@10], llm_qrel, eval_run)[nDCG@10]
+        results.append({
             'dataset': args.dataset_name,
             'exp': args.exp,
+            'judge_run': judge_name,
+            'evaluate_run': eval_name,
             'strategy': strategy,
-            'nDCG@10': round(score, 4),
-        }
-        print(json.dumps(row))
+            'nDCG@10': round(r, 4),
+        })
+
+        # NOTE: per query evaluation
+        # for m in ir_measures.iter_calc([nDCG@10], llm_qrel, eval_run):
+        #     if m.value != 1.0:
+        #         print(m)
+
+    # Append aggregate rows to CSV for Colab analysis
+    if args.output:
+        with open(args.output, 'w') as f:
+            for result in results:
+                f.write(json.dumps(result) + '\n')
