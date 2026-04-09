@@ -1,8 +1,0 @@
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "human.qrel", "evaluate_run": "run.beir.bm25-rerank-setmaxheaptopk.scidocs.txt", "strategy": "human", "nDCG@10": 0.1834}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-setmaxheaptopk.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "direct", "nDCG@10": 0.4591}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-setmaxheaptopk.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "thresholding", "nDCG@10": 0.4548}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-setmaxheaptopk.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "rank", "nDCG@10": 0.3964}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-setmaxheaptopk.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "largest_gap", "nDCG@10": 0.4591}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-setmaxheaptopk.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "quantile", "nDCG@10": 0.5872}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-setmaxheaptopk.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "optimal_per_topic", "nDCG@10": 0.5307}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-setmaxheaptopk.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "optimal_global", "nDCG@10": 0.4376}

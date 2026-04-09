@@ -1,8 +1,0 @@
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "human.qrel", "evaluate_run": "run.beir.bm25-rerank-rankgpt.scidocs.txt", "strategy": "human", "nDCG@10": 0.2033}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "direct", "nDCG@10": 0.4653}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "thresholding", "nDCG@10": 0.4803}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "rank", "nDCG@10": 0.4592}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "largest_gap", "nDCG@10": 0.4653}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "quantile", "nDCG@10": 0.6808}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "optimal_per_topic", "nDCG@10": 0.5465}
-{"dataset": "beir/scidocs", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.scidocs.txt", "evaluate_run": "run.beir.splade-v3.scidocs.txt", "strategy": "optimal_global", "nDCG@10": 0.4787}

@@ -26,3 +26,7 @@ build/
 
 bbeir/
 bbier/
+
+qrel-analysis/dense/
+qrel-analysis/results_bc/
+qrel-analysis/collected_bc/

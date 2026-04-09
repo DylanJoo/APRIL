@@ -1,8 +1,0 @@
-{"dataset": "beir/dbpedia-entity/test", "exp": null, "judge_run": "human.qrel", "evaluate_run": "run.beir.bm25-rerank-point.dbpedia-entity.txt", "strategy": "human", "nDCG@10": 0.3046}
-{"dataset": "beir/dbpedia-entity/test", "exp": null, "judge_run": "run.beir.bm25-rerank-point.dbpedia-entity.txt", "evaluate_run": "run.beir.splade-v3.dbpedia-entity.txt", "strategy": "direct", "nDCG@10": 0.5191}
-{"dataset": "beir/dbpedia-entity/test", "exp": null, "judge_run": "run.beir.bm25-rerank-point.dbpedia-entity.txt", "evaluate_run": "run.beir.splade-v3.dbpedia-entity.txt", "strategy": "thresholding", "nDCG@10": 0.517}
-{"dataset": "beir/dbpedia-entity/test", "exp": null, "judge_run": "run.beir.bm25-rerank-point.dbpedia-entity.txt", "evaluate_run": "run.beir.splade-v3.dbpedia-entity.txt", "strategy": "rank", "nDCG@10": 0.3163}
-{"dataset": "beir/dbpedia-entity/test", "exp": null, "judge_run": "run.beir.bm25-rerank-point.dbpedia-entity.txt", "evaluate_run": "run.beir.splade-v3.dbpedia-entity.txt", "strategy": "largest_gap", "nDCG@10": 0.4842}
-{"dataset": "beir/dbpedia-entity/test", "exp": null, "judge_run": "run.beir.bm25-rerank-point.dbpedia-entity.txt", "evaluate_run": "run.beir.splade-v3.dbpedia-entity.txt", "strategy": "quantile", "nDCG@10": 0.4265}
-{"dataset": "beir/dbpedia-entity/test", "exp": null, "judge_run": "run.beir.bm25-rerank-point.dbpedia-entity.txt", "evaluate_run": "run.beir.splade-v3.dbpedia-entity.txt", "strategy": "optimal_per_topic", "nDCG@10": 0.5287}
-{"dataset": "beir/dbpedia-entity/test", "exp": null, "judge_run": "run.beir.bm25-rerank-point.dbpedia-entity.txt", "evaluate_run": "run.beir.splade-v3.dbpedia-entity.txt", "strategy": "optimal_global", "nDCG@10": 0.5265}
