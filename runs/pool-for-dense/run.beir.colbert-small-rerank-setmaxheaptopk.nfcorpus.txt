@@ -1,0 +1,1 @@
+../Llama-3.3-70B-Instruct/run.beir.colbert-small-rerank-setmaxheaptopk.nfcorpus.txt
