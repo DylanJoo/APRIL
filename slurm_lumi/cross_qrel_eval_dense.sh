@@ -26,21 +26,29 @@ benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
 
-## Pointwise reranker as judgment
-# for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
-# for method in judge judge_exp pointwise; do
-for r in bm25; do
-for method in judge; do
-judge_run=${HOME}/APRIL/runs/Llama-3.3-70B-Instruct/run.$benchmark.$r-rerank-$method.${subset%%/*}.txt
-for evaluate_run in ${HOME}/runs-and-qrels/runs/$benchmark/run.$benchmark.*.${subset%%/*}*;do
-    mkdir -p ${HOME}/qrel-and-analysis/dense/${r}-rerank-${method}/
+RETRIEVALS=(bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small)
+RERANKERS=(judge judge_expr point rankgpt setmaxheaptopk)
+POOL=()
+for r in "${RETRIEVALS[@]}"; do
+POOL+=("${r}")
+for rr in "${RERANKERS[@]}"; do
+POOL+=("$r-rerank-$rr")
+done
+done
+
+## Retrieval + reranking as judgment
+for r in "${RETRIEVALS[@]}"; do
+for reranker in "${RERANKERS[@]}"; do
+judge_run=${HOME}/APRIL/runs/Llama-3.3-70B-Instruct/run.$benchmark.$r-rerank-$reranker.${subset%%/*}.txt
+mkdir -p ${HOME}/APRIL/qrel-analysis/dense/${r}-rerank-${reranker}/${subset%%/*}/
+for evaluate_setting in "${POOL[@]}"; do
     srun singularity exec $SIF python qrel-analysis/eval_autoqrels.py \
         --dataset_name ${dataset/@//} \
         --loader_type irds \
         --judge_run $judge_run \
-        --evaluate_run $evaluate_run \
+        --evaluate_run ${HOME}/APRIL/runs/pool-for-dense/run.$benchmark.$evaluate_setting.${subset%%/*}.txt \
         --strategies all \
-        --output ${HOME}/qrel-and-analysis/dense/${r}-rerank-${method}/${subset%%/*}.jsonl
+        --output ${HOME}/APRIL/qrel-analysis/dense/${r}-rerank-${reranker}/${subset%%/*}/$evaluate_setting.jsonl
 done
 done
 done
