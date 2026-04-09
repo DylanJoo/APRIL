@@ -1,0 +1,8 @@
+{"dataset": "beir/nfcorpus/test", "exp": null, "judge_run": "human.qrel", "evaluate_run": "run.beir.bm25-rerank-rankgpt.nfcorpus.txt", "strategy": "human", "nDCG@10": 0.3839}
+{"dataset": "beir/nfcorpus/test", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.nfcorpus.txt", "evaluate_run": "run.beir.splade-v3.nfcorpus.txt", "strategy": "direct", "nDCG@10": 0.6361}
+{"dataset": "beir/nfcorpus/test", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.nfcorpus.txt", "evaluate_run": "run.beir.splade-v3.nfcorpus.txt", "strategy": "thresholding", "nDCG@10": 0.6549}
+{"dataset": "beir/nfcorpus/test", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.nfcorpus.txt", "evaluate_run": "run.beir.splade-v3.nfcorpus.txt", "strategy": "rank", "nDCG@10": 0.6214}
+{"dataset": "beir/nfcorpus/test", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.nfcorpus.txt", "evaluate_run": "run.beir.splade-v3.nfcorpus.txt", "strategy": "largest_gap", "nDCG@10": 0.6361}
+{"dataset": "beir/nfcorpus/test", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.nfcorpus.txt", "evaluate_run": "run.beir.splade-v3.nfcorpus.txt", "strategy": "quantile", "nDCG@10": 0.7292}
+{"dataset": "beir/nfcorpus/test", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.nfcorpus.txt", "evaluate_run": "run.beir.splade-v3.nfcorpus.txt", "strategy": "optimal_per_topic", "nDCG@10": 0.7688}
+{"dataset": "beir/nfcorpus/test", "exp": null, "judge_run": "run.beir.bm25-rerank-rankgpt.nfcorpus.txt", "evaluate_run": "run.beir.splade-v3.nfcorpus.txt", "strategy": "optimal_global", "nDCG@10": 0.6651}

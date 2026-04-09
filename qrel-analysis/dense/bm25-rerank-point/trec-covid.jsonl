@@ -1,0 +1,8 @@
+{"dataset": "beir/trec-covid", "exp": null, "judge_run": "human.qrel", "evaluate_run": "run.beir.bm25-rerank-point.trec-covid.txt", "strategy": "human", "nDCG@10": 0.7805}
+{"dataset": "beir/trec-covid", "exp": null, "judge_run": "run.beir.bm25-rerank-point.trec-covid.txt", "evaluate_run": "run.beir.splade-v3.trec-covid.txt", "strategy": "direct", "nDCG@10": 0.5095}
+{"dataset": "beir/trec-covid", "exp": null, "judge_run": "run.beir.bm25-rerank-point.trec-covid.txt", "evaluate_run": "run.beir.splade-v3.trec-covid.txt", "strategy": "thresholding", "nDCG@10": 0.5095}
+{"dataset": "beir/trec-covid", "exp": null, "judge_run": "run.beir.bm25-rerank-point.trec-covid.txt", "evaluate_run": "run.beir.splade-v3.trec-covid.txt", "strategy": "rank", "nDCG@10": 0.2403}
+{"dataset": "beir/trec-covid", "exp": null, "judge_run": "run.beir.bm25-rerank-point.trec-covid.txt", "evaluate_run": "run.beir.splade-v3.trec-covid.txt", "strategy": "largest_gap", "nDCG@10": 0.5081}
+{"dataset": "beir/trec-covid", "exp": null, "judge_run": "run.beir.bm25-rerank-point.trec-covid.txt", "evaluate_run": "run.beir.splade-v3.trec-covid.txt", "strategy": "quantile", "nDCG@10": 0.3976}
+{"dataset": "beir/trec-covid", "exp": null, "judge_run": "run.beir.bm25-rerank-point.trec-covid.txt", "evaluate_run": "run.beir.splade-v3.trec-covid.txt", "strategy": "optimal_per_topic", "nDCG@10": 0.5516}
+{"dataset": "beir/trec-covid", "exp": null, "judge_run": "run.beir.bm25-rerank-point.trec-covid.txt", "evaluate_run": "run.beir.splade-v3.trec-covid.txt", "strategy": "optimal_global", "nDCG@10": 0.5567}

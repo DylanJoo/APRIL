@@ -1,0 +1,8 @@
+{"dataset": "beir/webis-touche2020/v2", "exp": null, "judge_run": "human.qrel", "evaluate_run": "run.beir.bm25-rerank-point.webis-touche2020.txt", "strategy": "human", "nDCG@10": 0.1767}
+{"dataset": "beir/webis-touche2020/v2", "exp": null, "judge_run": "run.beir.bm25-rerank-point.webis-touche2020.txt", "evaluate_run": "run.beir.splade-v3.webis-touche2020.txt", "strategy": "direct", "nDCG@10": 0.7346}
+{"dataset": "beir/webis-touche2020/v2", "exp": null, "judge_run": "run.beir.bm25-rerank-point.webis-touche2020.txt", "evaluate_run": "run.beir.splade-v3.webis-touche2020.txt", "strategy": "thresholding", "nDCG@10": 0.7346}
+{"dataset": "beir/webis-touche2020/v2", "exp": null, "judge_run": "run.beir.bm25-rerank-point.webis-touche2020.txt", "evaluate_run": "run.beir.splade-v3.webis-touche2020.txt", "strategy": "rank", "nDCG@10": 0.3117}
+{"dataset": "beir/webis-touche2020/v2", "exp": null, "judge_run": "run.beir.bm25-rerank-point.webis-touche2020.txt", "evaluate_run": "run.beir.splade-v3.webis-touche2020.txt", "strategy": "largest_gap", "nDCG@10": 0.7196}
+{"dataset": "beir/webis-touche2020/v2", "exp": null, "judge_run": "run.beir.bm25-rerank-point.webis-touche2020.txt", "evaluate_run": "run.beir.splade-v3.webis-touche2020.txt", "strategy": "quantile", "nDCG@10": 0.4704}
+{"dataset": "beir/webis-touche2020/v2", "exp": null, "judge_run": "run.beir.bm25-rerank-point.webis-touche2020.txt", "evaluate_run": "run.beir.splade-v3.webis-touche2020.txt", "strategy": "optimal_per_topic", "nDCG@10": 0.5719}
+{"dataset": "beir/webis-touche2020/v2", "exp": null, "judge_run": "run.beir.bm25-rerank-point.webis-touche2020.txt", "evaluate_run": "run.beir.splade-v3.webis-touche2020.txt", "strategy": "optimal_global", "nDCG@10": 0.6822}
