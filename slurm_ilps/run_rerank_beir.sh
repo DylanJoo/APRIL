@@ -9,7 +9,7 @@
 #SBATCH --time=24:00:00
 #SBATCH --output=%x-%a.out
 
-source ~/.bashrc
+source $HOME/.bashrc
 initconda
 conda activate autollmrerank
 

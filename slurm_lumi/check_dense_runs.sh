@@ -1,8 +1,9 @@
 #!/bin/bash
 RUNS_DIR="$HOME/APRIL/runs"
+
 MODEL_DIR="$RUNS_DIR/Llama-3.3-70B-Instruct"
-# MODEL_DIR="$RUNS_DIR/Qwen/Qwen2.5-7B-Instruct"
-# MODEL_DIR="$RUNS_DIR/Qwen3-Next-80B-A3B-Instruct"
+MODEL_DIR="$RUNS_DIR/Qwen2.5-7B-Instruct"
+# MODEL_DIR="$RUNS_DIR/supervised"
 DATASETS=(
     "msmarco-passage@trec-dl-2019/judged"
     "msmarco-passage@trec-dl-2020/judged"
@@ -15,6 +16,7 @@ DATASETS=(
 
 RETRIEVERS=(bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small)
 RERANKING=(judge judge_expr point setmaxheaptopk rankgpt)
+# RERANKING=(rankzephyr rankfirst)
 
 echo "========================================"
 echo "RERANKING: $1"
