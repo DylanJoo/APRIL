@@ -1,7 +1,6 @@
 #!/bin/bash
 RUNS_DIR="$HOME/APRIL/runs"
 MODEL_DIR="$RUNS_DIR/Llama-3.3-70B-Instruct"
-# MODEL_DIR="$RUNS_DIR/Qwen/Qwen2.5-7B-Instruct"
 DATASETS=(
     "beir@arguana"
     "beir@climate-fever"
@@ -15,7 +14,7 @@ DATASETS=(
 
 RETRIEVERS=(bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small)
 RERANKING=(judge judge_expr point setmaxheaptopk rankgpt)
-SEEDS=$(seq 1 10)
+SEEDS=$(seq 1 5)
 
 echo "========================================"
 echo "SPARSE LLAMA RERANKING CHECK"

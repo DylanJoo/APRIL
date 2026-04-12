@@ -2,8 +2,6 @@
 RUNS_DIR="$HOME/APRIL/runs"
 
 MODEL_DIR="$RUNS_DIR/Llama-3.3-70B-Instruct"
-MODEL_DIR="$RUNS_DIR/Qwen2.5-7B-Instruct"
-# MODEL_DIR="$RUNS_DIR/supervised"
 DATASETS=(
     "msmarco-passage@trec-dl-2019/judged"
     "msmarco-passage@trec-dl-2020/judged"

@@ -1,15 +1,3 @@
-#!/bin/bash -l
-#SBATCH --job-name=eval-dense-ndcg10
-#SBATCH --partition=small
-#SBATCH --mem=32G
-#SBATCH --nodes=1
-#SBATCH --array=0-6
-#SBATCH --cpus-per-task=32
-#SBATCH --time=24:00:00
-#SBATCH --account=project_465002532
-#SBATCH --output=logs/%x.%a.out
-#SBATCH --error=logs/%x.%a.err
-
 cd $HOME/APRIL
 
 DATASETS=(
@@ -23,8 +11,6 @@ DATASETS=(
 )
 
 MODEL_DIR=meta-llama/Llama-3.3-70B-Instruct
-
-singularity shell $SIF
 
 # retrieval 
 for retrieval in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do

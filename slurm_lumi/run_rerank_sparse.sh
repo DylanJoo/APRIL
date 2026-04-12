@@ -1,13 +1,13 @@
 #!/bin/bash -l
 #SBATCH --job-name=sparse
-#SBATCH --partition=small-g           # partition name
+#SBATCH --partition=dev-g           # partition name
 #SBATCH --ntasks-per-node=1         # 8 MPI ranks per node, 16 total (2x8)
 #SBATCH --mem=256G
 #SBATCH --nodes=1
-#SBATCH --array=0,1,2,3
+#SBATCH --array=2,6
 #SBATCH --cpus-per-task=32
 #SBATCH --gpus-per-node=8
-#SBATCH --time=72:00:00
+#SBATCH --time=2:00:00
 #SBATCH --account=project_465002438
 #SBATCH --output=logs/%x.%a.out
 #SBATCH --error=logs/%x.%a.err
@@ -44,7 +44,7 @@ subset=$(echo $dataset | cut -d'@' -f2)
 needs_pointwise=false
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
 for method in judge judge_expr point; do
-for seed in $(seq 1 10);do
+for seed in $(seq 1 5);do
     output_run=runs/${MODEL##*/}/sample-$seed/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ ! -f "$output_run" ]; then
         needs_pointwise=true
@@ -76,7 +76,7 @@ done
 echo "vLLM server is up and running."
 
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
-for seed in $(seq 1 10); do
+for seed in $(seq 1 5); do
 for method in point judge judge_expr; do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/sample-$seed/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
@@ -105,7 +105,7 @@ fi
 method=setmaxheaptopk
 needs_setwise=false
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
-for seed in $(seq 1 10);do
+for seed in $(seq 1 5);do
     output_run=runs/${MODEL##*/}/sample-$seed/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ ! -f "$output_run" ]; then
         needs_setwise=true
@@ -160,7 +160,7 @@ fi
 method=rankgpt
 needs_listwise=false
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
-for seed in $(seq 1 10);do
+for seed in $(seq 1 5);do
     output_run=runs/${MODEL##*/}/sample-$seed/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ ! -f "$output_run" ]; then
         needs_listwise=true
@@ -190,7 +190,7 @@ done
 echo "vLLM server is up and running."
 
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
-for seed in $(seq 1 10); do
+for seed in $(seq 1 5); do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/sample-$seed/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ -f "$output_run" ]; then

@@ -1,18 +1,4 @@
-#!/bin/bash -l
-#SBATCH --job-name=eval-dense-judge10
-#SBATCH --partition=small
-#SBATCH --mem=32G
-#SBATCH --nodes=1
-#SBATCH --array=0-6
-#SBATCH --cpus-per-task=32
-#SBATCH --time=24:00:00
-#SBATCH --account=project_465002532
-#SBATCH --output=logs/%x.%a.out
-#SBATCH --error=logs/%x.%a.err
-
 cd $HOME/APRIL
-
-singularity shell $SIF
 
 DATASETS=(
 "msmarco-passage@trec-dl-2019/judged"
@@ -24,7 +10,7 @@ DATASETS=(
 "beir@webis-touche2020/v2"
 )
 
-MODEL_DIR=Qwen/Qwen2.5-7B-Instruct
+MODEL_DIR=meta-llama/Llama-3.3-70B-Instruct
 
 # retrieval 
 for retrieval in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
