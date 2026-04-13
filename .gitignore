@@ -25,8 +25,6 @@ build/
 *.err
 
 bbeir/
-bbier/
 
-qrel-analysis/dense/
-qrel-analysis/results_bc/
-qrel-analysis/collected_bc/
+qrel-analysis/dense-70b/*/*
+!qrel-analysis/dense-70b/*/all.jsonl
