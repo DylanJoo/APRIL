@@ -1,0 +1,1 @@
+../Qwen2.5-7B-Instruct/run.beir.colbert-small-rerank-setmaxheaptopk.dbpedia-entity.txt

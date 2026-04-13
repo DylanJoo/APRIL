@@ -1,0 +1,1 @@
+/home/dju/runs-and-qrels/runs/beir/run.beir.splade-v3.scidocs.txt

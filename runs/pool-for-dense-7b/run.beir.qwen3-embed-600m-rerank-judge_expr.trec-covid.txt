@@ -1,0 +1,1 @@
+../Qwen2.5-7B-Instruct/run.beir.qwen3-embed-600m-rerank-judge_expr.trec-covid.txt

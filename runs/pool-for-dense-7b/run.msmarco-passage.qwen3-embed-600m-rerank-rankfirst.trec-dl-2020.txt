@@ -1,0 +1,1 @@
+../supervised/run.msmarco-passage.qwen3-embed-600m-rerank-rankfirst.trec-dl-2020.txt

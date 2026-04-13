@@ -7,12 +7,10 @@ src/pairwise/rank_llm_*/
 
 # Legacy or backup
 runs/*
-!runs/run.msmarco-passage-v2.bm25.trec-dl-2021.txt
-!runs/run.msmarco-passage-v2.bm25.trec-dl-2022.txt
-!runs/run.msmarco-passage-v2.bm25.trec-dl-2023.txt
-!runs/run.msmarco-passage.bm25.trec-dl-2019.txt
-!runs/run.msmarco-passage.bm25.trec-dl-2020.txt
+!runs/supervised
 !runs/pool-for-dense
+!runs/pool-for-dense-7b
+!runs/pool-for-dense-70b
 
 # Python packaging
 *.egg-info/
@@ -26,5 +24,7 @@ build/
 
 bbeir/
 
+qrel-analysis/dense-7b/*/*
+!qrel-analysis/dense-7b/*/all.jsonl
 qrel-analysis/dense-70b/*/*
 !qrel-analysis/dense-70b/*/all.jsonl
