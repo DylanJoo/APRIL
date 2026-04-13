@@ -1,0 +1,1 @@
+../supervised/run.beir.bm25-rerank-rankfirst.dbpedia-entity.txt
