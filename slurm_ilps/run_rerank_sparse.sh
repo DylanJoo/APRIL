@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
-#SBATCH --array=0
+#SBATCH --array=2
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=72:00:00
 #SBATCH --output=%x-%a.out
@@ -14,6 +14,8 @@ initconda
 conda activate autollmrerank
 
 cd $HOME/APRIL
+
+MODEL=Qwen/Qwen2.5-7B-Instruct
 mkdir -p runs/${MODEL##*/}
 
 DATASETS=(
@@ -31,13 +33,14 @@ dataset=${DATASETS[$SLURM_ARRAY_TASK_ID]}
 benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
-MODEL=Qwen/Qwen2.5-7B-Instruct
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
-for seed in $(seq 1 10); do
+# for seed in $(seq 1 10); do
+for seed in 5;do
+mkdir -p "runs/${MODEL##*/}/sample-$seed"
 for method in point judge judge_expr setmaxheaptopk rankgpt; do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/sample-$seed/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
-    if [ -f "$output_run" ]; then
+    if [ -f "$output_run" ] && [ -s "$output_run" ]; then
         echo "Skipping $output_run (already exists)"
         continue
     fi

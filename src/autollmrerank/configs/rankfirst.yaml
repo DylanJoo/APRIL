@@ -9,7 +9,7 @@ llm:
   temperature: 0.0
   top_p: 1.0
   backend: vllm
-  max_model_len: 30720
+  max_model_len: 20480
   dtype: bfloat16
   use_logits: true
   base_url: null
@@ -20,7 +20,7 @@ use_alphabetical: true
 top_k: 100 
 rank_start: 0
 rank_end: 100 
-max_doc_length: 1024
+max_doc_length: 8196
 context_size: 1024
 window_size: 20
 step_size: 10
