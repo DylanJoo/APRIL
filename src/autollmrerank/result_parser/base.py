@@ -83,7 +83,12 @@ class ResultParser(ABC):
         """ Assign the scores from top to bottom, and fill the rest with decreasing scores. """
         init_hits = copy.deepcopy(result.hits)
         if isinstance(scores[0], str):
-            scores = [float(s) for s in scores]
+            def to_float(s):
+                try:
+                    return float(s)
+                except (ValueError, TypeError):
+                    return 0.0
+            scores = [to_float(s) for s in scores]
         min_score = min(scores) - 1
 
         for i in range(len(init_hits)):

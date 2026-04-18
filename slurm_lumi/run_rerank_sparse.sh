@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=1         # 8 MPI ranks per node, 16 total (2x8)
 #SBATCH --mem=256G
 #SBATCH --nodes=1
-#SBATCH --array=2,6
+#SBATCH --array=2
 #SBATCH --cpus-per-task=32
 #SBATCH --gpus-per-node=8
 #SBATCH --time=2:00:00
@@ -94,7 +94,7 @@ for method in point judge judge_expr; do
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \
         --data.output_run=${output_run} \
-        --llm.model_name_or_path=$MODEL
+        --llm.model_name_or_path=$MODEL --max_doc_length=4000
 done
 done
 done
@@ -135,7 +135,7 @@ done
 echo "vLLM server is up and running."
 
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
-for seed in $(seq 1 10); do
+for seed in $(seq 1 5); do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/sample-$seed/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ -f "$output_run" ]; then
