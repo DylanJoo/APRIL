@@ -1,10 +1,10 @@
 #!/bin/sh
-#SBATCH --job-name=spv-d
+#SBATCH --job-name=test
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
-#SBATCH --array=4
+#SBATCH --array=5
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=25:00:00
 #SBATCH --output=logs/%x-%a.out
@@ -32,8 +32,9 @@ dataset=${DATASETS[$SLURM_ARRAY_TASK_ID]}
 benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
-for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
-for method in rankfirst; do
+# for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
+for r in bm25;do
+for method in rankzephyr; do
     output_run=runs/supervised/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     # if [ -f "$output_run" ]; then
     #     echo "Skipping $output_run (already exists)"
@@ -45,6 +46,6 @@ for method in rankfirst; do
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \
-        --data.output_run=${output_run} --max_doc_length=768
+        --data.output_run=${output_run}
 done
 done

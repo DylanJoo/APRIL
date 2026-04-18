@@ -50,7 +50,9 @@ class SlidingWindow(RerankStrategy):
             rank_start=curr_start, 
             rank_end=curr_end
         )
+        prompts = [p + '[' for p in prompts]
         outputs = self._llm.generate(prompts)
+        outputs = ['[' + o for o in outputs]
 
         reranked_results = self._result_parser.parse(
             outputs=outputs,
