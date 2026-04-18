@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1
 #SBATCH --mem=32G
 #SBATCH --nodes=1
-#SBATCH --array=0-6%3
+#SBATCH --array=4
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=25:00:00
 #SBATCH --output=logs/%x-%a.out
@@ -45,6 +45,6 @@ for method in rankfirst; do
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \
-        --data.output_run=${output_run}
+        --data.output_run=${output_run} --max_doc_length=768
 done
 done
