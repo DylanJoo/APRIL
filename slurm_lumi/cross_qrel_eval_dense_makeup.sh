@@ -44,7 +44,7 @@ mkdir -p ${HOME}/APRIL/qrel-analysis/dense-70b/${r1}-rerank-${r2}/${subset%%/*}/
 
 echo Judge: $r1-rerank-$r2
 for evaluate_setting in "${POOL[@]}"; do
-    echo $evaluate_setting
+    echo to evaluate $evaluate_setting
     # srun singularity exec $SIF python qrel-analysis/eval_autoqrels.py \
     #     --dataset_name ${dataset/@//} \
     #     --loader_type irds \
@@ -56,7 +56,7 @@ for evaluate_setting in "${POOL[@]}"; do
 done
 
 for eval_r1 in "${RETRIEVALS[@]}";do
-    echo $eval_r1
+    echo to evaluate: $eval_r1
     srun singularity exec $SIF python qrel-analysis/eval_autoqrels.py \
         --dataset_name ${dataset/@//} \
         --loader_type irds \
