@@ -220,7 +220,7 @@ bm25 | rankzephyr | trec-dl-2020 | 0.7044
 bm25 | rankzephyr | dbpedia-entity | 0.4055
 bm25 | rankzephyr | nfcorpus | 0.3242
 bm25 | rankzephyr | scidocs | 0.1534
-bm25 | rankzephyr | trec-covid | 0.6559
+bm25 | rankzephyr | trec-covid | 0.6591
 bm25 | rankzephyr | webis-touche2020 | 0.3296
 splade-v3 | rankfirst | trec-dl-2019 | 0.7655
 splade-v3 | rankfirst | trec-dl-2020 | 0.7820
@@ -248,7 +248,7 @@ nomicai-modernbert-embed | rankzephyr | trec-dl-2020 | 0.7676
 nomicai-modernbert-embed | rankzephyr | dbpedia-entity | 0.4826
 nomicai-modernbert-embed | rankzephyr | nfcorpus | 0.3315
 nomicai-modernbert-embed | rankzephyr | scidocs | 0.1793
-nomicai-modernbert-embed | rankzephyr | trec-covid | 0.8479
+nomicai-modernbert-embed | rankzephyr | trec-covid | 0.8429
 nomicai-modernbert-embed | rankzephyr | webis-touche2020 | 0.2641
 qwen3-embed-600m | rankfirst | trec-dl-2019 | 0.7383
 qwen3-embed-600m | rankfirst | trec-dl-2020 | 0.7624
