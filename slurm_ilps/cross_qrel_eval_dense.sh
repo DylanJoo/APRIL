@@ -25,7 +25,6 @@ dataset=${DATASETS[$SLURM_ARRAY_TASK_ID]}
 benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
-
 RETRIEVALS=(bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small)
 RERANKERS=(judge judge_expr point rankgpt setmaxheaptopk)
 POOL=()
@@ -76,6 +75,5 @@ for eval_r1 in "${RETRIEVALS[@]}";do
             --output ${HOME}/APRIL/qrel-analysis/dense-7b/${r1}-rerank-${r2}/${subset%%/*}/$eval_r1-rerank-$eval_r2.jsonl
     done
 done
-
 done
 done

@@ -13,8 +13,8 @@ DATASETS=(
 RETRIEVERS=(bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small)
 MODEL_DIR="$RUNS_DIR/Qwen2.5-7B-Instruct"
 RERANKING=(judge judge_expr point setmaxheaptopk rankgpt)
-MODEL_DIR="$RUNS_DIR/supervised"
-RERANKING=(rankzephyr rankfirst)
+# MODEL_DIR="$RUNS_DIR/supervised"
+# RERANKING=(rankzephyr rankfirst)
 
 echo "========================================"
 echo "RERANKING: $1"

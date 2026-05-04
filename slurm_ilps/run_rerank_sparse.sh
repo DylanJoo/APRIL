@@ -34,13 +34,12 @@ benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
-# for seed in $(seq 1 10); do
-for seed in 5;do
+for seed in $(seq 1 10); do
 mkdir -p "runs/${MODEL##*/}/sample-$seed"
 for method in point judge judge_expr setmaxheaptopk rankgpt; do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/sample-$seed/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
-    if [ -f "$output_run" ] && [ -s "$output_run" ]; then
+    if [ -f "$output_run" ]; then
         echo "Skipping $output_run (already exists)"
         continue
     fi
