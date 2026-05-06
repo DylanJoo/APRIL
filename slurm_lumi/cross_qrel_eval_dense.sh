@@ -1,9 +1,9 @@
 #!/bin/bash -l
-#SBATCH --job-name=crossqrel-dense
+#SBATCH --job-name=crossqrel-old
 #SBATCH --partition=small
 #SBATCH --mem=32G
 #SBATCH --nodes=1
-#SBATCH --array=0-6
+#SBATCH --array=4
 #SBATCH --cpus-per-task=32
 #SBATCH --time=24:00:00
 #SBATCH --account=project_465002532
@@ -30,14 +30,14 @@ RETRIEVALS=(bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-sma
 RERANKERS=(judge judge_expr point rankgpt setmaxheaptopk)
 POOL=()
 for r in "${RETRIEVALS[@]}"; do
-# POOL+=("${r}")
+POOL+=("${r}")
 for rr in "${RERANKERS[@]}"; do
 POOL+=("$r-rerank-$rr")
 done
 done
 
 ## Retrieval + reranking as judgment
-for r1 in "${RETRIEVALS[@]}"; do
+for r1 in qwen3-embed-600m colbert-small;do
 for r2 in judge judge_expr point rankgpt setmaxheaptopk;do
 judge_run=${HOME}/APRIL/runs/Llama-3.3-70B-Instruct/run.$benchmark.$r1-rerank-$r2.${subset%%/*}.txt
 mkdir -p ${HOME}/APRIL/qrel-analysis/dense-70b/${r1}-rerank-${r2}/${subset%%/*}/
@@ -45,7 +45,7 @@ mkdir -p ${HOME}/APRIL/qrel-analysis/dense-70b/${r1}-rerank-${r2}/${subset%%/*}/
 echo Judge: $r1-rerank-$r2
 for evaluate_setting in "${POOL[@]}"; do
     echo $evaluate_setting
-    srun singularity exec $SIF python qrel-analysis/eval_autoqrels.py \
+    srun singularity exec $SIF python qrel-analysis/eval_autoqrels_old.py \
         --dataset_name ${dataset/@//} \
         --loader_type irds \
         --exp Llama-3.3-70B-Instruct \
@@ -56,19 +56,18 @@ for evaluate_setting in "${POOL[@]}"; do
 done
 
 for eval_r1 in "${RETRIEVALS[@]}";do
-    echo $eval_r1
-    srun singularity exec $SIF python qrel-analysis/eval_autoqrels.py \
+    srun singularity exec $SIF python qrel-analysis/eval_autoqrels_old.py \
         --dataset_name ${dataset/@//} \
         --loader_type irds \
         --exp Llama-3.3-70B-Instruct \
         --judge_run $judge_run \
-        --evaluate_run ${HOME}/datasets/all-runs/supervised/run.$benchmark.$eval_r1.${subset%%/*}.txt \
+        --evaluate_run ${HOME}/runs-and-qrels/runs/$benchmark/run.$benchmark.$eval_r1.${subset%%/*}.txt \
         --strategies all \
         --output ${HOME}/APRIL/qrel-analysis/dense-70b/${r1}-rerank-${r2}/${subset%%/*}/$eval_r1.jsonl
 
     for eval_r2 in rankfirst rankzephyr;do
-        echo $eval_r1-rerank-$eval_r2
-        srun singularity exec $SIF python qrel-analysis/eval_autoqrels.py \
+        echo Judge: $eval_r1-rerank-$eval_r2
+        srun singularity exec $SIF python qrel-analysis/eval_autoqrels_old.py \
             --dataset_name ${dataset/@//} \
             --loader_type irds \
             --exp Llama-3.3-70B-Instruct \

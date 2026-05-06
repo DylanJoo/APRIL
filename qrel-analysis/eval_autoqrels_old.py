@@ -15,7 +15,6 @@ class AutoQrel:
         "all", "direct", "thresholding", "rank",
         "largest_gap", "quantile",
         "optimal_per_topic", "optimal_global",
-        "optimal_precision", "optimal_recall",
     ]
 
     def __init__(
@@ -387,7 +386,7 @@ if __name__ == "__main__":
             'exp': args.exp,
             'judge_run': judge_name,
             'evaluate_run': eval_name,
-            'strategy': strategy_label(strategy, args),
+            'strategy': strategy,
             'nDCG@10': round(r, 4),
         })
 
