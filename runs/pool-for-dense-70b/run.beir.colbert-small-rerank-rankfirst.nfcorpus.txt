@@ -1,1 +1,0 @@
-../supervised/run.beir.colbert-small-rerank-rankfirst.nfcorpus.txt

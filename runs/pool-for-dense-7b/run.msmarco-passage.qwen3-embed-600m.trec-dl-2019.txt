@@ -1,1 +1,0 @@
-/home/dju/runs-and-qrels/runs/msmarco-passage/run.msmarco-passage.qwen3-embed-600m.trec-dl-2019.txt

@@ -1,1 +1,0 @@
-../Llama-3.3-70B-Instruct/run.beir.bm25-rerank-judge_expr.trec-covid.txt

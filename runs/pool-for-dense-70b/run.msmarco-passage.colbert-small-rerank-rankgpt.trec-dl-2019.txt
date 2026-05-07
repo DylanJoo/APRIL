@@ -1,1 +1,0 @@
-../Llama-3.3-70B-Instruct/run.msmarco-passage.colbert-small-rerank-rankgpt.trec-dl-2019.txt

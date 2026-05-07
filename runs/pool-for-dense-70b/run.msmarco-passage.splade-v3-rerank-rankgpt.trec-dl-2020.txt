@@ -1,1 +1,0 @@
-../Llama-3.3-70B-Instruct/run.msmarco-passage.splade-v3-rerank-rankgpt.trec-dl-2020.txt

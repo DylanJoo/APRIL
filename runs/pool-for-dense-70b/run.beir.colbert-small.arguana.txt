@@ -1,1 +1,0 @@
-/users/judylan1/runs-and-qrels/runs/beir/run.beir.colbert-small.arguana.txt

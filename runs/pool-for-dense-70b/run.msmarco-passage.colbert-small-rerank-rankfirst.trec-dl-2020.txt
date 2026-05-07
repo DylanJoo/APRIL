@@ -1,1 +1,0 @@
-../supervised/run.msmarco-passage.colbert-small-rerank-rankfirst.trec-dl-2020.txt

@@ -1,1 +1,0 @@
-../supervised/run.beir.qwen3-embed-600m-rerank-rankzephyr.nfcorpus.txt

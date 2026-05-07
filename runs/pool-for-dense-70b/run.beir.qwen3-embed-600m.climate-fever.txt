@@ -1,1 +1,0 @@
-/users/judylan1/runs-and-qrels/runs/beir/run.beir.qwen3-embed-600m.climate-fever.txt

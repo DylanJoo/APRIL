@@ -1,1 +1,0 @@
-/users/judylan1/runs-and-qrels/runs/msmarco-passage/run.msmarco-passage.colbert-small.trec-dl-2020.txt

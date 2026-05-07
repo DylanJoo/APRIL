@@ -1,1 +1,0 @@
-../Llama-3.3-70B-Instruct/run.beir.colbert-small-rerank-judge_expr.webis-touche2020.txt

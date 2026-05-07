@@ -1,1 +1,0 @@
-../Qwen2.5-7B-Instruct/run.beir.bm25-rerank-rankgpt.nfcorpus.txt

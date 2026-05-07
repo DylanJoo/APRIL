@@ -1,1 +1,0 @@
-/home/dju/runs-and-qrels/runs/beir/run.beir.colbert-small.scidocs.txt

@@ -1,1 +1,0 @@
-../Qwen2.5-7B-Instruct/run.msmarco-passage.colbert-small-rerank-judge.trec-dl-2019.txt

@@ -1,1 +1,0 @@
-../Qwen2.5-7B-Instruct/run.msmarco-passage.splade-v3-rerank-judge.trec-dl-2020.txt

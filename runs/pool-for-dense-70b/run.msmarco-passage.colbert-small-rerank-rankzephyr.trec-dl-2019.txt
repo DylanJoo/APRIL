@@ -1,1 +1,0 @@
-../supervised/run.msmarco-passage.colbert-small-rerank-rankzephyr.trec-dl-2019.txt
