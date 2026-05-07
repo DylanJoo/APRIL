@@ -54,7 +54,7 @@ bm25 | judge_expr | nfcorpus | 0.3320
 bm25 | judge_expr | scidocs | 0.1054
 bm25 | judge_expr | trec-covid | 0.9660
 bm25 | judge_expr | webis-touche2020 | 0.2633
-bm25 | setmaxheaptopk | trec-dl-2019 | 0.8884
+bm25 | setmaxheaptopk | trec-dl-2019 | 0.9093
 bm25 | setmaxheaptopk | trec-dl-2020 | 0.8833
 bm25 | setmaxheaptopk | dbpedia-entity | 0.4942
 bm25 | setmaxheaptopk | nfcorpus | 0.3153
@@ -89,7 +89,7 @@ splade-v3 | judge_expr | nfcorpus | 0.2799
 splade-v3 | judge_expr | scidocs | 0.1042
 splade-v3 | judge_expr | trec-covid | 0.9400
 splade-v3 | judge_expr | webis-touche2020 | 0.2592
-splade-v3 | setmaxheaptopk | trec-dl-2019 | 0.8884
+splade-v3 | setmaxheaptopk | trec-dl-2019 | 0.9116
 splade-v3 | setmaxheaptopk | trec-dl-2020 | 0.9167
 splade-v3 | setmaxheaptopk | dbpedia-entity | 0.5118
 splade-v3 | setmaxheaptopk | nfcorpus | 0.2548
@@ -124,7 +124,7 @@ nomicai-modernbert-embed | judge_expr | nfcorpus | 0.2873
 nomicai-modernbert-embed | judge_expr | scidocs | 0.1109
 nomicai-modernbert-embed | judge_expr | trec-covid | 0.9260
 nomicai-modernbert-embed | judge_expr | webis-touche2020 | 0.2388
-nomicai-modernbert-embed | setmaxheaptopk | trec-dl-2019 | 0.8884
+nomicai-modernbert-embed | setmaxheaptopk | trec-dl-2019 | 0.9023
 nomicai-modernbert-embed | setmaxheaptopk | trec-dl-2020 | 0.9019
 nomicai-modernbert-embed | setmaxheaptopk | dbpedia-entity | 0.4957
 nomicai-modernbert-embed | setmaxheaptopk | nfcorpus | 0.2635
@@ -159,7 +159,7 @@ qwen3-embed-600m | judge_expr | nfcorpus | 0.2975
 qwen3-embed-600m | judge_expr | scidocs | 0.0904
 qwen3-embed-600m | judge_expr | trec-covid | 0.9400
 qwen3-embed-600m | judge_expr | webis-touche2020 | 0.2673
-qwen3-embed-600m | setmaxheaptopk | trec-dl-2019 | 0.8884
+qwen3-embed-600m | setmaxheaptopk | trec-dl-2019 | 0.8651
 qwen3-embed-600m | setmaxheaptopk | trec-dl-2020 | 0.8833
 qwen3-embed-600m | setmaxheaptopk | dbpedia-entity | 0.5012
 qwen3-embed-600m | setmaxheaptopk | nfcorpus | 0.2715
@@ -194,7 +194,7 @@ colbert-small | judge_expr | nfcorpus | 0.2910
 colbert-small | judge_expr | scidocs | 0.1078
 colbert-small | judge_expr | trec-covid | 0.9380
 colbert-small | judge_expr | webis-touche2020 | 0.2449
-colbert-small | setmaxheaptopk | trec-dl-2019 | 0.8884
+colbert-small | setmaxheaptopk | trec-dl-2019 | 0.9000
 colbert-small | setmaxheaptopk | trec-dl-2020 | 0.9167
 colbert-small | setmaxheaptopk | dbpedia-entity | 0.4888
 colbert-small | setmaxheaptopk | nfcorpus | 0.2536
