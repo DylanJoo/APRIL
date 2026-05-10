@@ -1,4 +1,5 @@
 import argparse
+import bisect
 import json
 import sys
 import os
@@ -13,10 +14,15 @@ class AutoQrel:
 
     STRATEGIES = [
         "all", "direct", "thresholding", "rank",
-        "largest_gap", "quantile",
+        "largest_gap", "quantile_binary", "quantile_bucket",
         "optimal_per_topic", "optimal_global",
         "optimal_precision", "optimal_recall",
     ]
+
+    # Bucket boundaries (lower-inclusive percentile fractions):
+    # 0: [0, 0.10)  1: [0.10, 0.20)  2: [0.20, 0.40)
+    # 3: [0.40, 0.60)  4: [0.60, 0.75)  5: [0.75, 1.0]
+    _BUCKET_BOUNDARIES = [0.10, 0.25, 0.50, 0.60, 0.75]
 
     def __init__(
         self, 
@@ -67,8 +73,10 @@ class AutoQrel:
             result = AutoQrel.rank_cutoff(run, self.rank_cutoff)
         elif strategy == "largest_gap":
             result = AutoQrel.largest_gap(run, self.gap_k)
-        elif strategy == "quantile":
-            result = AutoQrel.quantile(run, self.quantile_cutoff)
+        elif strategy == "quantile_binary":
+            result = AutoQrel.quantile_binary(run, self.quantile_cutoff)
+        elif strategy == "quantile_bucket":
+            result = AutoQrel.quantile_bucket(run)
         elif strategy == "optimal_global":
             result = AutoQrel.optimal_global(run, self.human_qrel, self.min_relevance)
         elif strategy == "optimal_per_topic":
@@ -135,14 +143,7 @@ class AutoQrel:
         return qrel
 
     @staticmethod
-    def quantile(run, q=0.75):
-        """Per-topic quantile thresholding: score >= q-th percentile → 1, else 0.
-
-        q=0.75 sets the threshold at the 75th percentile of scores for that topic,
-        so roughly the top 25% of documents are labeled positive. The quantile is
-        computed per-topic so that score scale differences across topics don't bias
-        the labeling.
-        """
+    def quantile_binary(run, q=0.75):
         qrel = {}
         for qid, docs in run.items():
             if not docs:
@@ -153,6 +154,23 @@ class AutoQrel:
             lo, hi = int(pos), min(int(pos) + 1, len(sorted_scores) - 1)
             threshold = sorted_scores[lo] + (pos - lo) * (sorted_scores[hi] - sorted_scores[lo])
             qrel[qid] = {did: (1 if score >= threshold else 0) for did, score in docs.items()}
+        return qrel
+
+    @staticmethod
+    def quantile_bucket(run):
+        qrel = {}
+        for qid, docs in run.items():
+            if not docs:
+                qrel[qid] = {}
+                continue
+            sorted_scores = sorted(docs.values())
+            n = len(sorted_scores)
+            qrel[qid] = {}
+            for did, score in docs.items():
+                rank = bisect.bisect_left(sorted_scores, score)
+                percentile = rank / n
+                bucket = sum(1 for b in AutoQrel._BUCKET_BOUNDARIES if percentile >= b)
+                qrel[qid][did] = bucket
         return qrel
 
     @staticmethod
@@ -327,8 +345,10 @@ if __name__ == "__main__":
             return f"rank@{args.rank_cutoff}"
         elif strategy == "largest_gap":
             return f"largest_gap@{args.gap_k}"
-        elif strategy == "quantile":
-            return f"quantile@{args.quantile_cutoff}"
+        elif strategy == "quantile_binary":
+            return f"quantile_binary@{args.quantile_cutoff}"
+        elif strategy == "quantile_bucket":
+            return f"quantile_bucket@{args.quantile_cutoff}"
         return strategy
 
     # Detect strategies already recorded in the output file so we can skip them

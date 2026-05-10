@@ -1,10 +1,10 @@
 #!/bin/bash -l
-#SBATCH --job-name=dense
+#SBATCH --job-name=rerun
 #SBATCH --partition=small-g           # partition name
 #SBATCH --ntasks-per-node=1         # 8 MPI ranks per node, 16 total (2x8)
 #SBATCH --mem=256G
 #SBATCH --nodes=1
-#SBATCH --array=0
+#SBATCH --array=3,4,6
 #SBATCH --cpus-per-task=32
 #SBATCH --gpus-per-node=8
 #SBATCH --time=72:00:00
@@ -39,63 +39,65 @@ benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
 ## POINTWISE
-needs_pointwise=false
-for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
-    for method in judge judge_expr point; do
-        output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
-        if [ ! -f "$output_run" ]; then
-            needs_pointwise=true
-            break 2
-        fi
-    done
-done
+# needs_pointwise=false
+# for r in ipool-40-systems-top10; do
+# for method in judge judge_expr point; do
+#     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
+#     if [ ! -f "$output_run" ]; then
+#         needs_pointwise=true
+#         break 2
+#     fi
+# done
+# done
 
-if [ "$needs_pointwise" = true ]; then
-python -m vllm.entrypoints.openai.api_server \
-    --model $MODEL \
-    --port 8000 \
-    --enforce-eager \
-    --max-model-len 10240 \
-    --dtype bfloat16 \
-    --tensor-parallel-size 8 > $LOG 2>&1 &
-PID=$!
-until curl -s http://localhost:8000/v1/models >/dev/null; do
-  sleep 10
-done
-echo "vLLM server is up and running."
+# if [ "$needs_pointwise" = true ]; then
+# python -m vllm.entrypoints.openai.api_server \
+#     --model $MODEL \
+#     --port 8000 \
+#     --enforce-eager \
+#     --max-model-len 10240 \
+#     --dtype bfloat16 \
+#     --tensor-parallel-size 8 > $LOG 2>&1 &
+# PID=$!
+# until curl -s http://localhost:8000/v1/models >/dev/null; do
+#   sleep 10
+# done
+# echo "vLLM server is up and running."
 
-for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
-for method in judge judge_expr point; do
-    inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
-    output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
-    if [ -f "$output_run" ]; then
-        echo "Skipping $output_run (already exists)"
-        continue
-    fi
-    srun singularity exec $SIF \
-    python -m autollmrerank.wrapper \
-        --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
-        --data.batch_size=512 \
-        --llm.backend=request \
-        --data.dataset_name=${benchmark}/${subset} \
-        --data.input_run=${inital_run} \
-        --data.output_run=${output_run} \
-        --llm.model_name_or_path=$MODEL
-done
-done
-kill $PID
-fi
+# for r in pool-40-systems-top10;do
+# for method in judge judge_expr point; do
+#     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
+#     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
+#     if [ -f "$output_run" ]; then
+#         echo "Skipping $output_run (already exists)"
+#         continue
+#     fi
+#     srun singularity exec $SIF \
+#     python -m autollmrerank.wrapper \
+#         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
+#         --data.batch_size=512 \
+#         --llm.backend=request \
+#         --data.dataset_name=${benchmark}/${subset} \
+#         --data.input_run=${inital_run} \
+#         --data.output_run=${output_run} \
+#         --llm.model_name_or_path=$MODEL
+# done
+# done
+# kill $PID
+# fi
 
 ## SETWISE
 method=setmaxheaptopk
 needs_setwise=false
-for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
+for r in pool-40-systems-top10; do
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ ! -f "$output_run" ]; then
         needs_setwise=true
         break
     fi
 done
+
+echo $needs_setwise
 
 if [ "$needs_setwise" = true ]; then
 python -m vllm.entrypoints.openai.api_server \
@@ -111,7 +113,7 @@ until curl -s http://localhost:8000/v1/models >/dev/null; do
 done
 echo "vLLM server is up and running."
 
-for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
+for r in pool-40-systems-top10;do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ -f "$output_run" ]; then
@@ -125,7 +127,7 @@ for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \
         --data.output_run=${output_run} \
-        --llm.model_name_or_path=$MODEL
+        --llm.model_name_or_path=$MODEL --max_doc_length=1024
 done
 kill $PID
 fi
@@ -133,13 +135,14 @@ fi
 ## LISTWISE
 method=rankgpt
 needs_listwise=false
-for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
+for r in pool-40-systems-top10; do
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ ! -f "$output_run" ]; then
         needs_listwise=true
         break
     fi
 done
+echo $needs_listwise
 
 if [ "$needs_listwise" = true ]; then
 python -m vllm.entrypoints.openai.api_server \
@@ -155,7 +158,7 @@ until curl -s http://localhost:8000/v1/models >/dev/null; do
 done
 echo "vLLM server is up and running."
 
-for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
+for r in pool-40-systems-top10;do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ -f "$output_run" ]; then
@@ -169,7 +172,7 @@ for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \
         --data.output_run=${output_run} \
-        --llm.model_name_or_path=$MODEL
+        --llm.model_name_or_path=$MODEL --max_doc_length=1024
 done
 kill $PID
 fi

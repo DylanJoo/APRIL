@@ -47,8 +47,8 @@ for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;
 done
 echo ${#RUN_FILES[@]}
 
-output=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.pool-40-systems-top10.${subset%%/*}.txt
+output=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.pool-40-systems-top100.${subset%%/*}.txt
 python3 qrel-analysis/diverse_pooling.py \
     --run_files "${RUN_FILES[@]}" \
-    --topk 10 \
+    --topk 100 \
     --output $output
