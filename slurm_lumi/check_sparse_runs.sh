@@ -14,7 +14,7 @@ DATASETS=(
 
 RETRIEVERS=(bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small)
 RERANKING=(judge judge_expr point setmaxheaptopk rankgpt)
-SEEDS=$(seq 1 5)
+SEEDS=$(seq 1 10)
 
 echo "========================================"
 echo "SPARSE LLAMA RERANKING CHECK"

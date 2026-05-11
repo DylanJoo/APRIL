@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class AutoQrel:
 
     STRATEGIES = [
-        "all", "direct", "thresholding", "rank",
+        "direct", "thresholding", "rank",
         "largest_gap", "quantile_binary", "quantile_bucket",
         "optimal_per_topic", "optimal_global",
         "optimal_precision", "optimal_recall",
@@ -325,7 +325,7 @@ if __name__ == "__main__":
     parser.add_argument("--evaluate_run", type=str, required=True, default=None)
 
     ## classification thresholding strategies
-    parser.add_argument("--strategies", action='append', choices=AutoQrel.STRATEGIES, default=None)
+    parser.add_argument("--strategies", action='append', default=None)
 
     ### binarize
     parser.add_argument("--threshold", type=float, default=0.5)
@@ -368,8 +368,13 @@ if __name__ == "__main__":
     eval_run = loader.load_run(args.evaluate_run)
 
     # Resolve requested strategies and remove already-done ones
-    requested = args.strategies
-    strategies_to_run = [s for s in requested if strategy_label(s, args) not in done_strategies]
+    if args.strategies == ['all']:
+        # done_strategies = [s.split('@')[0] for s in done_strategies]
+        strategies_to_run = [s for s in AutoQrel.STRATEGIES if strategy_label(s, args) not in done_strategies]
+    else:
+        # strategies_to_run = args.strategies if args.strategies != ['all'] else AutoQrel.strategies_to_run
+        done_strategies = [s.split('@')[0] for s in done_strategies]
+        strategies_to_run = [s for s in args.strategies if s not in done_strategies]
 
     autoqrel = AutoQrel(
         qrel=qrel,
@@ -384,18 +389,6 @@ if __name__ == "__main__":
 
     judge_name = os.path.basename(args.judge_run)
     results = []
-
-    # Evaluate the judge run against the human qrel (only if not already recorded)
-    if 'human' not in done_strategies:
-        r = ir_measures.calc_aggregate([nDCG@10], qrel, judge_run)[nDCG@10]
-        results.append({
-            'dataset': args.dataset_name,
-            'exp': args.exp,
-            'judge_run': 'human.qrel',
-            'evaluate_run': judge_name,
-            'strategy': 'human',
-            'nDCG@10': round(r, 4),
-        })
 
     # Evaluate against each thresholding strategy
     eval_name = os.path.basename(args.evaluate_run)
