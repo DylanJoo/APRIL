@@ -28,3 +28,4 @@ qrel-analysis/dense-7b/*/*
 !qrel-analysis/dense-7b/*/all.jsonl
 qrel-analysis/dense-70b/*/*
 !qrel-analysis/dense-70b/*/all.jsonl
+qrel-analysis/autoqrels/
