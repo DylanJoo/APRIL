@@ -39,57 +39,57 @@ benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
 ## POINTWISE
-# needs_pointwise=false
-# for r in ipool-40-systems-top10; do
-# for method in judge judge_expr point; do
-#     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
-#     if [ ! -f "$output_run" ]; then
-#         needs_pointwise=true
-#         break 2
-#     fi
-# done
-# done
+needs_pointwise=false
+for r in pool-40-systems-top10-rand2026; do
+for method in judge judge_expr point; do
+    output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
+    if [ ! -f "$output_run" ]; then
+        needs_pointwise=true
+        break 2
+    fi
+done
+done
 
-# if [ "$needs_pointwise" = true ]; then
-# python -m vllm.entrypoints.openai.api_server \
-#     --model $MODEL \
-#     --port 8000 \
-#     --enforce-eager \
-#     --max-model-len 10240 \
-#     --dtype bfloat16 \
-#     --tensor-parallel-size 8 > $LOG 2>&1 &
-# PID=$!
-# until curl -s http://localhost:8000/v1/models >/dev/null; do
-#   sleep 10
-# done
-# echo "vLLM server is up and running."
+if [ "$needs_pointwise" = true ]; then
+python -m vllm.entrypoints.openai.api_server \
+    --model $MODEL \
+    --port 8000 \
+    --enforce-eager \
+    --max-model-len 10240 \
+    --dtype bfloat16 \
+    --tensor-parallel-size 8 > $LOG 2>&1 &
+PID=$!
+until curl -s http://localhost:8000/v1/models >/dev/null; do
+  sleep 10
+done
+echo "vLLM server is up and running."
 
-# for r in pool-40-systems-top10;do
-# for method in judge judge_expr point; do
-#     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
-#     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
-#     if [ -f "$output_run" ]; then
-#         echo "Skipping $output_run (already exists)"
-#         continue
-#     fi
-#     srun singularity exec $SIF \
-#     python -m autollmrerank.wrapper \
-#         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
-#         --data.batch_size=512 \
-#         --llm.backend=request \
-#         --data.dataset_name=${benchmark}/${subset} \
-#         --data.input_run=${inital_run} \
-#         --data.output_run=${output_run} \
-#         --llm.model_name_or_path=$MODEL
-# done
-# done
-# kill $PID
-# fi
+for r in pool-40-systems-top10-rand2026;do
+for method in judge judge_expr point; do
+    inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
+    output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
+    if [ -f "$output_run" ]; then
+        echo "Skipping $output_run (already exists)"
+        continue
+    fi
+    srun singularity exec $SIF \
+    python -m autollmrerank.wrapper \
+        --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
+        --data.batch_size=512 \
+        --llm.backend=request \
+        --data.dataset_name=${benchmark}/${subset} \
+        --data.input_run=${inital_run} \
+        --data.output_run=${output_run} \
+        --llm.model_name_or_path=$MODEL
+done
+done
+kill $PID
+fi
 
 ## SETWISE
 method=setmaxheaptopk
 needs_setwise=false
-for r in pool-40-systems-top10; do
+for r in pool-40-systems-top10-rand2026; do
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ ! -f "$output_run" ]; then
         needs_setwise=true
@@ -113,7 +113,7 @@ until curl -s http://localhost:8000/v1/models >/dev/null; do
 done
 echo "vLLM server is up and running."
 
-for r in pool-40-systems-top10;do
+for r in pool-40-systems-top10-rand2026;do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ -f "$output_run" ]; then
@@ -158,7 +158,7 @@ until curl -s http://localhost:8000/v1/models >/dev/null; do
 done
 echo "vLLM server is up and running."
 
-for r in pool-40-systems-top10;do
+for r in pool-40-systems-top10-rand2026;do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ -f "$output_run" ]; then

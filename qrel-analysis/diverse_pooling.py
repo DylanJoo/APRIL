@@ -1,5 +1,6 @@
 import argparse
 import os
+import random
 from collections import defaultdict
 
 
@@ -55,6 +56,7 @@ def main():
     parser.add_argument("--output", required=True, help="Output file path for the fused run")
     parser.add_argument("--topk", type=int, default=10, help="Top-K docs per system per query")
     parser.add_argument("--rrf_k", type=int, default=60, help="RRF smoothing constant")
+    parser.add_argument("--seed", type=int, default=None, help="If set, randomly shuffle the RRF ranking with this seed")
     args = parser.parse_args()
 
     print(f"Fusing {len(args.run_files)} systems (top-{args.topk} each) ...")
@@ -62,6 +64,12 @@ def main():
         print(f"  {fp}")
     system_results = [parse_trec_run(fp, args.topk) for fp in args.run_files]
     fused = rrf_fuse(system_results, rrf_k=args.rrf_k)
+
+    if args.seed is not None:
+        rng = random.Random(args.seed)
+        for qid in fused:
+            rng.shuffle(fused[qid])
+        print(f"Shuffled ranking with seed={args.seed}")
 
     write_trec_run(fused, args.output)
     total_docs = sum(len(v) for v in fused.values())

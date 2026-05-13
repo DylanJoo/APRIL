@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --time=5:00:00
 #SBATCH --account=project_465002532
-#SBATCH --array=1-6
+#SBATCH --array=0
 #SBATCH --output=logs/%x.%a.out
 #SBATCH --error=logs/%x.%a.err
 
@@ -49,7 +49,7 @@ done
 # ── Step 1: generate auto-qrel files ──────────────────────────────────────────
 echo "=== Generating auto-qrel files for ${NAME} ==="
 for r1 in pool-40-systems-top10;do
-for r2 in "${RERANKERS[@]}"; do
+for r2 in judge judge_expr point;do
     judge_run=${HOME}/APRIL/runs/${MODEL_DIR}/run.${BENCHMARK}.${r1}-rerank-${r2}.${NAME}.txt
     if [ ! -f "$judge_run" ]; then
         echo "  [skip] not found: $judge_run"
@@ -58,7 +58,7 @@ for r2 in "${RERANKERS[@]}"; do
     output_dir=${HOME}/APRIL/qrel-analysis/autoqrels-quantile/${r1}-rerank-${r2}/${NAME}/
     mkdir -p "$output_dir"
     echo "  Generating: ${r1}-rerank-${r2}"
-    for cutoff in $(seq 0.75 0.05 0.95);do
+    for cutoff in $(seq 0.50 0.05 0.95) 0.975;do
         srun singularity exec $SIF python qrel-analysis/output_autoqrel.py \
             --dataset_name $DATASET \
             --loader_type irds \

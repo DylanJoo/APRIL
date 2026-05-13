@@ -32,3 +32,4 @@ qrel-analysis/dense-70b/*/*
 qrel-analysis/autoqrels/
 qrel-analysis/autoqrels-rank/
 qrel-analysis/autoqrels-quantile/
+qrel-analysis/autoqrels-full/
