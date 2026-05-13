@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --time=5:00:00
 #SBATCH --account=project_465002532
-#SBATCH --array=0
+#SBATCH --array=1-6
 #SBATCH --output=logs/%x.%a.out
 #SBATCH --error=logs/%x.%a.err
 
@@ -58,12 +58,12 @@ for r2 in "${RERANKERS[@]}"; do
     output_dir=${HOME}/APRIL/qrel-analysis/autoqrels-quantile/${r1}-rerank-${r2}/${NAME}/
     mkdir -p "$output_dir"
     echo "  Generating: ${r1}-rerank-${r2}"
-    for cutoff in $(seq 1 2 20);do
+    for cutoff in $(seq 0.75 0.05 0.95);do
         srun singularity exec $SIF python qrel-analysis/output_autoqrel.py \
             --dataset_name $DATASET \
             --loader_type irds \
             --judge_run $judge_run \
-            --strategies rank --rank_cutoff $cutoff \
+            --strategies quantile_binary --quantile_cutoff $cutoff \
             --output_dir $output_dir
     done
 done
