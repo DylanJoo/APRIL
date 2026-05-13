@@ -1,0 +1,41 @@
+run                                            nDCG@10
+bm25                                           0.5679
+splade-v3                                      0.6192
+nomicai-modernbert-embed                       0.5576
+qwen3-embed-600m                               0.5615
+colbert-small                                  0.5180
+bm25-rerank-judge                              0.5557
+bm25-rerank-judge_expr                         0.6652
+bm25-rerank-point                              0.5138
+bm25-rerank-rankgpt                            0.7215
+bm25-rerank-setmaxheaptopk                     0.6839
+bm25-rerank-rankfirst                          0.6980
+bm25-rerank-rankzephyr                         0.5657
+splade-v3-rerank-judge                         0.5719
+splade-v3-rerank-judge_expr                    0.6930
+splade-v3-rerank-point                         0.5469
+splade-v3-rerank-rankgpt                       0.7705
+splade-v3-rerank-setmaxheaptopk                0.7517
+splade-v3-rerank-rankfirst                     0.7113
+splade-v3-rerank-rankzephyr                    0.6050
+nomicai-modernbert-embed-rerank-judge          
+nomicai-modernbert-embed-rerank-judge_expr     
+nomicai-modernbert-embed-rerank-point          0.5218
+nomicai-modernbert-embed-rerank-rankgpt        0.7303
+nomicai-modernbert-embed-rerank-setmaxheaptopk  0.7142
+nomicai-modernbert-embed-rerank-rankfirst      0.6953
+nomicai-modernbert-embed-rerank-rankzephyr     0.5503
+qwen3-embed-600m-rerank-judge                  0.5710
+qwen3-embed-600m-rerank-judge_expr             0.6839
+qwen3-embed-600m-rerank-point                  0.5356
+qwen3-embed-600m-rerank-rankgpt                0.7639
+qwen3-embed-600m-rerank-setmaxheaptopk         0.7350
+qwen3-embed-600m-rerank-rankfirst              0.7067
+qwen3-embed-600m-rerank-rankzephyr             0.5416
+colbert-small-rerank-judge                     0.5604
+colbert-small-rerank-judge_expr                0.6790
+colbert-small-rerank-point                     0.5246
+colbert-small-rerank-rankgpt                   
+colbert-small-rerank-setmaxheaptopk            
+colbert-small-rerank-rankfirst                 
+colbert-small-rerank-rankzephyr                

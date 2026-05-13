@@ -48,7 +48,6 @@ class AutoQrel:
         self.human_qrel = qrel
         if "all" in strategies:
             self.strategies = self.STRATEGIES
-            self.strategies.remove('all')
         else:
             self.strategies = strategies
 

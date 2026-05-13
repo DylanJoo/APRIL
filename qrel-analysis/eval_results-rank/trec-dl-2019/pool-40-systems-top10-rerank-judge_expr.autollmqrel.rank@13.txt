@@ -1,0 +1,41 @@
+run                                            nDCG@10
+bm25                                           0.2524
+splade-v3                                      0.4768
+nomicai-modernbert-embed                       0.4572
+qwen3-embed-600m                               0.4289
+colbert-small                                  0.4723
+bm25-rerank-judge                              0.5526
+bm25-rerank-judge_expr                         0.7620
+bm25-rerank-point                              0.4125
+bm25-rerank-rankgpt                            0.5282
+bm25-rerank-setmaxheaptopk                     0.5275
+bm25-rerank-rankfirst                          0.4915
+bm25-rerank-rankzephyr                         0.4982
+splade-v3-rerank-judge                         0.5880
+splade-v3-rerank-judge_expr                    0.8874
+splade-v3-rerank-point                         0.4597
+splade-v3-rerank-rankgpt                       0.6029
+splade-v3-rerank-setmaxheaptopk                0.6034
+splade-v3-rerank-rankfirst                     0.5432
+splade-v3-rerank-rankzephyr                    
+nomicai-modernbert-embed-rerank-judge          
+nomicai-modernbert-embed-rerank-judge_expr     
+nomicai-modernbert-embed-rerank-point          
+nomicai-modernbert-embed-rerank-rankgpt        0.5713
+nomicai-modernbert-embed-rerank-setmaxheaptopk  0.5814
+nomicai-modernbert-embed-rerank-rankfirst      0.5443
+nomicai-modernbert-embed-rerank-rankzephyr     0.5538
+qwen3-embed-600m-rerank-judge                  0.6027
+qwen3-embed-600m-rerank-judge_expr             0.8929
+qwen3-embed-600m-rerank-point                  0.4631
+qwen3-embed-600m-rerank-rankgpt                0.5809
+qwen3-embed-600m-rerank-setmaxheaptopk         0.5949
+qwen3-embed-600m-rerank-rankfirst              0.5521
+qwen3-embed-600m-rerank-rankzephyr             0.5470
+colbert-small-rerank-judge                     0.5947
+colbert-small-rerank-judge_expr                0.8835
+colbert-small-rerank-point                     0.4491
+colbert-small-rerank-rankgpt                   0.5853
+colbert-small-rerank-setmaxheaptopk            0.5897
+colbert-small-rerank-rankfirst                 0.5563
+colbert-small-rerank-rankzephyr                0.5354
