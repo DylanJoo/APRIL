@@ -37,5 +37,5 @@ colbert-small-rerank-judge_expr                0.5952
 colbert-small-rerank-point                     0.6912
 colbert-small-rerank-rankgpt                   0.5798
 colbert-small-rerank-setmaxheaptopk            0.5361
-colbert-small-rerank-rankfirst                 0.5259
-colbert-small-rerank-rankzephyr                0.5321
+colbert-small-rerank-rankfirst                 
+colbert-small-rerank-rankzephyr                

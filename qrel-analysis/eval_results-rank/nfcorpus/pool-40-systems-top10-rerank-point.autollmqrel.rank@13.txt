@@ -28,14 +28,3 @@ nomicai-modernbert-embed-rerank-rankzephyr     0.3932
 qwen3-embed-600m-rerank-judge                  0.5673
 qwen3-embed-600m-rerank-judge_expr             0.6610
 qwen3-embed-600m-rerank-point                  0.7724
-qwen3-embed-600m-rerank-rankgpt                0.5796
-qwen3-embed-600m-rerank-setmaxheaptopk         0.5497
-qwen3-embed-600m-rerank-rankfirst              0.5616
-qwen3-embed-600m-rerank-rankzephyr             0.4198
-colbert-small-rerank-judge                     0.5538
-colbert-small-rerank-judge_expr                0.6397
-colbert-small-rerank-point                     0.7489
-colbert-small-rerank-rankgpt                   0.5662
-colbert-small-rerank-setmaxheaptopk            0.5461
-colbert-small-rerank-rankfirst                 0.5498
-colbert-small-rerank-rankzephyr                0.4051

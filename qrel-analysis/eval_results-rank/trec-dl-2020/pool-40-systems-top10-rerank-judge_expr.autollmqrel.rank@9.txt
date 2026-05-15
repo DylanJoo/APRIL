@@ -3,10 +3,10 @@ bm25                                           0.2746
 splade-v3                                      0.4935
 nomicai-modernbert-embed                       0.4454
 qwen3-embed-600m                               0.4146
-colbert-small                                  
-bm25-rerank-judge                              
-bm25-rerank-judge_expr                         
-bm25-rerank-point                              
+colbert-small                                  0.4601
+bm25-rerank-judge                              0.5262
+bm25-rerank-judge_expr                         0.6869
+bm25-rerank-point                              0.4513
 bm25-rerank-rankgpt                            0.4520
 bm25-rerank-setmaxheaptopk                     0.4619
 bm25-rerank-rankfirst                          0.4481
@@ -32,10 +32,10 @@ qwen3-embed-600m-rerank-rankgpt                0.5527
 qwen3-embed-600m-rerank-setmaxheaptopk         0.5609
 qwen3-embed-600m-rerank-rankfirst              0.5406
 qwen3-embed-600m-rerank-rankzephyr             0.5345
-colbert-small-rerank-judge                     
-colbert-small-rerank-judge_expr                
-colbert-small-rerank-point                     
-colbert-small-rerank-rankgpt                   
+colbert-small-rerank-judge                     0.6285
+colbert-small-rerank-judge_expr                0.8845
+colbert-small-rerank-point                     0.4956
+colbert-small-rerank-rankgpt                   0.5726
 colbert-small-rerank-setmaxheaptopk            0.5862
 colbert-small-rerank-rankfirst                 0.5578
 colbert-small-rerank-rankzephyr                0.5531

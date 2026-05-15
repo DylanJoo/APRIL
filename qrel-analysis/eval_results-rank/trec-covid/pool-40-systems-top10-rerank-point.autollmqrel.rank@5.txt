@@ -16,26 +16,7 @@ splade-v3-rerank-judge_expr                    0.3970
 splade-v3-rerank-point                         0.2430
 splade-v3-rerank-rankgpt                       0.3162
 splade-v3-rerank-setmaxheaptopk                0.3225
-splade-v3-rerank-rankfirst                     0.3278
-splade-v3-rerank-rankzephyr                    0.1339
-nomicai-modernbert-embed-rerank-judge          0.3368
-nomicai-modernbert-embed-rerank-judge_expr     0.4458
-nomicai-modernbert-embed-rerank-point          0.2435
-nomicai-modernbert-embed-rerank-rankgpt        0.3697
-nomicai-modernbert-embed-rerank-setmaxheaptopk  0.3407
-nomicai-modernbert-embed-rerank-rankfirst      0.3693
-nomicai-modernbert-embed-rerank-rankzephyr     0.2131
-qwen3-embed-600m-rerank-judge                  0.3077
-qwen3-embed-600m-rerank-judge_expr             0.4410
-qwen3-embed-600m-rerank-point                  0.2300
-qwen3-embed-600m-rerank-rankgpt                0.3614
-qwen3-embed-600m-rerank-setmaxheaptopk         0.3482
-qwen3-embed-600m-rerank-rankfirst              0.3712
-qwen3-embed-600m-rerank-rankzephyr             0.1867
-colbert-small-rerank-judge                     0.2679
-colbert-small-rerank-judge_expr                0.3882
-colbert-small-rerank-point                     0.2244
-colbert-small-rerank-rankgpt                   0.3430
-colbert-small-rerank-setmaxheaptopk            0.3038
-colbert-small-rerank-rankfirst                 0.3472
-colbert-small-rerank-rankzephyr                0.1699
+splade-v3-rerank-rankfirst                     
+splade-v3-rerank-rankzephyr                    
+nomicai-modernbert-embed-rerank-judge          
+nomicai-modernbert-embed-rerank-judge_expr     
