@@ -1,12 +1,12 @@
 #!/bin/bash -l
-#SBATCH --job-name=autoqrel-test
+#SBATCH --job-name=autoqrel-rand
 #SBATCH --partition=small
 #SBATCH --mem=32G
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=8
 #SBATCH --time=5:00:00
 #SBATCH --account=project_465002532
-#SBATCH --array=0-6
+#SBATCH --array=1-6
 #SBATCH --output=logs/%x.%a.out
 #SBATCH --error=logs/%x.%a.err
 
@@ -48,24 +48,22 @@ done
 
 # ── Step 1: generate auto-qrel files ──────────────────────────────────────────
 echo "=== Generating auto-qrel files for ${NAME} ==="
-for r1 in pool-40-systems-top10;do
+for r1 in pool-40-systems-top10-rand2026;do
 for r2 in "${RERANKERS[@]}"; do
     judge_run=${HOME}/APRIL/runs/${MODEL_DIR}/run.${BENCHMARK}.${r1}-rerank-${r2}.${NAME}.txt
     if [ ! -f "$judge_run" ]; then
         echo "  [skip] not found: $judge_run"
         continue
     fi
-    output_dir=${HOME}/APRIL/qrel-analysis/autoqrels-rank/${r1}-rerank-${r2}/${NAME}/
+    output_dir=${HOME}/APRIL/qrel-analysis/autoqrels-rand/${r1}-rerank-${r2}/${NAME}/
     mkdir -p "$output_dir"
     echo "  Generating: ${r1}-rerank-${r2}"
-    for cutoff in $(seq 21 2 49);do
-        srun singularity exec $SIF python qrel-analysis/output_autoqrel.py \
-            --dataset_name $DATASET \
-            --loader_type irds \
-            --judge_run $judge_run \
-            --strategies rank --rank_cutoff $cutoff \
-            --output_dir $output_dir
-    done
+    srun singularity exec $SIF python qrel-analysis/output_autoqrel.py \
+        --dataset_name $DATASET \
+        --loader_type irds \
+        --judge_run $judge_run \
+        --strategies all \
+        --output_dir $output_dir
 done
 done
 
@@ -85,12 +83,12 @@ done
 echo ""
 echo "=== nDCG@10 — auto-qrels ==="
 
-EVAL_RESULTS_DIR=${HOME}/APRIL/qrel-analysis/eval_results-rank/${NAME}
+EVAL_RESULTS_DIR=${HOME}/APRIL/qrel-analysis/eval_results-rand/${NAME}
 mkdir -p "$EVAL_RESULTS_DIR"
 
-for r1 in pool-40-systems-top10;do
+for r1 in pool-40-systems-top10-rand2026;do
 for r2 in "${RERANKERS[@]}"; do
-    qrel_dir=${HOME}/APRIL/qrel-analysis/autoqrels-rank/${r1}-rerank-${r2}/${NAME}/
+    qrel_dir=${HOME}/APRIL/qrel-analysis/autoqrels-rand/${r1}-rerank-${r2}/${NAME}/
     for qrel_file in "${qrel_dir}"autollmqrel.*.txt; do
         [ -f "$qrel_file" ] || continue
         strategy=$(basename "$qrel_file" .txt | sed 's/^qrel\.//')

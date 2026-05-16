@@ -26,16 +26,3 @@ nomicai-modernbert-embed-rerank-setmaxheaptopk  0.5751
 nomicai-modernbert-embed-rerank-rankfirst      0.5635
 nomicai-modernbert-embed-rerank-rankzephyr     0.4251
 qwen3-embed-600m-rerank-judge                  0.5681
-qwen3-embed-600m-rerank-judge_expr             0.6648
-qwen3-embed-600m-rerank-point                  0.6564
-qwen3-embed-600m-rerank-rankgpt                0.6020
-qwen3-embed-600m-rerank-setmaxheaptopk         0.6033
-qwen3-embed-600m-rerank-rankfirst              0.5917
-qwen3-embed-600m-rerank-rankzephyr             0.4464
-colbert-small-rerank-judge                     0.5777
-colbert-small-rerank-judge_expr                0.6631
-colbert-small-rerank-point                     0.6447
-colbert-small-rerank-rankgpt                   0.5966
-colbert-small-rerank-setmaxheaptopk            0.6056
-colbert-small-rerank-rankfirst                 0.5950
-colbert-small-rerank-rankzephyr                0.4328
