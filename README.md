@@ -69,3 +69,20 @@ APRIL/ # the proposed new method using `autollmrerank`.
 - Result: the class of retrieval/ranking results.
 - PromptMode: the class of reranking mode, including the prompt, llm calling and parsing
 
+#### Top 100 pool
+Average pool size 255.1627906976744
+Average pool size 145.625
+Average pool size 325.32
+Average pool size 278.23839009287923
+Average pool size 278.408
+Average pool size 291.54
+Average pool size 264.40816326530614
+
+#### Top 20 pool
+Average pool size 97.90697674418605
+Average pool size 41.815
+Average pool size 144.32
+Average pool size 122.30030959752322
+Average pool size 116.86
+Average pool size 123.94
+Average pool size 127.40816326530613

@@ -33,3 +33,4 @@ qrel-analysis/autoqrels/
 qrel-analysis/autoqrels-rank/
 qrel-analysis/autoqrels-quantile/
 qrel-analysis/autoqrels-full/
+qrel-analysis/autoqrels-rand/
