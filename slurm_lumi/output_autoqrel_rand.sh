@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --time=5:00:00
 #SBATCH --account=project_465002532
-#SBATCH --array=1-6
+#SBATCH --array=0
 #SBATCH --output=logs/%x.%a.out
 #SBATCH --error=logs/%x.%a.err
 

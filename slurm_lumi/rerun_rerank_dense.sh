@@ -4,11 +4,11 @@
 #SBATCH --ntasks-per-node=1         # 8 MPI ranks per node, 16 total (2x8)
 #SBATCH --mem=256G
 #SBATCH --nodes=1
-#SBATCH --array=3,4,6
+#SBATCH --array=3,5,6
 #SBATCH --cpus-per-task=32
 #SBATCH --gpus-per-node=8
-#SBATCH --time=72:00:00
-#SBATCH --account=project_465002438
+#SBATCH --time=12:00:00
+#SBATCH --account=project_465002532
 #SBATCH --output=logs/%x.%a.out
 #SBATCH --error=logs/%x.%a.err
 
@@ -38,58 +38,63 @@ dataset=${DATASETS[$SLURM_ARRAY_TASK_ID]}
 benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
-## POINTWISE
-needs_pointwise=false
-for r in pool-40-systems-top10-rand2026; do
-for method in judge judge_expr point; do
-    output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
-    if [ ! -f "$output_run" ]; then
-        needs_pointwise=true
-        break 2
-    fi
-done
-done
+## 
+# POOL=pool-40-systems-top20
+POOL=pool-40-systems-top10
 
-if [ "$needs_pointwise" = true ]; then
-python -m vllm.entrypoints.openai.api_server \
-    --model $MODEL \
-    --port 8000 \
-    --enforce-eager \
-    --max-model-len 10240 \
-    --dtype bfloat16 \
-    --tensor-parallel-size 8 > $LOG 2>&1 &
-PID=$!
-until curl -s http://localhost:8000/v1/models >/dev/null; do
-  sleep 10
-done
-echo "vLLM server is up and running."
-
-for r in pool-40-systems-top10-rand2026;do
-for method in judge judge_expr point; do
-    inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
-    output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
-    if [ -f "$output_run" ]; then
-        echo "Skipping $output_run (already exists)"
-        continue
-    fi
-    srun singularity exec $SIF \
-    python -m autollmrerank.wrapper \
-        --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
-        --data.batch_size=512 \
-        --llm.backend=request \
-        --data.dataset_name=${benchmark}/${subset} \
-        --data.input_run=${inital_run} \
-        --data.output_run=${output_run} \
-        --llm.model_name_or_path=$MODEL
-done
-done
-kill $PID
-fi
+# ## POINTWISE
+# needs_pointwise=false
+# for r in $POOL; do
+# for method in judge judge_expr point; do
+#     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
+#     if [ ! -f "$output_run" ]; then
+#         needs_pointwise=true
+#         break 2
+#     fi
+# done
+# done
+#
+# if [ "$needs_pointwise" = true ]; then
+# python -m vllm.entrypoints.openai.api_server \
+#     --model $MODEL \
+#     --port 8000 \
+#     --enforce-eager \
+#     --max-model-len 10240 \
+#     --dtype bfloat16 \
+#     --tensor-parallel-size 8 > $LOG 2>&1 &
+# PID=$!
+# until curl -s http://localhost:8000/v1/models >/dev/null; do
+#   sleep 10
+# done
+# echo "vLLM server is up and running."
+#
+# for r in $POOL;do
+# for method in judge judge_expr point; do
+#     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
+#     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
+#     if [ -f "$output_run" ]; then
+#         echo "Skipping $output_run (already exists)"
+#         continue
+#     fi
+#     srun singularity exec $SIF \
+#     python -m autollmrerank.wrapper \
+#         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
+#         --data.batch_size=512 \
+#         --llm.backend=request \
+#         --data.dataset_name=${benchmark}/${subset} \
+#         --data.input_run=${inital_run} \
+#         --data.output_run=${output_run} \
+#         --llm.model_name_or_path=$MODEL
+# done
+# done
+# kill $PID
+# until ! curl -s http://localhost:8000/v1/models >/dev/null 2>&1; do sleep 5; done
+# fi
 
 ## SETWISE
 method=setmaxheaptopk
 needs_setwise=false
-for r in pool-40-systems-top10-rand2026; do
+for r in $POOL; do
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ ! -f "$output_run" ]; then
         needs_setwise=true
@@ -102,18 +107,18 @@ echo $needs_setwise
 if [ "$needs_setwise" = true ]; then
 python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
-    --port 8000 \
+    --port 8001 \
     --enforce-eager \
     --max-model-len 20480 \
     --dtype bfloat16 \
     --tensor-parallel-size 8 > $LOG 2>&1 &
 PID=$!
-until curl -s http://localhost:8000/v1/models >/dev/null; do
+until curl -s http://localhost:8001/v1/models >/dev/null; do
   sleep 10
 done
 echo "vLLM server is up and running."
 
-for r in pool-40-systems-top10-rand2026;do
+for r in $POOL;do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ -f "$output_run" ]; then
@@ -124,18 +129,20 @@ for r in pool-40-systems-top10-rand2026;do
     python -m autollmrerank.wrapper \
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
         --llm.backend=request \
+        --llm.base_url=http://localhost:8001/v1 \
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \
         --data.output_run=${output_run} \
         --llm.model_name_or_path=$MODEL --max_doc_length=1024
 done
 kill $PID
+until ! curl -s http://localhost:8001/v1/models >/dev/null 2>&1; do sleep 5; done
 fi
 
 ## LISTWISE
 method=rankgpt
 needs_listwise=false
-for r in pool-40-systems-top10; do
+for r in $POOL; do
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ ! -f "$output_run" ]; then
         needs_listwise=true
@@ -148,17 +155,17 @@ if [ "$needs_listwise" = true ]; then
 python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
     --max-model-len 30720 \
-    --port 8000 \
+    --port 8002 \
     --enforce-eager \
     --dtype bfloat16 \
     --tensor-parallel-size 8 > $LOG 2>&1 &
 PID=$!
-until curl -s http://localhost:8000/v1/models >/dev/null; do
+until curl -s http://localhost:8002/v1/models >/dev/null; do
   sleep 10
 done
 echo "vLLM server is up and running."
 
-for r in pool-40-systems-top10-rand2026;do
+for r in $POOL;do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ -f "$output_run" ]; then
@@ -169,6 +176,7 @@ for r in pool-40-systems-top10-rand2026;do
     python -m autollmrerank.wrapper \
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
         --llm.backend=request \
+        --llm.base_url=http://localhost:8002/v1 \
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \
         --data.output_run=${output_run} \

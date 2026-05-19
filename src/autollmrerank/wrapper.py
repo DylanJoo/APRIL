@@ -58,7 +58,7 @@ class AutoLLMReranker:
             max_tokens=5 if config.llm.use_logits else 128,
             dtype=config.llm.dtype,
             num_gpus=max(1, int(torch.cuda.device_count())),
-            base_url=('http://localhost:8000/v1' or config.llm.base_url),
+            base_url=(config.llm.base_url or 'http://localhost:8000/v1'),
             api_key='EMPTY'
         )
         # agent.set_classification(target_ratings=[3,4,5])

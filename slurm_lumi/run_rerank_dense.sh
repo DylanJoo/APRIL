@@ -77,6 +77,7 @@ for method in judge judge_expr point; do
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
         --data.batch_size=512 \
         --llm.backend=request \
+        --llm.base_url=http://localhost:8000/v1 \
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \
         --data.output_run=${output_run} \
@@ -84,6 +85,7 @@ for method in judge judge_expr point; do
 done
 done
 kill $PID
+until ! curl -s http://localhost:8000/v1/models >/dev/null 2>&1; do sleep 5; done
 fi
 
 ## SETWISE
@@ -100,13 +102,13 @@ done
 if [ "$needs_setwise" = true ]; then
 python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
-    --port 8000 \
+    --port 8001 \
     --enforce-eager \
     --max-model-len 20480 \
     --dtype bfloat16 \
     --tensor-parallel-size 8 > $LOG 2>&1 &
 PID=$!
-until curl -s http://localhost:8000/v1/models >/dev/null; do
+until curl -s http://localhost:8001/v1/models >/dev/null; do
   sleep 10
 done
 echo "vLLM server is up and running."
@@ -122,12 +124,14 @@ for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;
     python -m autollmrerank.wrapper \
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
         --llm.backend=request \
+        --llm.base_url=http://localhost:8001/v1 \
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \
         --data.output_run=${output_run} \
         --llm.model_name_or_path=$MODEL
 done
 kill $PID
+until ! curl -s http://localhost:8001/v1/models >/dev/null 2>&1; do sleep 5; done
 fi
 
 ## LISTWISE
@@ -145,12 +149,12 @@ if [ "$needs_listwise" = true ]; then
 python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
     --max-model-len 30720 \
-    --port 8000 \
+    --port 8002 \
     --enforce-eager \
     --dtype bfloat16 \
     --tensor-parallel-size 8 > $LOG 2>&1 &
 PID=$!
-until curl -s http://localhost:8000/v1/models >/dev/null; do
+until curl -s http://localhost:8002/v1/models >/dev/null; do
   sleep 10
 done
 echo "vLLM server is up and running."
@@ -166,10 +170,12 @@ for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;
     python -m autollmrerank.wrapper \
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
         --llm.backend=request \
+        --llm.base_url=http://localhost:8002/v1 \
         --data.dataset_name=${benchmark}/${subset} \
         --data.input_run=${inital_run} \
         --data.output_run=${output_run} \
         --llm.model_name_or_path=$MODEL
 done
 kill $PID
+until ! curl -s http://localhost:8002/v1/models >/dev/null 2>&1; do sleep 5; done
 fi
