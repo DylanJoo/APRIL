@@ -1,0 +1,3 @@
+run                                            nDCG@10
+bm25                                           
+splade-v3                                      
