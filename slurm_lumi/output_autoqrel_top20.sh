@@ -64,26 +64,26 @@ for r2 in "${RERANKERS[@]}"; do
         --dataset_name $DATASET \
         --loader_type irds \
         --judge_run $judge_run \
-        --strategies all \
+        --strategies optimal_per_topic --strategies rank \
         --output_dir $output_dir
 done
 done
 
-# ── Step 2: nDCG@10 with human qrel (baseline) ────────────────────────────────
+# ── Step 2: nDCG@20 with human qrel (baseline) ────────────────────────────────
 echo ""
-echo "=== nDCG@10 — human qrel baseline ==="
-printf "%-45s  %s\n" "run" "nDCG@10"
+echo "=== nDCG@20 — human qrel baseline ==="
+printf "%-45s  %s\n" "run" "nDCG@20"
 for entry in "${EVAL_RUNS[@]}"; do
     run_path="${entry%%|*}"
     run_name="${entry##*|}"
     [ -f "$run_path" ] || { echo "  [skip] not found: $run_name"; continue; }
-    ndcg=$(srun singularity exec $SIF python -m ir_measures ${BENCHMARK}/${SUBSET} "$run_path" nDCG@10 | cut -f2)
+    ndcg=$(srun singularity exec $SIF python -m ir_measures ${BENCHMARK}/${SUBSET} "$run_path" nDCG@20 | cut -f2)
     printf "%-45s  %s\n" "$run_name" "$ndcg"
 done
 
-# ── Step 3: nDCG@10 with each auto-qrel ───────────────────────────────────────
+# ── Step 3: nDCG@20 with each auto-qrel ───────────────────────────────────────
 echo ""
-echo "=== nDCG@10 — auto-qrels ==="
+echo "=== nDCG@20 — auto-qrels ==="
 
 EVAL_RESULTS_DIR=${HOME}/APRIL/qrel-analysis/eval_results/${NAME}
 mkdir -p "$EVAL_RESULTS_DIR"
@@ -96,12 +96,12 @@ for r2 in "${RERANKERS[@]}"; do
         strategy=$(basename "$qrel_file" .txt | sed 's/^qrel\.//')
         out_file="${EVAL_RESULTS_DIR}/${r1}-rerank-${r2}.${strategy}.txt"
         echo "  Writing: $(basename "$out_file")"
-        printf "%-45s  %s\n" "run" "nDCG@10" > "$out_file"
+        printf "%-45s  %s\n" "run" "nDCG@20" > "$out_file"
         for entry in "${EVAL_RUNS[@]}"; do
             run_path="${entry%%|*}"
             run_name="${entry##*|}"
             [ -f "$run_path" ] || continue
-            ndcg=$(srun singularity exec $SIF python -m ir_measures "$qrel_file" "$run_path" nDCG@10 | cut -f2)
+            ndcg=$(srun singularity exec $SIF python -m ir_measures "$qrel_file" "$run_path" nDCG@20 | cut -f2)
             printf "%-45s  %s\n" "$run_name" "$ndcg" >> "$out_file"
         done
     done

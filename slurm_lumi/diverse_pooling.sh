@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --array=0-6
 #SBATCH --cpus-per-task=8
-#SBATCH --time=10:00
+#SBATCH --time=00:10:00
 #SBATCH --account=project_465002438
 #SBATCH --output=logs/%x.%a.out
 #SBATCH --error=logs/%x.%a.err
@@ -55,11 +55,11 @@ echo ${#RUN_FILES[@]}
 #     --output $output
 
 # top 20
-output=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.pool-40-systems-top20.${subset%%/*}.txt
-python3 qrel-analysis/diverse_pooling.py \
-    --run_files "${RUN_FILES[@]}" \
-    --topk 20 \
-    --output $output
+# output=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.pool-40-systems-top20.${subset%%/*}.txt
+# python3 qrel-analysis/diverse_pooling.py \
+#     --run_files "${RUN_FILES[@]}" \
+#     --topk 20 \
+#     --output $output
 
 # top 100
 # output=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.pool-40-systems-top100.${subset%%/*}.txt
@@ -68,10 +68,12 @@ python3 qrel-analysis/diverse_pooling.py \
 #     --topk 100 \
 #     --output $output
 
-# top 10 shuffle
-# output=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.pool-40-systems-top10-rand2026.${subset%%/*}.txt
-# python3 qrel-analysis/diverse_pooling.py \
-#     --run_files "${RUN_FILES[@]}" \
-#     --topk 10 \
-#     --output $output \
-#     --seed 2026 
+# top 20 shuffle
+for seed in $(seq 2027 2030); do
+    output=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.pool-40-systems-top20-rand$seed.${subset%%/*}.txt
+    python3 qrel-analysis/diverse_pooling.py \
+        --run_files "${RUN_FILES[@]}" \
+        --topk 20 \
+        --output $output \
+        --seed $seed
+done
