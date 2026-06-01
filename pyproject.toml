@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "autollmrerank"
 version = "0.1.10"
 description = "A modular reranking library with pluggable LLM, prompt, and parser interfaces."
-authors = [{ name = "Dylan Ju", email = "dylanjootw@gmail.com" }]
+authors = [{ name = "XXXXX", email = "XXXXX" }]
 dependencies = []
 
 [tool.setuptools]
@@ -17,4 +17,3 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 autollmrerank = ["configs/*.yaml"]
-

@@ -55,9 +55,9 @@ class Lancer(RerankStrategy):
         # subquestions = [self.postprocess(o, num_subquestions) for o in outputs]
 
         ## TODO: replace the subquestion generation with the pregenerated.
-        # with open("/home/dju/lancer-legacy/results/crux-mds-duc04-subquestions/qwen3-next-80b-a3b-instruct.json", "r") as f:
+        # with open("/home/XXXXX/lancer-legacy/results/crux-mds-duc04-subquestions/qwen3-next-80b-a3b-instruct.json", "r") as f:
         #     all_subquestions = json.loads(f.read())
-        with open("/home/dju/lancer-legacy/results/crux-mds-duc04-subquestions/subquestions.oracle.json", "r") as f:
+        with open("/home/XXXXX/lancer-legacy/results/crux-mds-duc04-subquestions/subquestions.oracle.json", "r") as f:
             all_subquestions = json.loads(f.read())
 
         subquestions = []
@@ -148,4 +148,3 @@ class Lancer(RerankStrategy):
         subquestions = [re.sub(r'^[\-\*\d\.\)\s]+', '', s) for s in subquestions]
         subquestions = [s for s in subquestions if s != ""]
         return subquestions[:n]
-

@@ -28,8 +28,8 @@ def load(
         return None, queries, qrels
 
     # [TODO] revise this to fit all the document format 
-    train_corpus = load_dataset('DylanJHJ/crux-mds-corpus', split='train')
-    test_corpus = load_dataset('DylanJHJ/crux-mds-corpus', split='test')
+    train_corpus = load_dataset('XXXXX/crux-mds-corpus', split='train')
+    test_corpus = load_dataset('XXXXX/crux-mds-corpus', split='test')
     corpus = {example["id"]: {"contents": example["contents"]} for example in train_corpus}
     corpus.update({example["id"]: {"contents": example["contents"]} for example in test_corpus})
     logger.info("Doc Example: %s", list(corpus.values())[0])

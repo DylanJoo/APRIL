@@ -229,4 +229,4 @@ dependencies:
       - yarl==1.22.0
       - zipp==3.23.0
       - zlib-state==0.1.10
-prefix: /home/dju/miniconda3/envs/autollmrerank
+prefix: /home/XXXXX/miniconda3/envs/autollmrerank
