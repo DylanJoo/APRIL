@@ -28,7 +28,7 @@ def load(
 
     # [TODO] revise this to fit all the document format 
     ds = load_dataset(
-        'json', data_files='/home/dju/datasets/neuclir1/*.processed_output.jsonl.gz', 
+        'json', data_files='/home/XXXXX/datasets/neuclir1/*.processed_output.jsonl.gz', 
         num_proc=3, split='train'
     )
     corpus = {example["id"]: {"contents": example["title"] + " " + example["text"]} \

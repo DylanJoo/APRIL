@@ -12,7 +12,7 @@ pip install uv
 ```
 - Dependency Installation
 ```
-git clone https://github.com/DylanJoo/APRIL.git
+git clone https://github.com/XXXXX/APRIL.git
 cd APRIL
 uv pip install -e .
 uv pip install vllm==0.11.1 ftfy ir_datasets ir_measures 
@@ -68,4 +68,3 @@ APRIL/ # the proposed new method using `autollmrerank`.
 #### Utililty functions/classes
 - Result: the class of retrieval/ranking results.
 - PromptMode: the class of reranking mode, including the prompt, llm calling and parsing
-
