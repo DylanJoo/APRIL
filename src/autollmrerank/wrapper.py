@@ -89,10 +89,11 @@ class AutoLLMReranker:
     @timer
     def rerank(
         self,
-        run: Dict[str, Dict[str, float]],
-        queries: Dict[str, str],
-        corpus: Dict[str, Dict[str, str]],
+        run: Dict[str, Dict[str, float]] = None,
+        queries: Dict[str, str] = None,
+        corpus: Dict[str, Dict[str, str]] = None,
         query_batch_size: int = 32,
+        results: List[Result] = None,
     ) -> Dict[str, Dict[str, float]]:
         """
         Args
@@ -101,7 +102,10 @@ class AutoLLMReranker:
             corpus (Dict[str, Dict[str, str]]): A dictionary mapping document IDs to their content and title (if applicable).
             batch_size (int): The number of query (with their results) to process in each batch.
         """
-        init_results = self.convert_run_to_result(run, queries, corpus)
+        if results is None:
+            init_results = self.convert_run_to_result(run, queries, corpus)
+        else:
+            init_results = results
 
         reranked_results = []
         for batch_results in tqdm(
