@@ -27,9 +27,12 @@ def load(
         return None, queries, qrels
 
     # [TODO] revise this to fit all the document format 
-    ds = load_dataset(
-        'json', data_files='/home/dju/datasets/neuclir1/*.processed_output.jsonl.gz', 
-        num_proc=3, split='train'
+    # CoveR's top1000: /home/dju/trec2026/data/neuclir/neuclir24-relevant-docs.jsonl
+    # All: /home/dju/scratch/neuclir1/*.processed.jsonl.gz
+    ds = load_dataset('json', 
+            data_files='/home/dju/trec2026/data/neuclir/neuclir24-relevant-docs.jsonl.gz',
+            num_proc=3, 
+            split='train'
     )
     corpus = {example["id"]: {"contents": example["title"] + " " + example["text"]} \
             for example in ds}

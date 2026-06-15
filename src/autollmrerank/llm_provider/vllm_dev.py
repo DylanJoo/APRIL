@@ -63,7 +63,7 @@ class LLM:
         no_strings=[' No', 'No', ' no', 'no', 'NO', ' NO'],
         id_strings=[chr(i) for i in range(65, 91)],
         max_rating=5, 
-        target_ratings=[3,4,5],
+        target_ratings=[1,2,3,4,5],
     ):
         self.id_tokens = [self.tokenizer.encode(item, add_special_tokens=False)[0] for item in id_strings]
         self.max_rating = max_rating

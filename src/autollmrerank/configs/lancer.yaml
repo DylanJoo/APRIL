@@ -5,6 +5,7 @@ data:
   input_run: runs/run.bm25.crux-mds-duc04.txt
   input_diversity_qrels: null
   input_ratings: null
+  output_subquestions: null
 
 llm:
   model_name_or_path: Qwen/Qwen2.5-7B-Instruct
@@ -27,7 +28,7 @@ context_size: 1024
 window_size: null
 step_size: null
 exp: implemented
-num_runs: 1
+num_runs: 2
 variable_passages: false
 include_system_message: true
 system_message: "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query"

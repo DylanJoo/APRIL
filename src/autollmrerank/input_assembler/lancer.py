@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import math
 import copy
@@ -49,16 +50,18 @@ class Lancer(RerankStrategy):
 
         # 1. Generate n sub-questions for all queries
         queries = [r.query for r in init_results]
-        # prompts = [self.preprocess(q, num_subquestions) for q in queries]
-        # with self._llm.default(): 
-        #     outputs = self._llm.generate(prompts)
-        # subquestions = [self.postprocess(o, num_subquestions) for o in outputs]
+        prompts = [self.preprocess(q, num_subquestions) for q in queries]
+        with self._llm.default(): 
+            outputs = self._llm.generate(prompts)
+        all_subquestions = {r.qid: self.postprocess(o, num_subquestions) for r, o in zip(results, outputs)}
+
+        output_subquestions = getattr(self.config.data, 'output_subquestions', None)
+        if output_subquestions:
+            os.makedirs(os.path.dirname(output_subquestions), exist_ok=True)
+            with open(output_subquestions, 'w') as f:
+                json.dump(all_subquestions, f, indent=2)
 
         ## TODO: replace the subquestion generation with the pregenerated.
-        # with open("/home/dju/lancer-legacy/results/crux-mds-duc04-subquestions/qwen3-next-80b-a3b-instruct.json", "r") as f:
-        #     all_subquestions = json.loads(f.read())
-        with open("/home/dju/lancer-legacy/results/crux-mds-duc04-subquestions/subquestions.oracle.json", "r") as f:
-            all_subquestions = json.loads(f.read())
 
         subquestions = []
         for r in results:
@@ -67,9 +70,8 @@ class Lancer(RerankStrategy):
 
         # 2. Answerability judgment for each question and add the score
         for i in range(num_subquestions):
-            for j, r in enumerate(results):
-                r.query = r.query + "\n" + subquestions[j][i]
-                # r.query = subquestions[j][i]
+            for r in results:
+                r.query = r.query + "\n" + all_subquestions[r.qid][i]
 
             subresults = self.run_pass(
                 results,
@@ -80,7 +82,7 @@ class Lancer(RerankStrategy):
             )
 
             for j, r in enumerate(results):
-                r.append_subresult(subquestions[j][i], subresults[j])
+                r.append_subresult(all_subquestions[r.qid][i], subresults[j])
 
         return results
 
@@ -95,11 +97,13 @@ class Lancer(RerankStrategy):
     ):
         results = [copy.deepcopy(result) for result in init_results]
         all_scores = {}
-        
+        tail_hits = {}
+
         for index, result in enumerate(results):
 
-            ## Placeholder for scores
-            result.hits = [hit for hit in result.hits[:rank_end]]
+            ## Preserve hits beyond rank_end to restore after reranking
+            tail_hits[result.qid] = result.hits[rank_end:]
+            result.hits = result.hits[:rank_end]
             all_scores[result.qid] = [0 for _ in result.hits]
 
             ## Create prompts for all pairs
@@ -121,9 +125,20 @@ class Lancer(RerankStrategy):
 
         ## Update results with scores
         reranked_results = self._result_parser.parse(
-            [all_scores[result.qid] for result in results], 
-            init_results
+            [all_scores[result.qid] for result in results],
+            results
         )
+
+        ## Restore hits beyond rank_end with scores below the reranked minimum
+        for result in reranked_results:
+            if tail_hits[result.qid]:
+                # min_score = min(hit.get('score', 0) for hit in result.hits) - 1
+                min_score = -1 # zero is find bc there is not other score that would be minus.
+                for i, hit in enumerate(tail_hits[result.qid]):
+                    hit = copy.deepcopy(hit)
+                    hit['score'] = min_score - i
+                    result.hits.append(hit)
+
         return reranked_results
 
     # NOTE: ad-hoc adoption of LANCER method
