@@ -1,0 +1,38 @@
+run                                            nDCG@10
+bm25                                           0.9594
+splade-v3                                      0.9751
+nomicai-modernbert-embed                       0.9521
+qwen3-embed-600m                               0.8411
+colbert-small                                  0.8727
+bm25-rerank-judge                              0.7836
+bm25-rerank-judge_expr                         0.9526
+bm25-rerank-point                              0.6801
+bm25-rerank-rankgpt                            0.9728
+bm25-rerank-setmaxheaptopk                     0.8902
+bm25-rerank-rankfirst                          0.9690
+bm25-rerank-rankzephyr                         0.9528
+splade-v3-rerank-judge                         0.8283
+splade-v3-rerank-judge_expr                    0.9706
+splade-v3-rerank-point                         0.6817
+splade-v3-rerank-rankgpt                       0.9873
+splade-v3-rerank-setmaxheaptopk                0.9528
+splade-v3-rerank-rankfirst                     0.9915
+splade-v3-rerank-rankzephyr                    0.9588
+nomicai-modernbert-embed-rerank-judge          0.8347
+nomicai-modernbert-embed-rerank-judge_expr     0.9756
+nomicai-modernbert-embed-rerank-point          0.7104
+nomicai-modernbert-embed-rerank-rankgpt        0.9923
+nomicai-modernbert-embed-rerank-setmaxheaptopk  0.9273
+nomicai-modernbert-embed-rerank-rankfirst      0.9829
+nomicai-modernbert-embed-rerank-rankzephyr     0.9420
+qwen3-embed-600m-rerank-judge                  0.8787
+qwen3-embed-600m-rerank-judge_expr             0.9867
+qwen3-embed-600m-rerank-point                  0.6911
+qwen3-embed-600m-rerank-rankgpt                0.9880
+qwen3-embed-600m-rerank-setmaxheaptopk         0.9168
+qwen3-embed-600m-rerank-rankfirst              0.9771
+qwen3-embed-600m-rerank-rankzephyr             0.9158
+colbert-small-rerank-judge                     0.8165
+colbert-small-rerank-judge_expr                
+colbert-small-rerank-point                     
+colbert-small-rerank-rankgpt                   
