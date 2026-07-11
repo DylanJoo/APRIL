@@ -5,6 +5,7 @@ from .pairwise import PairwiseFormatter
 from .setwise import SetwiseFormatter
 from .pointwise import PointwiseFormatter
 from .judge import JudgeFormatter
+from .umbrela import UmbrelaFormatter
 from ._dev import DevFormatter
 
 class AutoPromptFormatter:
@@ -20,6 +21,7 @@ class AutoPromptFormatter:
         'SetMaxHeapTopK': SetwiseFormatter,
         'Point': PointwiseFormatter,
         'Judge': JudgeFormatter,
+        'Umbrela': UmbrelaFormatter,
         'Lancer': JudgeFormatter,
         'Dev': DevFormatter,
     }

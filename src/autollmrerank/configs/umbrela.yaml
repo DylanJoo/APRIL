@@ -15,7 +15,7 @@ llm:
   base_url: null
   api_key: null
 
-rerank_mode: Judge
+rerank_mode: Umbrela
 use_alphabetical: false
 top_k: 100
 rank_start: 0
@@ -27,6 +27,6 @@ step_size: null
 exp: implemented
 num_runs: 1
 variable_passages: false
-include_system_message: true
-system_message: "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query"
-result_parser_name: text
+include_system_message: false
+system_message: ""
+result_parser_name: umbrela

@@ -22,6 +22,7 @@ class AutoAssembler:
         'SetMaxHeapTopK': SetMaxHeapTopK,
         'Point': Point,
         'Judge': Judge,
+        'Umbrela': Judge,
         'Lancer': Lancer,
         'Dev': Dev,
     }

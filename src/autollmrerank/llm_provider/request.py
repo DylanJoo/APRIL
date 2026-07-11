@@ -1,8 +1,10 @@
 import os
 import uuid
 import math
+import time
 import asyncio
 import openai
+from functools import wraps
 from typing import List
 from transformers import AutoTokenizer
 
@@ -43,21 +45,61 @@ class LLM:
         if logprobs:
             self.set_classification()
 
-    def set_classification(self, 
+        self.stats = {
+            'num_calls': 0,
+            'num_prompts': 0,
+            'prompt_words': 0,
+            'completion_words': 0,
+            'time_sec': 0.0,
+        }
+
+    @staticmethod
+    def tracker(func):
+        @wraps(func)
+        def wrapper(self, prompts, *args, **kwargs):
+            prompt_list = [prompts] if isinstance(prompts, str) else prompts
+
+            start = time.time()
+            result = func(self, prompts, *args, **kwargs)
+            elapsed = time.time() - start
+
+            prompt_words = sum(len(p.split()) for p in prompt_list)
+            completion_words = sum(len(str(r).split()) for r in result)
+
+            self.stats['num_calls'] += 1
+            self.stats['num_prompts'] += len(prompt_list)
+            self.stats['prompt_words'] += prompt_words
+            self.stats['completion_words'] += completion_words
+            self.stats['time_sec'] += elapsed
+
+            print(
+                f"\n\n{func.__qualname__} | prompts={len(prompt_list)} "
+                f"prompt_words={prompt_words} completion_words={completion_words} "
+                f"took {elapsed:.6f} seconds"
+            )
+            return result
+        return wrapper
+
+    def get_stats(self):
+        """Return a snapshot of cumulative usage since the last reset_stats()."""
+        return dict(self.stats)
+
+    def set_classification(self,
         yes_strings=[' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES'],
         no_strings=[' No', 'No', ' no', 'no', 'NO', ' NO'],
         id_strings=[chr(i) for i in range(65, 91)],
-        max_rating=5, 
+        max_rating=5,
         target_ratings=[3,4,5],
     ):
         self.id_tokens = [self.tokenizer.tokenize(item)[0] for item in id_strings]
         self.max_rating = max_rating
         self.target_ratings = target_ratings
 
+    @tracker
     def generate(
-        self, 
-        prompts, 
-        binary_probs=False, 
+        self,
+        prompts,
+        binary_probs=False,
         dist_logp=False,
         rating_logp=False,
         expected_rating=False
@@ -66,7 +108,7 @@ class LLM:
             prompts = [prompts]
 
         return self.loop.run_until_complete(
-                self._agenerate(prompts, 
+                self._agenerate(prompts,
                                 use_binary_probs=binary_probs,
                                 use_dist_probs=dist_logp,
                                 use_rating_logp=rating_logp,
@@ -74,9 +116,9 @@ class LLM:
         )
 
     async def _agenerate(
-        self, 
-        prompts, 
-        use_binary_probs=False, 
+        self,
+        prompts,
+        use_binary_probs=False,
         use_dist_probs=False,
         use_rating_logp=False,
         use_expected_rating=False
@@ -86,8 +128,8 @@ class LLM:
         # Use normal function and add run in thread
         ## NOTE: in serving mode, it will stop util hitting criteria
         def _get_output(
-            prompt, 
-            use_binary_probs, 
+            prompt,
+            use_binary_probs,
             use_dist_probs,
             use_rating_logp,
             use_expected_rating
@@ -141,9 +183,9 @@ class LLM:
 
         # Gather all the outputs
         outputs = await asyncio.gather(*[
-            asyncio.to_thread(_get_output, 
+            asyncio.to_thread(_get_output,
                               prompt,
-                              use_binary_probs, 
+                              use_binary_probs,
                               use_dist_probs,
                               use_rating_logp,
                               use_expected_rating) for prompt in prompts

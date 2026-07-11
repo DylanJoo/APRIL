@@ -43,7 +43,7 @@ subset=$(echo $dataset | cut -d'@' -f2)
 ## POINTWISE
 needs_pointwise=false
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
-for method in judge judge_expr point; do
+for method in judge judge_expr point umbrela; do
 for seed in $(seq 1 5);do
     output_run=runs/${MODEL##*/}/sample-$seed/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ ! -f "$output_run" ]; then
@@ -77,7 +77,7 @@ echo "vLLM server is up and running."
 
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
 for seed in $(seq 1 5); do
-for method in point judge judge_expr; do
+for method in point judge judge_expr umbrela; do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/sample-$seed/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ -f "$output_run" ]; then

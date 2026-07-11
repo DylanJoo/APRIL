@@ -1,6 +1,8 @@
 import uuid
 import math
+import time
 import asyncio
+from functools import wraps
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.sampling_params import SamplingParams
@@ -57,6 +59,49 @@ class LLM:
         if logprobs:
             self.set_classification()
 
+        self.reset_stats()
+
+    @staticmethod
+    def stat_tracker(func):
+        @wraps(func)
+        def wrapper(self, prompts, *args, **kwargs):
+            prompt_list = [prompts] if isinstance(prompts, str) else prompts
+
+            start = time.time()
+            result = func(self, prompts, *args, **kwargs)
+            elapsed = time.time() - start
+
+            prompt_words = sum(len(p.split()) for p in prompt_list)
+            completion_words = sum(len(str(r).split()) for r in result)
+
+            self.stats['num_calls'] += 1
+            self.stats['num_prompts'] += len(prompt_list)
+            self.stats['prompt_words'] += prompt_words
+            self.stats['completion_words'] += completion_words
+            self.stats['time_sec'] += elapsed
+
+            print(
+                f"\n\n{func.__qualname__} | prompts={len(prompt_list)} "
+                f"prompt_words={prompt_words} completion_words={completion_words} "
+                f"took {elapsed:.6f} seconds"
+            )
+            return result
+        return wrapper
+
+    def reset_stats(self):
+        """Reset the cumulative call/word-count/timing counters returned by `get_stats()`."""
+        self.stats = {
+            'num_calls': 0,
+            'num_prompts': 0,
+            'prompt_words': 0,
+            'completion_words': 0,
+            'time_sec': 0.0,
+        }
+
+    def get_stats(self):
+        """Return a snapshot of cumulative usage since the last reset_stats()."""
+        return dict(self.stats)
+
     # TODO: Set the id_tokens as dynamic based on window size
     def set_classification(self, 
         yes_strings=[' Yes', 'Yes', ' yes', 'yes', 'YES', ' YES'],
@@ -71,10 +116,11 @@ class LLM:
         print(f"ID TOKENS: {self.id_tokens}")
         print(f"MAX RATING TOKEN: {self.max_rating} | TARGET TOKENS: {target_ratings}")
 
+    @stat_tracker
     def generate(
-        self, 
-        prompts, 
-        binary_probs=False, 
+        self,
+        prompts,
+        binary_probs=False,
         dist_logp=False,
         rating_logp=False,
         expected_rating=False,

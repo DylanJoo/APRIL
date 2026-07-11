@@ -83,6 +83,17 @@ MODEL=Qwen/Qwen2.5-7B-Instruct
 #     --llm.model_name_or_path=$MODEL \
 #     --result_parser_name=expected_rating > $LOGDIR/judge_expr.beir-${subset%%/*}.log
 #
+# # UMBRELA (ZERO-SHOT)
+# python -m autollmrerank.wrapper_bootstrap \
+#     --config=$HOME/APRIL/src/autollmrerank/configs/umbrela.yaml \
+#     --bootstrapping=true \
+#     --bootstrapping_size=50 \
+#     --bootstrapping_seed=$seed \
+#     --data.dataset_name=beir/${subset} \
+#     --data.input_run=runs/run.beir.bm25.${subset%%/*}.txt \
+#     --data.output_run=$OUTDIR/umbrela.beir-${subset%%/*}.txt \
+#     --llm.model_name_or_path=$MODEL > $LOGDIR/umbrela.beir-${subset%%/*}.log
+#
 # # SETWISE TOPK
 # python -m autollmrerank.wrapper_bootstrap \
 #     --config=$HOME/APRIL/src/autollmrerank/configs/setmaxheaptopk.yaml \

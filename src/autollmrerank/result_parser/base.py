@@ -10,6 +10,7 @@ Apply different parsing depending with diffrent LLM outputs.
     * absoluate scores: List[List[float]] (e.g., Pairwise All, Pointwise)
     * partial scores: List[List[float]] (e.g., APRIL, Setwise)
 """
+import re
 import copy
 from typing import List, Optional, Tuple, Callable, Dict, Union
 from abc import ABC, abstractmethod
@@ -17,8 +18,43 @@ from ..utils import Result
 
 class ResultParser(ABC):
 
-    def __init__(self, use_alpha=False):
+    # Ported from castorini/umbrela's `parse_fewshot_response` (common_utils.py), used to
+    # extract the 0-3 relevance category out of a raw UMBRELA judge completion.
+    _UMBRELA_SCORE_PATTERNS = [
+        r'"o"\s*[:-=]?\s*(0|1|2|3)',
+        r"\'o\'\s*[:-=]?\s*(0|1|2|3)",
+        r"o\s*[:-=]?\s*(0|1|2|3)",
+        r'"overall_score"\s*[:-=]?\s*(0|1|2|3)',
+        r'"overall"\s*[:-=]?\s*(0|1|2|3)',
+        r'"overall score"\s*[:-=]?\s*(0|1|2|3)',
+        r'"final score"\s*[:-=]?\s*(0|1|2|3)',
+        r"final score\s*[:-=]?\s*(0|1|2|3)",
+        r"final score is (0|1|2|3)",
+        r'"final_score"\s*[:-=]?\s*(0|1|2|3)',
+        r'"score"\s*[:-=]?\s*(0|1|2|3)',
+        r'"o_score"\s*[:-=]?\s*(0|1|2|3)',
+        r"output score is (0|1|2|3)",
+        r"score is (0|1|2|3)",
+        r"score of\s+(0|1|2|3)",
+        r"assign(?:ing)?\s+(?:it\s+)?(?:a\s+)?score of\s+(0|1|2|3)",
+        r"conclude(?:s|d)?\s+with\s+(?:a\s+)?score of\s+(0|1|2|3)",
+        r"give(?:n)?\s+(?:it\s+)?(?:a\s+)?score of\s+(0|1|2|3)",
+        r"i (?:would )?(?:give|assign)\s+(?:it\s+)?(?:a\s+)?score of\s+(0|1|2|3)",
+        r"score:\s*(0|1|2|3)",
+        r"[a-zA-Z]+\s+is\s+(0|1|2|3)\s",
+        r"relevance category\s*[:-=]?\s*(0|1|2|3)",
+        r"relevance category is (0|1|2|3)",
+        r"it falls into the category (0|1|2|3)",
+        r"category\s*(0|1|2|3)",
+        r"relevance category (0|1|2|3)",
+        r"relevance category for this passage would be (0|1|2|3)",
+        r"the relevance category would be (0|1|2|3)",
+        r"\n*(0|1|2|3)",
+    ]
+
+    def __init__(self, use_alpha=False, result_parser_name="text"):
         self._use_alpha = use_alpha
+        self._result_parser_name = result_parser_name
 
     # TODO: parse all, or maybe multithreading
     # TODO: make the meaning of `rank_start` and `rank_end` similar across methods?
@@ -70,6 +106,24 @@ class ResultParser(ABC):
             result.hits[j + rank_start] = copy.deepcopy(cut_range[x])
         return result
 
+    @staticmethod
+    def _to_float(s: str) -> float:
+        try:
+            return float(s)
+        except (ValueError, TypeError):
+            return 0.0
+
+    def _parse_umbrela_score(self, response: str) -> float:
+        """ Extract the 0-3 relevance category from a raw UMBRELA judge completion. """
+        response = response.strip().lower()
+        for pattern in self._UMBRELA_SCORE_PATTERNS:
+            matched = None
+            for m in re.finditer(pattern, response, re.IGNORECASE | re.MULTILINE | re.DOTALL):
+                matched = m
+            if matched:
+                return float(matched.group(1))
+        return 0.0
+
     def _parse_swap(self, swap: bool, result: Result, target: int) -> Result:
         if swap is False: # means passage [1] > [2] (hits[rank_end-1] > hits[rank_end-2])
             return result
@@ -83,11 +137,7 @@ class ResultParser(ABC):
         """ Assign the scores from top to bottom, and fill the rest with decreasing scores. """
         init_hits = copy.deepcopy(result.hits)
         if isinstance(scores[0], str):
-            def to_float(s):
-                try:
-                    return float(s)
-                except (ValueError, TypeError):
-                    return 0.0
+            to_float = self._parse_umbrela_score if self._result_parser_name == "umbrela" else self._to_float
             scores = [to_float(s) for s in scores]
         min_score = min(scores) - 1
 

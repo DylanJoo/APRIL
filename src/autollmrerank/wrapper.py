@@ -1,10 +1,9 @@
 import os
+import json
 from typing import Optional, Tuple, List, Dict, Union, Any
 from pprint import pprint
 from tqdm import tqdm
 import torch
-from functools import wraps
-import time
 
 from .utils import Result, batch_iterator
 from .input_assembler import AutoAssembler
@@ -26,17 +25,6 @@ class AutoLLMReranker:
         llmconfig.update(kwargs.pop('llm', {}))
         config = ConfigManager(path=path, llm=llmconfig, **kwargs).get_config()
         return cls(config, **kwargs)
-
-    @staticmethod
-    def timer(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            start = time.time()
-            result = func(*args, **kwargs)
-            end = time.time()
-            print(f"\n\n{func.__qualname__} took {end - start:.6f} seconds")
-            return result
-        return wrapper
 
     def __init__(self, config, **kwargs) -> None:
         self.config = config
@@ -63,7 +51,7 @@ class AutoLLMReranker:
         )
         # agent.set_classification(target_ratings=[3,4,5])
 
-        result_parser = ResultParser(use_alpha=config.use_alphabetical)
+        result_parser = ResultParser(use_alpha=config.use_alphabetical, result_parser_name=config.result_parser_name)
 
         # initialize the algorithm module
         self.assembler = AutoAssembler.from_config(
@@ -84,9 +72,8 @@ class AutoLLMReranker:
             results.append(Result(qid=qid, query=query, hits=hit_docs))
         return results
 
-    # TODO: Figure out another input format called `text_pairs=[(q1, [d1, d2, ...]), (q2, ...)]`. 
+    # TODO: Figure out another input format called `text_pairs=[(q1, [d1, d2, ...]), (q2, ...)]`.
     # This is more friendly for users who only have texts.
-    @timer
     def rerank(
         self,
         run: Dict[str, Dict[str, float]] = None,
@@ -179,13 +166,25 @@ if __name__ == "__main__":
     r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)
     r2 = ir_measures.calc_aggregate([nDCG@10], qrels, reranked_run)
 
+    # cost report: the LLM provider tracks call count, word counts, and time
+    # as a side effect of every `generate()` call, so we just read it back here
+    cost_stats = rankllm.assembler._llm.get_stats()
+    cost_stats['num_queries'] = len(run)
+    if cost_stats['num_queries']:
+        cost_stats['time_sec_per_query'] = cost_stats['time_sec'] / cost_stats['num_queries']
+        cost_stats['prompt_words_per_query'] = cost_stats['prompt_words'] / cost_stats['num_queries']
+
+    with open(f"{output_path}.stats.json", 'w') as f:
+        json.dump(cost_stats, f, indent=2)
+
     # print logs
     eval_log = {
         'rerank_mode': config.rerank_mode,
-        'model_name_or_path': config.llm.model_name_or_path, 
+        'model_name_or_path': config.llm.model_name_or_path,
         'dataset_name': f"{config.data.loader_type}:{config.data.dataset_name}",
         'run_path': config.data.input_run,
-        'original': r1, 
-        'reranked': r2
+        'original': r1,
+        'reranked': r2,
+        'cost_stats': cost_stats,
     }
     pprint(eval_log)

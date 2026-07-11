@@ -3,8 +3,6 @@ from typing import Optional, Tuple, List, Dict, Union, Any
 from pprint import pprint
 from tqdm import tqdm
 import torch
-from functools import wraps
-import time
 import numpy as np
 
 from .utils import Result, batch_iterator
@@ -27,17 +25,6 @@ class AutoLLMReranker:
         llmconfig.update(kwargs.pop('llm', {}))
         config = ConfigManager(path=path, llm=llmconfig, **kwargs).get_config()
         return cls(config, **kwargs)
-
-    @staticmethod
-    def timer(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            start = time.time()
-            result = func(*args, **kwargs)
-            end = time.time()
-            print(f"\n\n{func.__qualname__} took {end - start:.6f} seconds")
-            return result
-        return wrapper
 
     def __init__(self, config, **kwargs) -> None:
 
@@ -71,7 +58,7 @@ class AutoLLMReranker:
         # if config.llm.use_logits:
         #     agent.set_classification(id_strings=[chr(i) for i in range(65, 91)])
 
-        result_parser = ResultParser(use_alpha=config.use_alphabetical)
+        result_parser = ResultParser(use_alpha=config.use_alphabetical, result_parser_name=config.result_parser_name)
 
         # initialize the algorithm module
         self.assembler = AutoAssembler.from_config(
@@ -92,9 +79,8 @@ class AutoLLMReranker:
             results.append(Result(qid=qid, query=query, hits=hit_docs))
         return results
 
-    # TODO: Figure out another input format called `text_pairs=[(q1, [d1, d2, ...]), (q2, ...)]`. 
+    # TODO: Figure out another input format called `text_pairs=[(q1, [d1, d2, ...]), (q2, ...)]`.
     # This is more friendly for users who only have texts.
-    @timer
     def rerank(
         self,
         run: Dict[str, Dict[str, float]],
