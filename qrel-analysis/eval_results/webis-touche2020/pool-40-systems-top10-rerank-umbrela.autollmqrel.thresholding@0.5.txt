@@ -33,6 +33,9 @@ qwen3-embed-600m-rerank-setmaxheaptopk         0.9168
 qwen3-embed-600m-rerank-rankfirst              0.9771
 qwen3-embed-600m-rerank-rankzephyr             0.9158
 colbert-small-rerank-judge                     0.8165
-colbert-small-rerank-judge_expr                
-colbert-small-rerank-point                     
-colbert-small-rerank-rankgpt                   
+colbert-small-rerank-judge_expr                0.9737
+colbert-small-rerank-point                     0.6885
+colbert-small-rerank-rankgpt                   0.9857
+colbert-small-rerank-setmaxheaptopk            0.9167
+colbert-small-rerank-rankfirst                 0.9663
+colbert-small-rerank-rankzephyr                0.8876

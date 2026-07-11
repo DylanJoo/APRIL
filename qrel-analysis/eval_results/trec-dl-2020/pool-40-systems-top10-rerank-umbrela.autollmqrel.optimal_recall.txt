@@ -27,3 +27,15 @@ nomicai-modernbert-embed-rerank-rankfirst      0.9669
 nomicai-modernbert-embed-rerank-rankzephyr     0.9773
 qwen3-embed-600m-rerank-judge                  0.9087
 qwen3-embed-600m-rerank-judge_expr             0.9787
+qwen3-embed-600m-rerank-point                  0.8845
+qwen3-embed-600m-rerank-rankgpt                0.9750
+qwen3-embed-600m-rerank-setmaxheaptopk         0.9459
+qwen3-embed-600m-rerank-rankfirst              0.9661
+qwen3-embed-600m-rerank-rankzephyr             0.9763
+colbert-small-rerank-judge                     0.9079
+colbert-small-rerank-judge_expr                0.9829
+colbert-small-rerank-point                     0.8782
+colbert-small-rerank-rankgpt                   0.9855
+colbert-small-rerank-setmaxheaptopk            0.9717
+colbert-small-rerank-rankfirst                 0.9780
+colbert-small-rerank-rankzephyr                0.9915
