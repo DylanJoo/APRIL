@@ -28,7 +28,7 @@ done
 
 # reranking
 for retrieval in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
-for rerank in point judge judge_expr setmaxheaptopk rankgpt;do
+for rerank in point umbrela judge judge_expr setmaxheaptopk rankgpt;do
 for dataset in ${DATASETS[@]};do
     benchmark=$(echo $dataset | cut -d'@' -f1)
     subset=$(echo $dataset | cut -d'@' -f2)

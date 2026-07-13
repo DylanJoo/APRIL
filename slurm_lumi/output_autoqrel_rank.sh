@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --job-name=autoqrel-test
+#SBATCH --job-name=autoqrel-rank
 #SBATCH --partition=small
 #SBATCH --mem=32G
 #SBATCH --nodes=1
@@ -46,10 +46,13 @@ for r2 in rankfirst rankzephyr;do
 done
 done
 
+POOL=pool-40-systems-top10
+JUDGES=(umbrela)
+
 # ── Step 1: generate auto-qrel files ──────────────────────────────────────────
 echo "=== Generating auto-qrel files for ${NAME} ==="
-for r1 in pool-40-systems-top10;do
-for r2 in "${RERANKERS[@]}"; do
+for r1 in $POOL;do
+for r2 in "${JUDGES[@]}"; do
     judge_run=${HOME}/APRIL/runs/${MODEL_DIR}/run.${BENCHMARK}.${r1}-rerank-${r2}.${NAME}.txt
     if [ ! -f "$judge_run" ]; then
         echo "  [skip] not found: $judge_run"
@@ -58,7 +61,12 @@ for r2 in "${RERANKERS[@]}"; do
     output_dir=${HOME}/APRIL/qrel-analysis/autoqrels-rank/${r1}-rerank-${r2}/${NAME}/
     mkdir -p "$output_dir"
     echo "  Generating: ${r1}-rerank-${r2}"
-    for cutoff in $(seq 21 2 49);do
+    for cutoff in $(seq 1 2 19);do
+        qrel_file="${output_dir}autollmqrel.rank@${cutoff}.txt"
+        if [ -f "$qrel_file" ]; then
+            echo "    [skip] already generated: rank@${cutoff}"
+            continue
+        fi
         srun singularity exec $SIF python qrel-analysis/output_autoqrel.py \
             --dataset_name $DATASET \
             --loader_type irds \
@@ -88,13 +96,26 @@ echo "=== nDCG@10 — auto-qrels ==="
 EVAL_RESULTS_DIR=${HOME}/APRIL/qrel-analysis/eval_results-rank/${NAME}
 mkdir -p "$EVAL_RESULTS_DIR"
 
-for r1 in pool-40-systems-top10;do
-for r2 in "${RERANKERS[@]}"; do
+# Number of EVAL_RUNS that actually exist on disk — defines a "complete" out_file's line count
+# (1 header + 1 row per existing run), used below to skip files that already finished.
+n_existing_runs=0
+for entry in "${EVAL_RUNS[@]}"; do
+    run_path="${entry%%|*}"
+    [ -f "$run_path" ] && n_existing_runs=$((n_existing_runs + 1))
+done
+expected_lines=$((n_existing_runs + 1))
+
+for r1 in $POOL;do
+for r2 in "${JUDGES[@]}"; do
     qrel_dir=${HOME}/APRIL/qrel-analysis/autoqrels-rank/${r1}-rerank-${r2}/${NAME}/
     for qrel_file in "${qrel_dir}"autollmqrel.*.txt; do
         [ -f "$qrel_file" ] || continue
         strategy=$(basename "$qrel_file" .txt | sed 's/^qrel\.//')
         out_file="${EVAL_RESULTS_DIR}/${r1}-rerank-${r2}.${strategy}.txt"
+        if [ -f "$out_file" ] && [ "$(wc -l < "$out_file")" -eq "$expected_lines" ]; then
+            echo "  [skip] already complete: $(basename "$out_file")"
+            continue
+        fi
         echo "  Writing: $(basename "$out_file")"
         printf "%-45s  %s\n" "run" "nDCG@10" > "$out_file"
         for entry in "${EVAL_RUNS[@]}"; do

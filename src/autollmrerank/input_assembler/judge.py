@@ -20,7 +20,7 @@ class Judge(RerankStrategy):
         results = [copy.deepcopy(result) for result in init_results]
         all_scores = {}
         
-        for index, result in enumerate(results):
+        for index, result in tqdm(enumerate(results), total=len(results), desc=f"{self.config.rerank_mode} scoring"):
 
             ## Placeholder for scores
             result.hits = [hit for hit in result.hits[:rank_end]]
