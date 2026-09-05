@@ -1,0 +1,8 @@
+run                                            nDCG@10
+bm25                                           0.6739
+splade-v3                                      0.6960
+nomicai-modernbert-embed                       0.7258
+qwen3-embed-600m                               0.8122
+colbert-small                                  0.7496
+bm25-rerank-judge                              0.7947
+bm25-rerank-judge_expr                         0.8794

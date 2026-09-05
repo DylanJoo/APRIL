@@ -1,0 +1,71 @@
+import os
+from pathlib import Path
+from autollmrerank import loader
+from pprint import pprint
+import ir_measures
+from ir_measures import *
+home_dir=str(Path.home())
+
+# Initialize the reranker with the configuration
+from autollmrerank.config_manager import ConfigManager
+config = ConfigManager(
+    rerank_mode='Judge',
+    top_k=100,
+    rank_start=0,
+    rank_end=100,
+    step_size=10,
+    window_size=20,
+    num_runs=1,
+    llm={'max_model_len': 8196, 'backend': 'vllm_dev', 'model_name_or_path': 'Qwen/Qwen2.5-7B-Instruct', 'use_logits': False},
+    result_parser_name='text'
+).get_config()
+
+subset = 'arguana'
+config.data.ir_datasets_name = f'beir/{subset}'
+subset_ = subset.split('/')[0]
+config.data.input_run = f"{home_dir}/APRIL/runs/run.beir.bm25.{subset_}.txt"
+run = loader.load_run(config.data.input_run)
+
+from autollmrerank.wrapper import AutoLLMReranker
+rankllm = AutoLLMReranker(config, 
+    system_message= "You are JudgeLLM, an intelligent assistant that can judge a passage based on its relevancy to the query"
+)
+
+# start reranking
+results = {}
+corpus, queries, qrels = loader.load(
+    config.data.ir_datasets_name, 
+    query_fields=None, 
+    doc_fields=['title', 'text']
+)
+run = {qid: hit for qid, hit in run.items() if qid in qrels} # filter
+
+reranked_run = rankllm.rerank(
+    run=run,
+    queries=queries,
+    corpus=corpus,
+    query_batch_size=64,
+)
+
+# prepare output run
+output_path = os.path.join(config.data.input_run.replace('runs', f'runs/{config.rerank_mode}'))
+os.makedirs(os.path.dirname(output_path), exist_ok=True)
+with open(output_path, 'w') as f:
+    for qid in reranked_run:
+        for i, (docid, score) in enumerate(reranked_run[qid].items()):
+            f.write(f"{qid} Q0 {docid} {i+1} {score} rerank\n")
+
+# evaluation
+r1 = ir_measures.calc_aggregate([nDCG@10], qrels, run)
+r2 = ir_measures.calc_aggregate([nDCG@10], qrels, reranked_run)
+
+eval_log = {
+    'model_name_or_path': config.llm.model_name_or_path, 
+    'ir_datasets_name': config.data.ir_datasets_name,
+    'run_path': config.data.input_run,
+    'original': r1, 
+    'reranked': r2
+}
+results[dataset] = eval_log
+pprint(eval_log)
+
