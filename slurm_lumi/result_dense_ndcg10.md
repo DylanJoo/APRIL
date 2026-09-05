@@ -40,6 +40,13 @@ bm25 | point | nfcorpus | 0.3288
 bm25 | point | scidocs | 0.1648
 bm25 | point | trec-covid | 0.7805
 bm25 | point | webis-touche2020 | 0.1767
+bm25 | umbrela | trec-dl-2019 | 0.6674
+bm25 | umbrela | trec-dl-2020 | 0.6006
+bm25 | umbrela | dbpedia-entity | 0.3461
+bm25 | umbrela | nfcorpus | 0.3302
+bm25 | umbrela | scidocs | 0.1222
+bm25 | umbrela | trec-covid | 0.7697
+bm25 | umbrela | webis-touche2020 | 0.2100
 bm25 | judge | trec-dl-2019 | 0.6488
 bm25 | judge | trec-dl-2020 | 0.5970
 bm25 | judge | dbpedia-entity | 0.3232
@@ -68,6 +75,13 @@ bm25 | rankgpt | nfcorpus | 0.3839
 bm25 | rankgpt | scidocs | 0.2033
 bm25 | rankgpt | trec-covid | 0.8435
 bm25 | rankgpt | webis-touche2020 | 0.3301
+bm25 | umbrela | trec-dl-2019 | 0.6674
+bm25 | umbrela | trec-dl-2020 | 0.6006
+bm25 | umbrela | dbpedia-entity | 0.3461
+bm25 | umbrela | nfcorpus | 0.3302
+bm25 | umbrela | scidocs | 0.1222
+bm25 | umbrela | trec-covid | 0.7697
+bm25 | umbrela | webis-touche2020 | 0.2100
 splade-v3 | point | trec-dl-2019 | 0.6417
 splade-v3 | point | trec-dl-2020 | 0.6365
 splade-v3 | point | dbpedia-entity | 0.3341
@@ -75,6 +89,13 @@ splade-v3 | point | nfcorpus | 0.3429
 splade-v3 | point | scidocs | 0.1663
 splade-v3 | point | trec-covid | 0.7323
 splade-v3 | point | webis-touche2020 | 0.1881
+splade-v3 | umbrela | trec-dl-2019 | 0.6805
+splade-v3 | umbrela | trec-dl-2020 | 0.6356
+splade-v3 | umbrela | dbpedia-entity | 0.3818
+splade-v3 | umbrela | nfcorpus | 0.3369
+splade-v3 | umbrela | scidocs | 0.1184
+splade-v3 | umbrela | trec-covid | 0.7448
+splade-v3 | umbrela | webis-touche2020 | 0.2038
 splade-v3 | judge | trec-dl-2019 | 0.6625
 splade-v3 | judge | trec-dl-2020 | 0.6599
 splade-v3 | judge | dbpedia-entity | 0.3475
@@ -103,6 +124,13 @@ splade-v3 | rankgpt | nfcorpus | 0.4053
 splade-v3 | rankgpt | scidocs | 0.2015
 splade-v3 | rankgpt | trec-covid | 0.8663
 splade-v3 | rankgpt | webis-touche2020 | 0.3305
+splade-v3 | umbrela | trec-dl-2019 | 0.6805
+splade-v3 | umbrela | trec-dl-2020 | 0.6356
+splade-v3 | umbrela | dbpedia-entity | 0.3818
+splade-v3 | umbrela | nfcorpus | 0.3369
+splade-v3 | umbrela | scidocs | 0.1184
+splade-v3 | umbrela | trec-covid | 0.7448
+splade-v3 | umbrela | webis-touche2020 | 0.2038
 nomicai-modernbert-embed | point | trec-dl-2019 | 0.6479
 nomicai-modernbert-embed | point | trec-dl-2020 | 0.6446
 nomicai-modernbert-embed | point | dbpedia-entity | 0.3620
@@ -110,6 +138,13 @@ nomicai-modernbert-embed | point | nfcorpus | 0.3648
 nomicai-modernbert-embed | point | scidocs | 0.1729
 nomicai-modernbert-embed | point | trec-covid | 0.7855
 nomicai-modernbert-embed | point | webis-touche2020 | 0.1701
+nomicai-modernbert-embed | umbrela | trec-dl-2019 | 0.6709
+nomicai-modernbert-embed | umbrela | trec-dl-2020 | 0.6402
+nomicai-modernbert-embed | umbrela | dbpedia-entity | 0.4015
+nomicai-modernbert-embed | umbrela | nfcorpus | 0.3469
+nomicai-modernbert-embed | umbrela | scidocs | 
+nomicai-modernbert-embed | umbrela | trec-covid | 0.7855
+nomicai-modernbert-embed | umbrela | webis-touche2020 | 0.1991
 nomicai-modernbert-embed | judge | trec-dl-2019 | 0.6567
 nomicai-modernbert-embed | judge | trec-dl-2020 | 0.6347
 nomicai-modernbert-embed | judge | dbpedia-entity | 0.3633
@@ -138,6 +173,13 @@ nomicai-modernbert-embed | rankgpt | nfcorpus | 0.4020
 nomicai-modernbert-embed | rankgpt | scidocs | 0.2124
 nomicai-modernbert-embed | rankgpt | trec-covid | 0.8663
 nomicai-modernbert-embed | rankgpt | webis-touche2020 | 0.3080
+nomicai-modernbert-embed | umbrela | trec-dl-2019 | 0.6709
+nomicai-modernbert-embed | umbrela | trec-dl-2020 | 0.6402
+nomicai-modernbert-embed | umbrela | dbpedia-entity | 0.4015
+nomicai-modernbert-embed | umbrela | nfcorpus | 0.3469
+nomicai-modernbert-embed | umbrela | scidocs | 
+nomicai-modernbert-embed | umbrela | trec-covid | 0.7855
+nomicai-modernbert-embed | umbrela | webis-touche2020 | 0.1991
 qwen3-embed-600m | point | trec-dl-2019 | 0.6457
 qwen3-embed-600m | point | trec-dl-2020 | 0.6280
 qwen3-embed-600m | point | dbpedia-entity | 0.3753
@@ -145,6 +187,13 @@ qwen3-embed-600m | point | nfcorpus | 0.3758
 qwen3-embed-600m | point | scidocs | 0.1640
 qwen3-embed-600m | point | trec-covid | 0.7942
 qwen3-embed-600m | point | webis-touche2020 | 0.1700
+qwen3-embed-600m | umbrela | trec-dl-2019 | 0.6800
+qwen3-embed-600m | umbrela | trec-dl-2020 | 0.6331
+qwen3-embed-600m | umbrela | dbpedia-entity | 0.4039
+qwen3-embed-600m | umbrela | nfcorpus | 0.3545
+qwen3-embed-600m | umbrela | scidocs | 
+qwen3-embed-600m | umbrela | trec-covid | 0.8157
+qwen3-embed-600m | umbrela | webis-touche2020 | 0.2094
 qwen3-embed-600m | judge | trec-dl-2019 | 0.6533
 qwen3-embed-600m | judge | trec-dl-2020 | 0.6365
 qwen3-embed-600m | judge | dbpedia-entity | 0.3807
@@ -173,6 +222,13 @@ qwen3-embed-600m | rankgpt | nfcorpus | 0.4290
 qwen3-embed-600m | rankgpt | scidocs | 0.2248
 qwen3-embed-600m | rankgpt | trec-covid | 0.8995
 qwen3-embed-600m | rankgpt | webis-touche2020 | 0.3191
+qwen3-embed-600m | umbrela | trec-dl-2019 | 0.6800
+qwen3-embed-600m | umbrela | trec-dl-2020 | 0.6331
+qwen3-embed-600m | umbrela | dbpedia-entity | 0.4039
+qwen3-embed-600m | umbrela | nfcorpus | 0.3545
+qwen3-embed-600m | umbrela | scidocs | 
+qwen3-embed-600m | umbrela | trec-covid | 0.8157
+qwen3-embed-600m | umbrela | webis-touche2020 | 0.2094
 colbert-small | point | trec-dl-2019 | 0.6452
 colbert-small | point | trec-dl-2020 | 0.6442
 colbert-small | point | dbpedia-entity | 0.3410
@@ -180,6 +236,13 @@ colbert-small | point | nfcorpus | 0.3496
 colbert-small | point | scidocs | 0.1677
 colbert-small | point | trec-covid | 0.7541
 colbert-small | point | webis-touche2020 | 0.1838
+colbert-small | umbrela | trec-dl-2019 | 0.6721
+colbert-small | umbrela | trec-dl-2020 | 0.6402
+colbert-small | umbrela | dbpedia-entity | 0.3797
+colbert-small | umbrela | nfcorpus | 0.3351
+colbert-small | umbrela | scidocs | 
+colbert-small | umbrela | trec-covid | 0.7613
+colbert-small | umbrela | webis-touche2020 | 0.2182
 colbert-small | judge | trec-dl-2019 | 0.6643
 colbert-small | judge | trec-dl-2020 | 0.6473
 colbert-small | judge | dbpedia-entity | 0.3496
@@ -208,6 +271,13 @@ colbert-small | rankgpt | nfcorpus | 0.3993
 colbert-small | rankgpt | scidocs | 0.2077
 colbert-small | rankgpt | trec-covid | 0.8649
 colbert-small | rankgpt | webis-touche2020 | 0.2694
+colbert-small | umbrela | trec-dl-2019 | 0.6721
+colbert-small | umbrela | trec-dl-2020 | 0.6402
+colbert-small | umbrela | dbpedia-entity | 0.3797
+colbert-small | umbrela | nfcorpus | 0.3351
+colbert-small | umbrela | scidocs | 
+colbert-small | umbrela | trec-covid | 0.7613
+colbert-small | umbrela | webis-touche2020 | 0.2182
 bm25 | rankfirst | trec-dl-2019 | 0.7284
 bm25 | rankfirst | trec-dl-2020 | 0.7035
 bm25 | rankfirst | dbpedia-entity | 0.4237
