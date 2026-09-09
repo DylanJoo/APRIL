@@ -6,6 +6,8 @@ from .setwise import SetwiseFormatter
 from .pointwise import PointwiseFormatter
 from .judge import JudgeFormatter
 from .umbrela import UmbrelaFormatter
+from .umbrela_listwise import UmbrelaListwiseFormatter
+from .umbrela_setwise import UmbrelaSetwiseFormatter
 from ._dev import DevFormatter
 
 class AutoPromptFormatter:
@@ -22,6 +24,9 @@ class AutoPromptFormatter:
         'Point': PointwiseFormatter,
         'Judge': JudgeFormatter,
         'Umbrela': UmbrelaFormatter,
+        'UmbrelaRankGPT': UmbrelaListwiseFormatter,
+        'UmbrelaSetTopK': UmbrelaSetwiseFormatter,
+        'UmbrelaSetMaxHeapTopK': UmbrelaSetwiseFormatter,
         'Lancer': JudgeFormatter,
         'Dev': DevFormatter,
     }

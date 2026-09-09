@@ -83,9 +83,10 @@ def _first(prompt) -> str:
 # ── Listwise ───────────────────────────────────────────────────────────────────
 
 @pytest.mark.parametrize("mode,use_alpha", [
-    ("RankGPT",    False),
-    ("RankZephyr", False),
-    ("RankFirst",  True),
+    ("RankGPT",        False),
+    ("RankZephyr",     False),
+    ("RankFirst",      True),
+    ("UmbrelaRankGPT", False),
 ])
 def test_listwise(mode, use_alpha):
     config = ConfigManager(
@@ -130,8 +131,10 @@ def test_pairwise(mode, idx_pairs):
 # ── Setwise ────────────────────────────────────────────────────────────────────
 
 @pytest.mark.parametrize("mode,use_alpha", [
-    ("SetTopK",        False),
-    ("SetMaxHeapTopK", True),
+    ("SetTopK",              False),
+    ("SetMaxHeapTopK",       True),
+    ("UmbrelaSetTopK",       False),
+    ("UmbrelaSetMaxHeapTopK", True),
 ])
 def test_setwise(mode, use_alpha):
     config = ConfigManager(

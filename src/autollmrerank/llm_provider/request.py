@@ -6,6 +6,7 @@ import asyncio
 import openai
 from functools import wraps
 from typing import List
+from contextlib import contextmanager
 from transformers import AutoTokenizer
 
 class LLM:
@@ -94,6 +95,27 @@ class LLM:
         self.id_tokens = [self.tokenizer.tokenize(item)[0] for item in id_strings]
         self.max_rating = max_rating
         self.target_ratings = target_ratings
+
+    @contextmanager
+    def default(self):
+        """
+        Usage example:
+        with llm.default():
+            outputs = llm.generate(prompts)
+        """
+        old_temperature = self.temperature
+        old_top_p = self.top_p
+        old_max_tokens = self.max_tokens
+        try:
+            print("Entering default sampling parameters context ...\nTemperature: 1.0, Top-p: 1.0, Max tokens: 512")
+            self.temperature = 1.0
+            self.top_p = 1.0
+            self.max_tokens = 512
+            yield  # This is where the code inside the 'with' block runs
+        finally:
+            self.temperature = old_temperature
+            self.top_p = old_top_p
+            self.max_tokens = old_max_tokens
 
     @tracker
     def generate(

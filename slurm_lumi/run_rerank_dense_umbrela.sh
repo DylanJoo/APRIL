@@ -1,14 +1,14 @@
 #!/bin/bash -l
-#SBATCH --job-name=rankjudge
-#SBATCH --partition=standard-g           # partition name
+#SBATCH --job-name=u_rankjudge
+#SBATCH --partition=small-g           # partition name
 #SBATCH --ntasks-per-node=1         # 8 MPI ranks per node, 16 total (2x8)
 #SBATCH --mem=256G
 #SBATCH --nodes=1
-#SBATCH --array=4
+#SBATCH --array=0-6
 #SBATCH --cpus-per-task=32
 #SBATCH --gpus-per-node=8
-#SBATCH --time=24:00:00
-#SBATCH --account=project_465002438
+#SBATCH --time=28:00:00
+#SBATCH --account=project_465002532
 #SBATCH --output=logs/%x.%a.out
 #SBATCH --error=logs/%x.%a.err
 
@@ -38,16 +38,15 @@ dataset=${DATASETS[$SLURM_ARRAY_TASK_ID]}
 benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
-## POINTWISE
+## POINTWISE (UMBRELA)
+method=umbrela
 needs_pointwise=false
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
-    for method in judge judge_expr point; do
-        output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
-        if [ ! -f "$output_run" ]; then
-            needs_pointwise=true
-            break 2
-        fi
-    done
+    output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
+    if [ ! -f "$output_run" ]; then
+        needs_pointwise=true
+        break 2
+    fi
 done
 
 if [ "$needs_pointwise" = true ]; then
@@ -65,7 +64,6 @@ done
 echo "vLLM server is up and running."
 
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
-for method in judge judge_expr point; do
     inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ -f "$output_run" ]; then
@@ -83,7 +81,6 @@ for method in judge judge_expr point; do
         --data.output_run=${output_run} \
         --llm.model_name_or_path=$MODEL
 done
-done
 kill $PID
 sleep 5
 pkill -9 -f "vllm.entrypoints.openai.api_server" 2>/dev/null
@@ -94,18 +91,18 @@ until ! curl -s http://localhost:8000/v1/models >/dev/null 2>&1 || [ $waited -ge
 done
 fi
 
-## SETWISE
-method=setmaxheaptopk
-needs_setwise=false
+## UMBRELA SETWISE
+method=umbrela_setmaxheaptopk
+needs_umbrela_setwise=false
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ ! -f "$output_run" ]; then
-        needs_setwise=true
+        needs_umbrela_setwise=true
         break
     fi
 done
 
-if [ "$needs_setwise" = true ]; then
+if [ "$needs_umbrela_setwise" = true ]; then
 python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
     --port 8001 \
@@ -146,18 +143,18 @@ until ! curl -s http://localhost:8001/v1/models >/dev/null 2>&1 || [ $waited -ge
 done
 fi
 
-## LISTWISE
-method=rankgpt
-needs_listwise=false
+## UMBRELA LISTWISE
+method=umbrela_rankgpt
+needs_umbrela_listwise=false
 for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small; do
     output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
     if [ ! -f "$output_run" ]; then
-        needs_listwise=true
+        needs_umbrela_listwise=true
         break
     fi
 done
 
-if [ "$needs_listwise" = true ]; then
+if [ "$needs_umbrela_listwise" = true ]; then
 python -m vllm.entrypoints.openai.api_server \
     --model $MODEL \
     --max-model-len 30720 \

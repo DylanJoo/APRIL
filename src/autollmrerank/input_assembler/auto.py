@@ -23,6 +23,9 @@ class AutoAssembler:
         'Point': Point,
         'Judge': Judge,
         'Umbrela': Judge,
+        'UmbrelaRankGPT': SlidingWindow,
+        'UmbrelaSetTopK': SetBubbleTopK,
+        'UmbrelaSetMaxHeapTopK': SetMaxHeapTopK,
         'Lancer': Lancer,
         'Dev': Dev,
     }
