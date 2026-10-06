@@ -39,8 +39,8 @@ benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
 ## 
-# POOL=pool-40-systems-top20
-POOL=pool-40-systems-top10
+# POOL=pool-55-systems-top20
+POOL=pool-55-systems-top10
 
 ## POINTWISE
 needs_pointwise=false

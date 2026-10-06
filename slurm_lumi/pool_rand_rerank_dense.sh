@@ -41,7 +41,7 @@ benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
 ##
-POOL=pool-40-systems-top20-rand${SEED}
+POOL=pool-55-systems-top20-rand${SEED}
 
 
 # # SETWISE

@@ -46,7 +46,7 @@ for r2 in rankfirst rankzephyr;do
 done
 done
 
-POOL=pool-40-systems-top20
+POOL=pool-55-systems-top20
 #
 # ── Step 1: generate auto-qrel files ──────────────────────────────────────────
 echo "=== Generating auto-qrel files for ${NAME} ==="

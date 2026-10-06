@@ -7,7 +7,7 @@
 #SBATCH --array=0-6
 #SBATCH --cpus-per-task=8
 #SBATCH --time=00:10:00
-#SBATCH --account=project_465002438
+#SBATCH --account=project_465002532
 #SBATCH --output=logs/%x.%a.out
 #SBATCH --error=logs/%x.%a.err
 
@@ -33,7 +33,7 @@ for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;
     f=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
     [ -f "$f" ] && echo Y || echo "MISSING: $f"
     RUN_FILES+=("$f")
-    for rr in judge judge_expr point rankgpt setmaxheaptopk; do
+    for rr in judge judge_expr point rankgpt setmaxheaptopk umbrela umbrela_setmaxheaptopk umbrela_rankgpt; do
         f=$HOME/APRIL/runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${rr}.${subset%%/*}.txt
         [ -f "$f" ] && echo Y || echo "MISSING: $f"
         RUN_FILES+=("$f")
@@ -47,30 +47,40 @@ for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;
 done
 echo ${#RUN_FILES[@]}
 
+POOL_DIR=$HOME/runs-and-qrels/runs-pool-rankjudge/${benchmark}
+
 # top 10
-# output=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.pool-40-systems-top10.${subset%%/*}.txt
-# python3 qrel-analysis/diverse_pooling.py \
-#     --run_files "${RUN_FILES[@]}" \
-#     --topk 10 \
-#     --output $output
+output=$POOL_DIR/run.${benchmark}.pool-55-systems-top10.${subset%%/*}.txt
+python3 qrel-analysis/diverse_pooling.py \
+    --run_files "${RUN_FILES[@]}" \
+    --topk 10 \
+    --output $output
 
 # top 20
-# output=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.pool-40-systems-top20.${subset%%/*}.txt
-# python3 qrel-analysis/diverse_pooling.py \
-#     --run_files "${RUN_FILES[@]}" \
-#     --topk 20 \
-#     --output $output
+output=$POOL_DIR/run.${benchmark}.pool-55-systems-top20.${subset%%/*}.txt
+python3 qrel-analysis/diverse_pooling.py \
+    --run_files "${RUN_FILES[@]}" \
+    --topk 20 \
+    --output $output
 
 # top 100
-# output=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.pool-40-systems-top100.${subset%%/*}.txt
-# python3 qrel-analysis/diverse_pooling.py \
-#     --run_files "${RUN_FILES[@]}" \
-#     --topk 100 \
-#     --output $output
+output=$POOL_DIR/run.${benchmark}.pool-55-systems-top100.${subset%%/*}.txt
+python3 qrel-analysis/diverse_pooling.py \
+    --run_files "${RUN_FILES[@]}" \
+    --topk 100 \
+    --output $output
+
+# top 10 shuffle (used by output_autoqrel_rand.sh)
+output=$POOL_DIR/run.${benchmark}.pool-55-systems-top10-rand2026.${subset%%/*}.txt
+python3 qrel-analysis/diverse_pooling.py \
+    --run_files "${RUN_FILES[@]}" \
+    --topk 10 \
+    --output $output \
+    --seed 2026
 
 # top 20 shuffle
 for seed in $(seq 2027 2030); do
-    output=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.pool-40-systems-top20-rand$seed.${subset%%/*}.txt
+    output=$POOL_DIR/run.${benchmark}.pool-55-systems-top20-rand$seed.${subset%%/*}.txt
     python3 qrel-analysis/diverse_pooling.py \
         --run_files "${RUN_FILES[@]}" \
         --topk 20 \

@@ -4,10 +4,10 @@
 #SBATCH --ntasks-per-node=1         # 8 MPI ranks per node, 16 total (2x8)
 #SBATCH --mem=256G
 #SBATCH --nodes=1
-#SBATCH --array=0-6
+#SBATCH --array=3,4
 #SBATCH --cpus-per-task=32
 #SBATCH --gpus-per-node=8
-#SBATCH --time=28:00:00
+#SBATCH --time=24:00:00
 #SBATCH --account=project_465002532
 #SBATCH --output=logs/%x.%a.out
 #SBATCH --error=logs/%x.%a.err
@@ -73,7 +73,7 @@ for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;
     srun singularity exec $SIF \
     python -m autollmrerank.wrapper \
         --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
-        --data.batch_size=512 \
+        --data.batch_size=256 \
         --llm.backend=request \
         --llm.base_url=http://localhost:8000/v1 \
         --data.dataset_name=${benchmark}/${subset} \

@@ -48,7 +48,7 @@ done
 
 # ── Step 1: generate auto-qrel files ──────────────────────────────────────────
 echo "=== Generating auto-qrel files for ${NAME} ==="
-for r1 in pool-40-systems-top10-rand2026;do
+for r1 in pool-55-systems-top10-rand2026;do
 for r2 in "${RERANKERS[@]}"; do
     judge_run=${HOME}/APRIL/runs/${MODEL_DIR}/run.${BENCHMARK}.${r1}-rerank-${r2}.${NAME}.txt
     if [ ! -f "$judge_run" ]; then
@@ -86,7 +86,7 @@ echo "=== nDCG@10 — auto-qrels ==="
 EVAL_RESULTS_DIR=${HOME}/APRIL/qrel-analysis/eval_results-rand/${NAME}
 mkdir -p "$EVAL_RESULTS_DIR"
 
-for r1 in pool-40-systems-top10-rand2026;do
+for r1 in pool-55-systems-top10-rand2026;do
 for r2 in "${RERANKERS[@]}"; do
     qrel_dir=${HOME}/APRIL/qrel-analysis/autoqrels-rand/${r1}-rerank-${r2}/${NAME}/
     for qrel_file in "${qrel_dir}"autollmqrel.*.txt; do

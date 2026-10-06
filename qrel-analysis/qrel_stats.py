@@ -14,7 +14,7 @@ python qrel_stats.py path/to/autollmqrel.rank@10.txt
 python qrel_stats.py autollmqrel.rank@10.txt autollmqrel.thresholding@0.5.txt
 
 # All files in a directory
-python qrel_stats.py --dir autoqrels/pool-40-systems-top10-rerank-judge/trec-dl-2019/
+python qrel_stats.py --dir autoqrels/pool-55-systems-top10-rerank-judge/trec-dl-2019/
 
 # Compare against a reference (human) qrel
 python qrel_stats.py --ref human.qrel autollmqrel.rank@10.txt autollmqrel.thresholding@0.5.txt

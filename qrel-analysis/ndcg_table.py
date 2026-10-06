@@ -3,13 +3,13 @@ ndcg_table.py
 
 nDCG@10 of each candidate run (bm25, splade-v3, ..., and each retriever's
 rerankers) evaluated against different judgment sources (LLM-judge-derived
-auto-qrels), for the top10-pool (pool-40-systems-top10) results already
+auto-qrels), for the top10-pool (pool-55-systems-top10) results already
 computed under eval_results/. This does not re-run any evaluation; it
 parses the precomputed "run \t nDCG@10" files that eval_autoqrels.py /
 output_autoqrel.py produced, one per (dataset, judge method, strategy)
 combination:
 
-    eval_results/{dataset}/pool-40-systems-top10-rerank-{method}.autollmqrel.{strategy}.txt
+    eval_results/{dataset}/pool-55-systems-top10-rerank-{method}.autollmqrel.{strategy}.txt
 
 One table is printed per dataset: rows are candidate runs, columns are
 judge methods, cells are that candidate's nDCG@10 under that judge
@@ -42,7 +42,7 @@ DEFAULT_EVAL_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ev
 DEFAULT_DATASETS = ["dbpedia-entity", "nfcorpus", "scidocs", "trec-covid", "webis-touche2020",
                      "trec-dl-2019", "trec-dl-2020"]
 DEFAULT_METHODS = ["judge", "judge_expr", "point", "rankgpt", "setmaxheaptopk", "umbrela"]
-DEFAULT_POOL = "pool-40-systems-top10"
+DEFAULT_POOL = "pool-55-systems-top10"
 DEFAULT_STRATEGY = "rank@10"
 
 BASE_RUNS = ["bm25", "splade-v3", "nomicai-modernbert-embed", "qwen3-embed-600m", "colbert-small"]
@@ -140,7 +140,7 @@ def main():
         epilog=__doc__,
     )
     parser.add_argument("--eval-root", type=str, default=DEFAULT_EVAL_ROOT,
-                         help="Root dir containing {dataset}/pool-40-systems-top10-rerank-{method}.autollmqrel.{strategy}.txt files.")
+                         help="Root dir containing {dataset}/pool-55-systems-top10-rerank-{method}.autollmqrel.{strategy}.txt files.")
     parser.add_argument("--datasets", nargs="+", default=DEFAULT_DATASETS)
     parser.add_argument("--methods", nargs="+", default=DEFAULT_METHODS)
     parser.add_argument("--pool", type=str, default=DEFAULT_POOL,

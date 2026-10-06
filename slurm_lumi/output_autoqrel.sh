@@ -47,7 +47,7 @@ for r2 in rankfirst rankzephyr;do
 done
 done
 
-POOL=pool-40-systems-top10
+POOL=pool-55-systems-top10
 # Judgment method to generate auto-qrels from (Steps 1 & 3). RERANKERS above
 # stays as the fixed system list scored in Step 2/3 (EVAL_RUNS) — umbrela is
 # only the qrel source here, not one of the systems being judged.

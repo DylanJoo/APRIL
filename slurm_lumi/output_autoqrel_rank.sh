@@ -46,7 +46,7 @@ for r2 in rankfirst rankzephyr;do
 done
 done
 
-POOL=pool-40-systems-top10
+POOL=pool-55-systems-top10
 JUDGES=(umbrela)
 
 # ── Step 1: generate auto-qrel files ──────────────────────────────────────────

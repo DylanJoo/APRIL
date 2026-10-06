@@ -47,7 +47,7 @@ HUMAN_QREL_OVERRIDES = {
 DEFAULT_DATASETS = ["dbpedia-entity", "nfcorpus", "scidocs", "trec-covid", "webis-touche2020",
                      "trec-dl-2019", "trec-dl-2020"]
 DEFAULT_METHODS = ["judge", "judge_expr", "point", "rankgpt", "setmaxheaptopk", "umbrela"]
-DEFAULT_POOLS = ["pool-40-systems-top10"]
+DEFAULT_POOLS = ["pool-55-systems-top10"]
 RANK_CUTOFF = 10
 
 
@@ -258,7 +258,7 @@ def main():
     parser.add_argument("--human", type=str, default=None, help="Single human qrel file (used with --auto).")
 
     parser.add_argument("--auto-root", type=str, default=DEFAULT_AUTOQREL_ROOT,
-                         help="Root dir containing pool-40-systems-top{K}-rerank-{method}/{dataset}/ subdirs.")
+                         help="Root dir containing pool-55-systems-top{K}-rerank-{method}/{dataset}/ subdirs.")
     parser.add_argument("--human-dir", type=str, default=DEFAULT_HUMAN_QREL_DIR,
                          help="Dir containing qrels.beir.{dataset}.txt files.")
     parser.add_argument("--datasets", nargs="+", default=DEFAULT_DATASETS)

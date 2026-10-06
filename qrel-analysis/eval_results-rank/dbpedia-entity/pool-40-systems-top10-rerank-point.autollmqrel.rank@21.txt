@@ -1,6 +1,0 @@
-run                                            nDCG@10
-bm25                                           
-splade-v3                                      
-nomicai-modernbert-embed                       
-qwen3-embed-600m                               
-colbert-small                                  
