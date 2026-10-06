@@ -24,7 +24,7 @@ class SlidingWindow(RerankStrategy):
                 range(rank_end, rank_start, -self._step_size),
                 desc=f"Listwise Window Bubble (the {i_run + 1} run)",
             ):
-                if curr_end - self._window_size < rank_start: 
+                if curr_end - self._window_size < rank_start:
                     break
                 rerank_results = self.run_pass(rerank_results, rank_start, rank_end, curr_end)
 
@@ -45,9 +45,17 @@ class SlidingWindow(RerankStrategy):
     ) -> List[Result]:
 
         curr_start = max(0, curr_end - self._window_size)
+
+        # Skipping the empty listwise exmaple
+        active = [i for i, r in enumerate(results) if len(r.hits[curr_start:curr_end]) >= 2]
+        if not active:
+            return results
+        active_results = [results[i] for i in active] 
+        # in the batch, keep only the query-docs that should be reranked
+
         prompts = self._prompt_builder.create_prompt_batched(
-            results=results, 
-            rank_start=curr_start, 
+            results=active_results,
+            rank_start=curr_start,
             rank_end=curr_end
         )
         prompts = [p + '[' for p in prompts]
@@ -56,11 +64,13 @@ class SlidingWindow(RerankStrategy):
 
         reranked_results = self._result_parser.parse(
             outputs=outputs,
-            results=results,
+            results=active_results,
             rank_start=curr_start,
             rank_end=curr_end,
         )
-        return reranked_results
+        for i, result in zip(active, reranked_results):
+            results[i] = result
+        return results
 
 class SlidingWindowFIRST(SlidingWindow):
 
@@ -73,9 +83,16 @@ class SlidingWindowFIRST(SlidingWindow):
     ) -> List[Result]:
 
         curr_start = max(0, curr_end - self._window_size)
+        # Skip queries whose window is empty or has a single passage (e.g. pooled runs
+        # with a large rank_end): nothing to rank, so bypass the LLM call for them.
+        active = [i for i, r in enumerate(results) if len(r.hits[curr_start:curr_end]) >= 2]
+        if not active:
+            return results
+        active_results = [results[i] for i in active]
+
         prompts = self._prompt_builder.create_prompt_batched(
-            results=results, 
-            rank_start=curr_start, 
+            results=active_results,
+            rank_start=curr_start,
             rank_end=curr_end
         )
         prompts = [p + '[' for p in prompts]
@@ -84,11 +101,13 @@ class SlidingWindowFIRST(SlidingWindow):
 
         reranked_results = self._result_parser.parse(
             outputs=outputs,
-            results=results,
+            results=active_results,
             rank_start=curr_start,
             rank_end=curr_end,
         )
-        return reranked_results
+        for i, result in zip(active, reranked_results):
+            results[i] = result
+        return results
 
 class SlidingWindowPlus(SlidingWindow):
 
