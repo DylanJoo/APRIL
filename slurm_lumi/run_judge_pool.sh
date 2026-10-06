@@ -8,7 +8,7 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --gpus-per-node=8
 #SBATCH --time=24:00:00
-#SBATCH --account=project_465002438
+#SBATCH --account=project_465002532
 #SBATCH --output=logs/%x.%a.out
 #SBATCH --error=logs/%x.%a.err
 
