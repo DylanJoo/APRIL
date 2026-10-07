@@ -15,7 +15,7 @@ class SetMaxHeapTopK(RerankStrategy):
         self,
         init_results: List[Result],
         rank_start: int = 0,
-        rank_end: int = None,
+        rank_end: int = None, # unused
         batch_size: Optional[int] = 32,
         num_runs: int = 10,
         **kwargs
