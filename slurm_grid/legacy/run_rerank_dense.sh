@@ -1,0 +1,51 @@
+#!/bin/bash -l
+#SBATCH --job-name=rankjudge
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:a100:1
+#SBATCH --mem=256G
+#SBATCH --nodes=1
+#SBATCH --array=0-6%2
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=25:00:00
+#SBATCH --output=%x-%a.out
+
+source $HOME/.bashrc
+initconda
+conda activate autollmrerank
+
+cd $HOME/APRIL
+MODEL=meta-llama/Llama-3.3-70B-Instruct
+LOG=vllm_server.log
+mkdir -p runs/${MODEL##*/}
+
+DATASETS=(
+"msmarco-passage@trec-dl-2019/judged"
+"msmarco-passage@trec-dl-2020/judged"
+"beir@dbpedia-entity/test"
+"beir@nfcorpus/test"
+"beir@scidocs"
+"beir@trec-covid"
+"beir@webis-touche2020/v2"
+)
+
+dataset=${DATASETS[$SLURM_ARRAY_TASK_ID]}
+benchmark=$(echo $dataset | cut -d'@' -f1)
+subset=$(echo $dataset | cut -d'@' -f2)
+
+for r in bm25 splade-v3 nomicai-modernbert-embed qwen3-embed-600m colbert-small;do
+for method in point judge judge_expr umbrela setmaxheaptopk rankgpt; do
+    inital_run=$HOME/runs-and-qrels/runs/${benchmark}/run.${benchmark}.${r}.${subset%%/*}.txt
+    output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt
+    if [ -f "$output_run" ]; then
+        echo "Skipping $output_run (already exists)"
+        continue
+    fi
+    echo "=== RUNNING: dataset=$dataset r=$r method=$method ==="
+    python -m autollmrerank.wrapper \
+        --config=$HOME/APRIL/src/autollmrerank/configs/${method}.yaml \
+        --data.dataset_name=${benchmark}/${subset} \
+        --data.input_run=${inital_run} \
+        --data.output_run=runs/${MODEL##*/}/run.${benchmark}.${r}-rerank-${method}.${subset%%/*}.txt \
+        --llm.model_name_or_path=$MODEL
+done
+done
