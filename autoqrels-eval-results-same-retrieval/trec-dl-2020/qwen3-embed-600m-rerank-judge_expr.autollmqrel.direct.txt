@@ -1,0 +1,12 @@
+run                                            nDCG@10
+qwen3-embed-600m                               0.7692
+qwen3-embed-600m-rerank-judge                  0.9872
+qwen3-embed-600m-rerank-judge_expr             1.0000
+qwen3-embed-600m-rerank-point                  0.8875
+qwen3-embed-600m-rerank-umbrela                0.8851
+qwen3-embed-600m-rerank-rankgpt                0.9070
+qwen3-embed-600m-rerank-setmaxheaptopk         0.8845
+qwen3-embed-600m-rerank-umbrela_rankgpt        0.9145
+qwen3-embed-600m-rerank-umbrela_setmaxheaptopk  0.9088
+qwen3-embed-600m-rerank-rankfirst              0.8811
+qwen3-embed-600m-rerank-rankzephyr             0.8915

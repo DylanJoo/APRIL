@@ -1,0 +1,12 @@
+run                                            nDCG@10
+splade-v3                                      0.6324
+splade-v3-rerank-judge                         1.0000
+splade-v3-rerank-judge_expr                    0.9742
+splade-v3-rerank-point                         0.7598
+splade-v3-rerank-umbrela                       0.7987
+splade-v3-rerank-rankgpt                       0.8177
+splade-v3-rerank-setmaxheaptopk                0.7788
+splade-v3-rerank-umbrela_rankgpt               0.8190
+splade-v3-rerank-umbrela_setmaxheaptopk        0.8324
+splade-v3-rerank-rankfirst                     0.7871
+splade-v3-rerank-rankzephyr                    0.7884

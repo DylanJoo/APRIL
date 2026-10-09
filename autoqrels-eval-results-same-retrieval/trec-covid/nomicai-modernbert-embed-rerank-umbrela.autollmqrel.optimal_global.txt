@@ -1,0 +1,12 @@
+run                                            nDCG@10
+nomicai-modernbert-embed                       0.9549
+nomicai-modernbert-embed-rerank-judge          0.9974
+nomicai-modernbert-embed-rerank-judge_expr     1.0000
+nomicai-modernbert-embed-rerank-point          0.9985
+nomicai-modernbert-embed-rerank-umbrela        1.0000
+nomicai-modernbert-embed-rerank-rankgpt        1.0000
+nomicai-modernbert-embed-rerank-setmaxheaptopk  0.9604
+nomicai-modernbert-embed-rerank-umbrela_rankgpt  1.0000
+nomicai-modernbert-embed-rerank-umbrela_setmaxheaptopk  0.9927
+nomicai-modernbert-embed-rerank-rankfirst      0.9924
+nomicai-modernbert-embed-rerank-rankzephyr     0.9633

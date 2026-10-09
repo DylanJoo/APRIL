@@ -1,0 +1,12 @@
+run                                            nDCG@10
+bm25                                           0.7575
+bm25-rerank-judge                              0.7456
+bm25-rerank-judge_expr                         0.7935
+bm25-rerank-point                              0.7363
+bm25-rerank-umbrela                            0.7042
+bm25-rerank-rankgpt                            0.8470
+bm25-rerank-setmaxheaptopk                     1.0000
+bm25-rerank-umbrela_rankgpt                    0.8305
+bm25-rerank-umbrela_setmaxheaptopk             0.9033
+bm25-rerank-rankfirst                          0.8001
+bm25-rerank-rankzephyr                         0.7565
