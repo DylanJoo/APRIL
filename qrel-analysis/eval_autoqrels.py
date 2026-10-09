@@ -16,7 +16,6 @@ class AutoQrel:
         "direct", "thresholding", "rank",
         "largest_gap", "quantile_binary", "quantile_bucket",
         "optimal_per_topic", "optimal_global",
-        "optimal_precision", "optimal_recall",
     ]
 
     # Bucket boundaries (lower-inclusive percentile fractions):
@@ -79,11 +78,11 @@ class AutoQrel:
         elif strategy == "optimal_global":
             result = AutoQrel.optimal_global(run, self.human_qrel, self.min_relevance)
         elif strategy == "optimal_per_topic":
-            result = AutoQrel.optimal_per_topic_f1(run, self.human_qrel)
-        elif strategy == "optimal_precision":
-            result = AutoQrel.optimal_per_topic_precision(run, self.human_qrel)
-        elif strategy == "optimal_recall":
-            result = AutoQrel.optimal_per_topic_recall(run, self.human_qrel)
+            result = AutoQrel.optimal_per_topic_f1(run, self.human_qrel, self.min_relevance)
+        # elif strategy == "optimal_precision":
+        #     result = AutoQrel.optimal_per_topic_precision(run, self.human_qrel)
+        # elif strategy == "optimal_recall":
+        #     result = AutoQrel.optimal_per_topic_recall(run, self.human_qrel)
         else:
             raise ValueError(f"Unknown thresholding strategy: {strategy!r}")
         return AutoQrel._filter_no_relevant(result)
@@ -183,17 +182,22 @@ class AutoQrel:
         return 2 * precision * recall / (precision + recall)
 
     @staticmethod
-    def optimal_per_topic_f1(run, human_qrel):
+    def optimal_per_topic_f1(run, human_qrel, min_relevance=1):
         """Oracle: per-topic threshold that maximises F1 against human qrel.
 
         For every query, all unique scores in the run are tried as candidate
         thresholds; the one yielding the best binary F1 is chosen. This is an
         oracle upper bound — it requires the human labels it is meant to replace.
+
+        Positives are restricted to human-relevant docs present in the judge run
+        (the pool): relevant docs the judge never scored can't be predicted at any
+        threshold, so counting them would only inflate the recall denominator.
+        Pool docs missing from the human qrel are still treated as negatives.
         """
         qrel = {}
         for qid, docs in run.items():
             hq = human_qrel.get(qid, {})
-            actual_pos = {did for did, rel in hq.items() if rel >= 1}
+            actual_pos = {did for did, rel in hq.items() if rel >= min_relevance and did in docs}
             if not actual_pos:
                 qrel[qid] = {did: 0 for did in docs}
                 continue
@@ -281,30 +285,34 @@ class AutoQrel:
         Every unique score across the entire run is tried as a global threshold;
         the one with the highest average per-topic F1 is selected and applied
         uniformly to all topics.
+
+        Positives are restricted to human-relevant docs present in the judge run
+        (the pool), as in optimal_per_topic_f1; topics with no positive inside the
+        pool are skipped.
         """
         all_scores = sorted(
             {score for docs in run.values() for score in docs.values()}, reverse=True
         )
-        topics_with_pos = {
-            qid for qid, docs in human_qrel.items()
-            if any(rel >= min_relevance for rel in docs.values())
+        actual_pos_by_qid = {
+            qid: {did for did, rel in human_qrel.get(qid, {}).items()
+                  if rel >= min_relevance and did in docs}
+            for qid, docs in run.items()
         }
         best_avg_f1, best_threshold = -1.0, all_scores[-1]
         for thresh in all_scores:
             f1s = []
             for qid, docs in run.items():
-                if qid not in topics_with_pos:
+                actual_pos = actual_pos_by_qid[qid]
+                if not actual_pos:
                     continue
-                hq = human_qrel.get(qid, {})
-                actual_pos = {did for did, rel in hq.items() if rel >= min_relevance}
                 predicted_pos = {did for did, score in docs.items() if score >= thresh}
                 f1s.append(AutoQrel._binary_f1(predicted_pos, actual_pos))
             avg_f1 = sum(f1s) / len(f1s) if f1s else 0.0
             if avg_f1 > best_avg_f1:
                 best_avg_f1, best_threshold = avg_f1, thresh
                 logger.info(
-                    f"Look for optimal threshold." + \
-                     "New best threshold={best_threshold:.5g}, avg_F1={best_avg_f1:.4f}"
+                    f"Look for optimal threshold. "
+                    f"New best threshold={best_threshold:.5g}, avg_F1={best_avg_f1:.4f}"
                 )
 
         return {

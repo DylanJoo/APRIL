@@ -88,8 +88,8 @@ if __name__ == "__main__":
         parser.error("Provide --output_dir (multi-strategy) or --output (single file).")
 
     loader = importlib.import_module(f"autollmrerank.loader_dev.{args.loader_type}")
-    _, _, human_qrel = loader.load(args.dataset_name)
-    judge_run = loader.load_run(args.judge_run)
+    _, _, human_qrel = loader.load(args.dataset_name, ignore_corpus=True)
+    judge_run = loader.load_run(args.judge_run, topk=None)
 
     strategies_requested = args.strategies or ["all"]
 
