@@ -22,7 +22,8 @@ class Result:
 
     def sort_by(self, field: str = 'score'):
         hits = deepcopy(self.hits)
-        hits.sort(key=lambda x: x[field], reverse=True)
+        # ties broken by docid (descending), as trec_eval does, not by input order
+        hits.sort(key=lambda x: (x[field], x['docid']), reverse=True)
         for i, hit in enumerate(hits):
             hit['rank'] = i + 1
         self.hits = hits

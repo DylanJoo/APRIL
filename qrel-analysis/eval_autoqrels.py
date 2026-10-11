@@ -106,10 +106,12 @@ class AutoQrel:
     @staticmethod
     def rank_cutoff(run, topk=10):
         """Top-k ranked docs → 1, remainder → 0.
-        Works for any ranked run regardless of score semantics."""
+        Works for any ranked run regardless of score semantics.
+        Ties are broken by docid (descending), as trec_eval does, so the cut
+        does not depend on the order the judge saw the pool in."""
         qrel = {}
         for qid, docs in run.items():
-            ranked = list(docs.keys())
+            ranked = [did for did, _ in sorted(docs.items(), key=lambda x: (x[1], x[0]), reverse=True)]
             qrel[qid] = {did: (1 if i < topk else 0) for i, did in enumerate(ranked)}
         return qrel
 

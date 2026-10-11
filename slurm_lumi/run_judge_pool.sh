@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --job-name=pool
-#SBATCH --partition=small-g           # partition name
+#SBATCH --partition=standard-g           # partition name
 #SBATCH --ntasks-per-node=1         # 8 MPI ranks per node, 16 total (2x8)
 #SBATCH --mem=256G
 #SBATCH --nodes=1
@@ -38,13 +38,35 @@ dataset=${DATASETS[$SLURM_ARRAY_TASK_ID]}
 benchmark=$(echo $dataset | cut -d'@' -f1)
 subset=$(echo $dataset | cut -d'@' -f2)
 
+# vLLM's tensor-parallel workers are spawned as "python -c from multiprocessing.spawn ...",
+# so killing the api_server PID (or pkill on its name) leaves them holding the GPUs and
+# the next server can't start. Kill the workers too, and fail fast if a server dies.
+wait_vllm() {
+    until curl -s http://localhost:8000/v1/models >/dev/null; do
+        if ! kill -0 $PID 2>/dev/null; then
+            echo "vLLM server exited before becoming ready; see $LOG" >&2
+            exit 1
+        fi
+        sleep 10
+    done
+    echo "vLLM server is up and running."
+}
+stop_vllm() {
+    kill $PID 2>/dev/null
+    sleep 5
+    pkill -9 -f "vllm.entrypoints.openai.api_server" 2>/dev/null
+    pkill -9 -f "multiprocessing.spawn" 2>/dev/null
+    waited=0
+    until ! curl -s http://localhost:8000/v1/models >/dev/null 2>&1 || [ $waited -ge 60 ]; do
+        sleep 5
+        waited=$((waited + 5))
+    done
+    sleep 10
+}
+
 ## 
 POOL=pool-55-systems-top10
-# Pools can exceed 100 docs/query (pool-55 top10: up to 179, top20: up to 255), but
-# load_run (data.topk) and the pointwise assemblers (rank_end/top_k) default to 100.
-# Raise all three so every pooled doc is judged (setwise heap only reads data.topk).
-# Listwise: rank_end must stay a multiple of step_size (10) or the [0:20] window is
-# skipped; empty windows beyond a query's hits are skipped in SlidingWindow.run_pass.
+POOL=pool-55-systems-top10-rand2026
 POOL_TOPK=1000
 
 ## POINTWISE
@@ -68,10 +90,7 @@ python -m vllm.entrypoints.openai.api_server \
     --dtype bfloat16 \
     --tensor-parallel-size 8 > $LOG 2>&1 &
 PID=$!
-until curl -s http://localhost:8000/v1/models >/dev/null; do
-  sleep 10
-done
-echo "vLLM server is up and running."
+wait_vllm
 
 for r in $POOL;do
 for method in judge judge_expr point umbrela; do
@@ -96,14 +115,7 @@ for method in judge judge_expr point umbrela; do
         --llm.model_name_or_path=$MODEL
 done
 done
-kill $PID
-sleep 5
-pkill -9 -f "vllm.entrypoints.openai.api_server" 2>/dev/null
-waited=0
-until ! curl -s http://localhost:8000/v1/models >/dev/null 2>&1 || [ $waited -ge 60 ]; do
-    sleep 5
-    waited=$((waited + 5))
-done
+stop_vllm
 fi
 
 ## SETWISE
@@ -129,10 +141,7 @@ python -m vllm.entrypoints.openai.api_server \
     --dtype bfloat16 \
     --tensor-parallel-size 8 > $LOG 2>&1 &
 PID=$!
-until curl -s http://localhost:8000/v1/models >/dev/null; do
-  sleep 10
-done
-echo "vLLM server is up and running."
+wait_vllm
 
 for method in setmaxheaptopk umbrela_setmaxheaptopk; do
 for r in $POOL;do
@@ -156,8 +165,7 @@ for r in $POOL;do
         --llm.model_name_or_path=$MODEL --max_doc_length=1024
 done
 done
-kill $PID
-until ! curl -s http://localhost:8000/v1/models >/dev/null 2>&1; do sleep 5; done
+stop_vllm
 fi
 
 ## LISTWISE
@@ -182,10 +190,7 @@ python -m vllm.entrypoints.openai.api_server \
     --dtype bfloat16 \
     --tensor-parallel-size 8 > $LOG 2>&1 &
 PID=$!
-until curl -s http://localhost:8000/v1/models >/dev/null; do
-  sleep 10
-done
-echo "vLLM server is up and running."
+wait_vllm
 
 for method in rankgpt umbrela_rankgpt; do
 for r in $POOL;do
@@ -209,5 +214,5 @@ for r in $POOL;do
         --llm.model_name_or_path=$MODEL --max_doc_length=1024
 done
 done
-kill $PID
+stop_vllm
 fi
