@@ -1,4 +1,4 @@
-# Configuraitons — same-retrieval setting
+# Configuraitons
 # Judge = retrieval A reranked by LLM judge B (A-rerank-B).
 # Candidates = only systems built on A (A alone + A-rerank-* for every reranker).
 

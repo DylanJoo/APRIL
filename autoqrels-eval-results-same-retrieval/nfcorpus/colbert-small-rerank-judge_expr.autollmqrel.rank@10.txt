@@ -1,0 +1,12 @@
+run                                            nDCG@10
+colbert-small                                  0.4247
+colbert-small-rerank-judge                     0.6893
+colbert-small-rerank-judge_expr                0.9998
+colbert-small-rerank-point                     0.6270
+colbert-small-rerank-umbrela                   0.6031
+colbert-small-rerank-rankgpt                   0.6124
+colbert-small-rerank-setmaxheaptopk            0.5958
+colbert-small-rerank-umbrela_rankgpt           0.6038
+colbert-small-rerank-umbrela_setmaxheaptopk    0.6585
+colbert-small-rerank-rankfirst                 0.6038
+colbert-small-rerank-rankzephyr                0.4248
